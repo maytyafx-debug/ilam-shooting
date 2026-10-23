@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0f2a23">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="وب‌سایت هیأت تیراندازی استان ایلام؛ اطلاع‌رسانی درباره هیأت، ورزشکاران، رویدادها و وضعیت خدمات.">
+  <meta name="description" content="وب‌سایت هیأت تیراندازی استان ایلام؛ اطلاع‌رسانی درباره هیأت، ورزشکاران، مسابقات، دوره‌ها و وضعیت خدمات.">
   <title>هیأت تیراندازی استان ایلام</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -30,12 +30,14 @@
     </button>
 
     <nav id="site-nav" class="site-nav" aria-label="فهرست اصلی">
-      <a href="#about">درباره هیأت</a>
-      <a href="#athletes">ورزشکاران</a>
+      <a href="#about">هیأت‌رئیسه</a>
+      <a href="#committees">کمیته‌ها</a>
       <a href="#competitions">مسابقات</a>
-      <a href="#news">اخبار</a>
-      <a href="#services">خدمات</a>
+      <a href="#schedule">برنامه</a>
+      <a href="#athletes">قهرمانان</a>
       <a href="#courses">دوره‌ها</a>
+      <a href="#news">اخبار</a>
+      <a href="#registration">ثبت‌نام</a>
     </nav>
 
     <span class="header-status" aria-label="وضعیت ثبت‌نام">ثبت‌نام غیرفعال</span>
@@ -52,8 +54,8 @@
         <h1>دقت، تمرکز،<br><em>مسیر قهرمانی</em></h1>
         <p class="hero-lead">اطلاع‌رسانی رسمی فعالیت‌های تیراندازی استان؛ از برنامهٔ مسابقات و اخبار تا وضعیت خدمات هیأت.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#services">وضعیت خدمات</a>
-          <a class="btn btn-ghost" href="#competitions">تقویم مسابقات</a>
+          <a class="btn btn-primary" href="#registration">وضعیت ثبت‌نام</a>
+          <a class="btn btn-ghost" href="#schedule">برنامهٔ مسابقات</a>
         </div>
       </div>
     </div>
@@ -68,38 +70,160 @@
     </div>
   </section>
 
-  <section class="section" id="services">
+  <section class="section section-dark" id="about">
     <div class="wrap">
       <header class="section-head">
         <div>
-          <p class="kicker">خدمات هیأت</p>
-          <h2>وضعیت خدمات</h2>
+          <p class="kicker">هیأت تیراندازی استان ایلام</p>
+          <h2>اعضای هیأت‌رئیسه</h2>
         </div>
-        <p>در حال حاضر هیچ‌یک از خدمات آنلاین فعال نیست. فرم، پرداخت و ثبت سفارشی در این نسخه وجود ندارد.</p>
+        <p>نام‌ها و سمت‌ها مطابق اطلاعات اعلام‌شده توسط هیأت.</p>
       </header>
 
-      <ul class="service-list">
-        <li class="service-card">
-          <span class="service-name">ثبت‌نام ورزشکاران</span>
-          <span class="status status-off">غیرفعال</span>
-        </li>
-        <li class="service-card">
-          <span class="service-name">ثبت‌نام مسابقات</span>
-          <span class="status status-off">غیرفعال</span>
-        </li>
-        <li class="service-card">
-          <span class="service-name">بیمه ورزشی</span>
-          <span class="status status-off">غیرفعال</span>
-        </li>
-        <li class="service-card">
-          <span class="service-name">پرداخت حق عضویت</span>
-          <span class="status status-off">غیرفعال</span>
-        </li>
-        <li class="service-card">
-          <span class="service-name">فروش ساچمه</span>
-          <span class="status status-off">غیرفعال</span>
+      <ul class="board-grid">
+        <li class="board-card"><h3>امیرحسین اکبری</h3><p>رئیس هیأت</p></li>
+        <li class="board-card"><h3>آیت قمری</h3><p>دبیر هیأت</p></li>
+        <li class="board-card"><h3>فاطمه پورصفر</h3><p>نایب‌رئیس</p></li>
+        <li class="board-card"><h3>محمدامین موسی‌نژاد</h3><p>خزانه‌دار</p></li>
+        <li class="board-card"><h3>آقای شهبازی</h3><p>عضو هیأت‌رئیسه</p></li>
+        <li class="board-card"><h3>آقای صالحیان</h3><p>عضو هیأت‌رئیسه</p></li>
+        <li class="board-card"><h3>خانم غیاثی</h3><p>عضو هیأت‌رئیسه</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section-tinted" id="committees">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">ساختار اجرایی</p>
+          <h2>کمیته‌ها و بازرسی</h2>
+        </div>
+        <p>رئیس هر کمیته و بخش بازرسی مطابق اطلاعات اعلام‌شده توسط هیأت.</p>
+      </header>
+      <ul class="committee-list">
+        <li><span class="committee-no">۰۱</span><div><h4>کمیته مسابقات</h4><p>رئیس: آقای بهمن اکبری</p></div></li>
+        <li><span class="committee-no">۰۲</span><div><h4>کمیته اهداف پروازی</h4><p>رئیس: آقای سلیمانی</p></div></li>
+        <li><span class="committee-no">۰۳</span><div><h4>کمیته گلوله‌زنی</h4><p>رئیس: آقای فریادیان</p></div></li>
+        <li><span class="committee-no">۰۴</span><div><h4>کمیته انضباطی</h4><p>نام رئیس در انتظار اعلام</p></div></li>
+        <li><span class="committee-no">۰۵</span><div><h4>کمیته فرهنگی</h4><p>رئیس: آقای سحری</p></div></li>
+        <li><span class="committee-no">۰۶</span><div><h4>بازرسی</h4><p>نام رئیس در انتظار اعلام</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="competitions">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">قسمت مسابقات</p>
+          <h2>مسابقات استان</h2>
+        </div>
+        <p>مسابقات رسمی هیأت پس از اعلام، با شرایط شرکت در این بخش معرفی می‌شوند.</p>
+      </header>
+      <div class="empty-state">
+        <p>در حال حاضر مسابقهٔ اعلام‌شده‌ای وجود ندارد.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tinted" id="registration">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">ثبت‌نام جدید</p>
+          <h2>ثبت‌نام ورزشکاران</h2>
+        </div>
+        <p>ثبت‌نام ورزشکاران جدید پس از راه‌اندازی سامانهٔ امن فعال می‌شود.</p>
+      </header>
+      <form class="member-form" aria-describedby="member-note" onsubmit="return false">
+        <div class="form-grid">
+          <label class="form-field">
+            <span>نام</span>
+            <input type="text" name="first_name" maxlength="100" autocomplete="given-name" disabled>
+          </label>
+          <label class="form-field">
+            <span>نام خانوادگی</span>
+            <input type="text" name="last_name" maxlength="100" autocomplete="family-name" disabled>
+          </label>
+          <label class="form-field">
+            <span>شماره موبایل</span>
+            <input type="tel" name="phone" maxlength="20" inputmode="tel" autocomplete="tel" disabled>
+          </label>
+          <label class="form-field">
+            <span>شهر</span>
+            <input type="text" name="city" maxlength="100" autocomplete="address-level2" disabled>
+          </label>
+          <label class="form-field form-field-wide">
+            <span>رشته</span>
+            <select name="discipline" disabled>
+              <option value="">انتخاب کنید</option>
+              <option value="air_rifle">تفنگ بادی</option>
+              <option value="air_pistol">تپانچه بادی</option>
+              <option value="sport_shooting">تیراندازی ورزشی</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit" disabled>ارسال درخواست</button>
+          <p id="member-note"><span class="status status-off">غیرفعال</span> این فرم هنوز برای ارسال آماده نیست. پس از تأیید هیأت و راه‌اندازی سامانهٔ امن فعال می‌شود.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="section" id="schedule">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">تقویم و رویدادها</p>
+          <h2>برنامهٔ مسابقات</h2>
+        </div>
+        <span class="pill">در انتظار برنامهٔ رسمی</span>
+      </header>
+
+      <ul class="event-list">
+        <li class="event-item">
+          <div class="event-date"><strong>—</strong><small>زمان اعلام نشده</small></div>
+          <div class="event-body">
+            <h3>عنوان مسابقه اعلام نشده</h3>
+            <p>رشته، رده و محل برگزاری پس از اعلام رسمی درج می‌شود.</p>
+          </div>
+          <span class="status status-off">ثبت‌نام غیرفعال</span>
         </li>
       </ul>
+      <p class="footnote">برنامهٔ رسمی مسابقات هنوز اعلام نشده است.</p>
+    </div>
+  </section>
+
+  <section class="section section-tinted" id="athletes">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">ورزشکاران استان ایلام</p>
+          <h2>معرفی قهرمانان</h2>
+        </div>
+        <p>اطلاعات تأییدشدهٔ ورزشکاران پس از اعلام رسمی در این بخش درج می‌شود.</p>
+      </header>
+      <div class="empty-state">
+        <p>هنوز اطلاعات تأییدشده‌ای برای نمایش وجود ندارد.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="competition-registration">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">ثبت‌نام شرکت در مسابقه</p>
+          <h2>ثبت‌نام مسابقات</h2>
+        </div>
+        <p>ثبت‌نام در مسابقات پس از اعلام برنامهٔ رسمی فعال می‌شود.</p>
+      </header>
+      <div class="status-panel">
+        <span class="status status-off">غیرفعال</span>
+        <p>هیچ مسابقه‌ای برای ثبت‌نام در دسترس نیست.</p>
+      </div>
     </div>
   </section>
 
@@ -107,8 +231,8 @@
     <div class="wrap">
       <header class="section-head">
         <div>
-          <p class="kicker">دوره‌های مربیگری و داوری</p>
-          <h2 id="courses-title">اطلاعات دوره‌ها</h2>
+          <p class="kicker">ثبت‌نام دوره مربیگری و داوری</p>
+          <h2 id="courses-title">دوره‌های مربیگری و داوری</h2>
         </div>
         <p>برای ثبت‌نام در دوره‌ها، پس از راه‌اندازی سامانهٔ امن و اعلام رسمی، از این بخش اطلاع پیدا خواهید کرد.</p>
       </header>
@@ -133,92 +257,62 @@
     </div>
   </section>
 
-  <section class="section" id="athletes">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">ورزشکاران استان ایلام</p>
-          <h2>اطلاعات و افتخارات</h2>
-        </div>
-        <p>اطلاعات تأییدشدهٔ ورزشکاران پس از اعلام رسمی در این بخش درج می‌شود.</p>
-      </header>
-
-      <div class="empty-state">
-        <p>هنوز اطلاعات تأییدشده‌ای برای نمایش وجود ندارد.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-tinted" id="competitions">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">تقویم و رویدادها</p>
-          <h2>برنامهٔ مسابقات</h2>
-        </div>
-        <span class="pill">در انتظار برنامهٔ رسمی</span>
-      </header>
-
-      <ul class="event-list">
-        <li class="event-item">
-          <div class="event-date"><strong>—</strong><small>زمان اعلام نشده</small></div>
-          <div class="event-body">
-            <h3>عنوان مسابقه اعلام نشده</h3>
-            <p>رشته، رده و محل برگزاری پس از اعلام رسمی درج می‌شود.</p>
-          </div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-      </ul>
-      <p class="footnote">برنامهٔ رسمی مسابقات هنوز اعلام نشده است.</p>
-    </div>
-  </section>
-
   <section class="section" id="news">
     <div class="wrap">
       <header class="section-head">
         <div>
-          <p class="kicker">اخبار و اطلاعیه‌ها</p>
+          <p class="kicker">بخش اخبار</p>
           <h2>آخرین اخبار هیأت</h2>
         </div>
         <p>اخبار و اطلاعیه‌ها پس از تأیید رسمی منتشر می‌شوند.</p>
       </header>
-
       <div class="empty-state">
         <p>در حال حاضر خبر یا اطلاعیهٔ تأییدشده‌ای منتشر نشده است.</p>
       </div>
     </div>
   </section>
 
-  <section class="section section-dark" id="about">
+  <section class="section section-tinted" id="insurance">
     <div class="wrap">
       <header class="section-head">
         <div>
-          <p class="kicker">هیأت تیراندازی استان ایلام</p>
-          <h2>اعضای هیأت‌رئیسه</h2>
+          <p class="kicker">ثبت‌نامهٔ بیمه</p>
+          <h2>بیمه ورزشی</h2>
         </div>
-        <p>نام‌ها و سمت‌ها مطابق اطلاعات اعلام‌شده توسط هیأت.</p>
+        <p>ثبت‌نام بیمهٔ ورزشی در این نسخه فعال نیست.</p>
       </header>
+      <div class="status-panel">
+        <span class="status status-off">غیرفعال</span>
+        <p>اطلاعات بیمه و شرایط آن پس از راه‌اندازی سامانه و اعلام رسمی منتشر می‌شود.</p>
+      </div>
+    </div>
+  </section>
 
-      <ul class="board-grid">
-        <li class="board-card"><h3>امیرحسین اکبری</h3><p>رئیس هیأت</p></li>
-        <li class="board-card"><h3>آیت قمری</h3><p>دبیر هیأت</p></li>
-        <li class="board-card"><h3>فاطمه پورصفر</h3><p>نایب‌رئیس</p></li>
-        <li class="board-card"><h3>محمدامین موسی‌نژاد</h3><p>خزانه‌دار</p></li>
-        <li class="board-card"><h3>آقای شهبازی</h3><p>عضو هیأت‌رئیسه</p></li>
-        <li class="board-card"><h3>آقای صالحیان</h3><p>عضو هیأت‌رئیسه</p></li>
-        <li class="board-card"><h3>خانم غیاثی</h3><p>عضو هیأت‌رئیسه</p></li>
-      </ul>
+  <section class="section" id="payment">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">پرداخت هزینه</p>
+          <h2>شهریه و ساچمه</h2>
+        </div>
+        <p>پرداخت حق عضویت (شهریه) و خرید ساچمه در این نسخه فعال نیست.</p>
+      </header>
+      <div class="status-panel">
+        <span class="status status-off">غیرفعال</span>
+        <p>درگاه پرداخت و فروش ساچمه پس از راه‌اندازی امن منتشر می‌شود. تا آن زمان، پرداختی انجام ندهید.</p>
+      </div>
+    </div>
+  </section>
 
-      <h3 class="subhead">کمیته‌ها و بازرسی</h3>
-      <ul class="committee-list">
-        <li><span class="committee-no">۰۱</span><div><h4>کمیته مسابقات</h4><p>رئیس: آقای بهمن اکبری</p></div></li>
-        <li><span class="committee-no">۰۲</span><div><h4>کمیته اهداف پروازی</h4><p>رئیس: آقای سلیمانی</p></div></li>
-        <li><span class="committee-no">۰۳</span><div><h4>کمیته گلوله‌زنی</h4><p>رئیس: آقای فریادیان</p></div></li>
-        <li><span class="committee-no">۰۴</span><div><h4>کمیته انضباطی</h4><p>نام رئیس در انتظار اعلام</p></div></li>
-        <li><span class="committee-no">۰۵</span><div><h4>کمیته فرهنگی</h4><p>رئیس: آقای سحری</p></div></li>
-        <li><span class="committee-no">۰۶</span><div><h4>بازرسی</h4><p>نام رئیس در انتظار اعلام</p></div></li>
-      </ul>
-
+  <section class="section section-tinted" id="hall">
+    <div class="wrap">
+      <header class="section-head">
+        <div>
+          <p class="kicker">محیط سالن</p>
+          <h2>سالن تیراندازی</h2>
+        </div>
+        <p>تصویر زیر بازسازی مفهومی است و عکس مستند سالن نیست.</p>
+      </header>
       <figure class="hall">
         <img src="assets/empty-hall-updated-reference.png" alt="بازسازی مفهومی سالن تیراندازی خالی، بدون حضور افراد" loading="lazy">
         <figcaption>
@@ -235,7 +329,7 @@
         <h2>اطلاعات رسمی را دنبال کنید</h2>
         <p>ثبت‌نام و خدمات آنلاین پس از راه‌اندازی سامانهٔ امن فعال می‌شوند.</p>
       </div>
-      <a class="btn btn-primary" href="#services">وضعیت خدمات</a>
+      <a class="btn btn-primary" href="#registration">وضعیت ثبت‌نام</a>
     </div>
   </section>
 
@@ -255,5 +349,6 @@
 </footer>
 
 <script src="script.js"></script>
+<script src="analytics.js" defer></script>
 </body>
 </html>
