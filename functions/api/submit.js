@@ -4,7 +4,7 @@ export async function onRequestPost(context) {
     const data = Object.fromEntries(formData.entries());
     
     // --- تنظیمات تلگرام ---
-    const BOT_TOKEN = "AAHjV_bPYOehcDVo8nkgdzAPyiGWM2JElbc";
+    const BOT_TOKEN = "8904228391:AAHjV_bPYOehcDVo8nkgdzAPyiGWM2JElbc";
     const CHAT_ID = "8904228391";
     
     // ساختن متن پیام
