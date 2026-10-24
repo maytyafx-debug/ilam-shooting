@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ثبت‌نام مسابقات | تیراندازی ایلام</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .page-header { padding: 120px 0 40px; text-align: center; }
+  .page-header h1 { font-size: 2.2rem; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <a href="index.html" class="logo"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#0B0F14" stroke-width="2.5"><circle cx="12" cy="12" r="9"/></svg></span><span>هیأت تیراندازی ایلام</span></a>
+    <nav class="nav-links"><a href="index.html">← بازگشت به خانه</a></nav>
+  </div>
+</header>
+<div class="page-header">
+  <h1>ثبت‌نام در مسابقات استانی</h1>
+  <p>برای شرکت در مسابقات پیش‌رو، فرم زیر را تکمیل کنید.</p>
+</div>
+<div class="container">
+  <div class="form-box">
+    <form action="/api/submit" method="POST">
+      <div class="form-group">
+        <label>انتخاب مسابقه</label>
+        <select name="competition" required>
+          <option value="" disabled selected>مسابقه را انتخاب کنید...</option>
+          <option value="1">جام پهلوانی نوروز (۱۷ فروردین)</option>
+          <option value="2">جام سعدی (۱۱ اردیبهشت)</option>
+          <option value="3">جام فردوسی (۲۵ اردیبهشت)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>نام و نام خانوادگی</label><input type="text" name="name" required></div>
+      <div class="form-group"><label>شماره تماس</label><input type="tel" name="phone" required></div>
+      <div class="form-group"><label>باشگاه / محل تمرین</label><input type="text" name="club"></div>
+      <button type="submit" class="btn-submit">ثبت‌نام در مسابقه</button>
+    </form>
+  </div>
+</div>
+<footer><p>© ۱۴۰۵ هیأت تیراندازی ایلام</p></footer>
+</body>
+</html>
