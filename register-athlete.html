@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ثبت‌نام ورزشکار | هیأت تیراندازی ایلام</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .page-header { padding: 120px 0 40px; text-align: center; }
+  .page-header h1 { font-size: 2.2rem; margin-bottom: 10px; }
+  .page-header p { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <a href="index.html" class="logo"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#0B0F14" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/></svg></span><span>هیأت تیراندازی ایلام</span></a>
+    <nav class="nav-links"><a href="index.html">← بازگشت به خانه</a></nav>
+  </div>
+</header>
+
+<div class="page-header">
+  <h1>ثبت‌نام ورزشکاران</h1>
+  <p>برای پیوستن به خانه تیراندازی استان، فرم زیر را تکمیل کنید.</p>
+</div>
+
+<div class="container">
+  <div class="form-box">
+    <form action="/api/submit" method="POST"> <!-- این اکشن بعدا به کلادفلر وصل میشه -->
+      <div class="form-group">
+        <label>نام و نام خانوادگی</label>
+        <input type="text" name="name" required placeholder="نام کامل">
+      </div>
+      <div class="form-group">
+        <label>کد ملی</label>
+        <input type="text" name="national_id" required placeholder="۱۰ رقم">
+      </div>
+      <div class="form-group">
+        <label>شماره تماس</label>
+        <input type="tel" name="phone" required placeholder="۰۹۱۲...">
+      </div>
+      <div class="form-group">
+        <label>جنسیت</label>
+        <select name="gender" required>
+          <option value="" disabled selected>انتخاب کنید...</option>
+          <option value="male">آقایان</option>
+          <option value="female">بانوان</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>رشته ورزشی</label>
+        <select name="sport" required>
+          <option value="" disabled selected>انتخاب رشته...</option>
+          <option value="rifle">تفنگ بادی</option>
+          <option value="pistol">تپانچه بادی</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-submit">ارسال درخواست ثبت‌نام</button>
+    </form>
+  </div>
+</div>
+
+<footer><p>© ۱۴۰۵ هیأت تیراندازی ایلام</p></footer>
+</body>
+</html>
