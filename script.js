@@ -1,28 +1,16 @@
 'use strict';
+const menuButton = document.querySelector('.menu-button');
+const navigation = document.querySelector('#navigation');
 
-(function () {
-  const toggle = document.querySelector('.menu-toggle');
-  const nav = document.getElementById('site-nav');
-  if (!toggle || !nav) return;
+menuButton.addEventListener('click', () => {
+  const opened = menuButton.getAttribute('aria-expanded') === 'true';
+  menuButton.setAttribute('aria-expanded', String(!opened));
+  navigation.classList.toggle('open', !opened);
+  menuButton.setAttribute('aria-label', opened ? 'باز کردن فهرست' : 'بستن فهرست');
+});
 
-  function setOpen(open) {
-    toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label', open ? 'بستن فهرست' : 'باز کردن فهرست');
-    nav.classList.toggle('open', open);
-  }
-
-  toggle.addEventListener('click', function () {
-    setOpen(toggle.getAttribute('aria-expanded') !== 'true');
-  });
-
-  nav.querySelectorAll('a').forEach(function (link) {
-    link.addEventListener('click', function () { setOpen(false); });
-  });
-
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
-      setOpen(false);
-      toggle.focus();
-    }
-  });
-})();
+navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+  navigation.classList.remove('open');
+  menuButton.setAttribute('aria-expanded', 'false');
+  menuButton.setAttribute('aria-label', 'باز کردن فهرست');
+}));
