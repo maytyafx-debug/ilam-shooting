@@ -1,470 +1,350 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html dir="rtl" lang="fa">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f2a23">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="وب‌سایت هیأت تیراندازی استان ایلام؛ اطلاع‌رسانی درباره هیأت، ورزشکاران، مسابقات، دوره‌ها و وضعیت خدمات.">
-  <title>هیأت تیراندازی استان ایلام</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="#03357f" name="theme-color"/>
+<meta content="noindex,nofollow" name="robots"/>
+<meta content="وب‌سایت هیأت تیراندازی استان ایلام؛ اطلاع‌رسانی درباره هیأت، ورزشکاران، تقویم مسابقات و وضعیت خدمات." name="description"/>
+<title>هیأت تیراندازی استان ایلام</title>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body>
+<a class="skip" href="#main">رفتن به محتوای اصلی</a>
 
-<a class="skip-link" href="#main">رفتن به محتوای اصلی</a>
-
-<div class="preview-bar" role="status">نسخهٔ بازبینی · خدمات آنلاین تا راه‌اندازی سامانهٔ امن فعال نیستند</div>
+<div class="preview-bar">نسخهٔ بازبینی محلی · اطلاعات تأییدنشده منتشر نمی‌شود</div>
 
 <header class="site-header">
-  <div class="wrap header-inner">
-    <a class="brand" href="#top" aria-label="صفحه نخست هیأت تیراندازی استان ایلام">
-      <span class="brand-mark" aria-hidden="true"><i></i></span>
-      <span class="brand-text">
-        <strong>هیأت تیراندازی</strong>
-        <small>استان ایلام</small>
-      </span>
+  <div class="header-top wrap">
+    <a aria-label="صفحه نخست" class="brand" href="#">
+      <img class="site-logo" src="assets/logo.jpg" alt="لوگوی هیأت تیراندازی استان ایلام" width="52" height="52"/>
+      <span class="brand-text">هیأت تیراندازی استان ایلام<small>Ilam Shooting Federation</small></span>
     </a>
-
-    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="باز کردن فهرست">
-      <span></span><span></span><span></span>
-    </button>
-
-    <nav id="site-nav" class="site-nav" aria-label="فهرست اصلی">
-      <a href="#about">هیأت‌رئیسه</a>
-      <a href="#committees">کمیته‌ها</a>
-      <a href="#competitions">مسابقات</a>
-      <a href="#schedule">برنامه</a>
-      <a href="#athletes">قهرمانان</a>
-      <a href="#courses">دوره‌ها</a>
-      <a href="#news">اخبار</a>
-      <a href="#registration">ثبت‌نام</a>
-    </nav>
-
-    <span class="header-status" aria-label="وضعیت ثبت‌نام">ثبت‌نام غیرفعال</span>
+    <div class="header-actions">
+      <span class="header-cta is-inactive" title="ثبت‌نام فعال نیست">ثبت‌نام فعال نیست</span>
+      <button aria-controls="navigation" aria-expanded="false" aria-label="باز کردن فهرست" class="menu-button" type="button">
+        <span class="bars" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
+  <nav aria-label="فهرست اصلی" class="main-nav" id="navigation">
+    <div class="wrap nav-row">
+      <a href="#about">درباره هیأت<i class="dot" aria-hidden="true"></i></a>
+      <a href="#athletes">ورزشکاران<i class="dot" aria-hidden="true"></i></a>
+      <a href="#calendar">تقویم مسابقات<i class="dot" aria-hidden="true"></i></a>
+      <a href="#news">اخبار<i class="dot" aria-hidden="true"></i></a>
+      <a href="#services">خدمات<i class="dot" aria-hidden="true"></i></a>
+      <a href="#courses">دوره‌ها</a>
+    </div>
+  </nav>
 </header>
 
 <main id="main">
 
-  <section class="hero" id="top">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="wrap hero-inner">
-      <div class="hero-copy">
-        <p class="eyebrow">هیأت تیراندازی استان ایلام</p>
-        <h1>دقت، تمرکز،<br><em>مسیر قهرمانی</em></h1>
-        <p class="hero-lead">اطلاع‌رسانی رسمی فعالیت‌های تیراندازی استان؛ از برنامهٔ مسابقات و اخبار تا وضعیت خدمات هیأت.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#registration">وضعیت ثبت‌نام</a>
-          <a class="btn btn-ghost" href="#schedule">برنامهٔ مسابقات</a>
-        </div>
-      </div>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="arc arc-1" aria-hidden="true"></div>
+  <div class="arc arc-2" aria-hidden="true"></div>
+  <div class="arc arc-3" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <p class="crumbs">خانه <span>←</span> هیأت</p>
+    <h1 id="hero-title">هیأت تیراندازی استان ایلام</h1>
+    <p class="hero-lead">اطلاع‌رسانی درباره فعالیت‌های تیراندازی استان؛ خدمات آنلاین هنوز فعال نشده‌اند.</p>
+  </div>
+</section>
+
+<div class="link-band">
+  <div class="wrap link-list">
+    <a href="#about">درباره هیأت <span>←</span></a>
+    <a href="#athletes">ورزشکاران <span>←</span></a>
+    <a href="#calendar">تقویم مسابقات <span>←</span></a>
+    <a href="#news">اخبار و اطلاعیه‌ها <span>←</span></a>
+    <a href="#services">وضعیت خدمات <span>←</span></a>
+    <a href="#courses">دوره‌های مربیگری و داوری <span>←</span></a>
+  </div>
+</div>
+
+<section class="section wrap" id="services">
+  <div class="section-heading">
+    <div>
+      <span class="kicker">خدمات هیأت</span>
+      <h2>وضعیت خدمات</h2>
     </div>
-  </section>
+    <p>هیچ‌یک از خدمات زیر در حال حاضر فعال نیستند. فرم ثبت‌نام، پرداخت یا سفارش در دسترس نیست.</p>
+  </div>
+  <div class="service-grid">
+    <article class="service-card featured"><span class="service-icon">↗</span><span class="service-name">ثبت‌نام ورزشکاران</span><small>در حال حاضر فعال نیست</small></article>
+    <article class="service-card"><span class="service-icon">⚑</span><span class="service-name">ثبت‌نام مسابقات</span><small>در حال حاضر فعال نیست</small></article>
+    <article class="service-card"><span class="service-icon">◇</span><span class="service-name">بیمه ورزشی</span><small>در حال حاضر فعال نیست</small></article>
+    <article class="service-card"><span class="service-icon">▤</span><span class="service-name">پرداخت حق عضویت</span><small>در حال حاضر فعال نیست</small></article>
+    <article class="service-card"><span class="service-icon">◉</span><span class="service-name">فروش ساچمه</span><small>در حال حاضر فعال نیست</small></article>
+  </div>
+</section>
 
-  <section class="disciplines" aria-label="رشته‌ها">
-    <div class="wrap disciplines-inner">
-      <span>تفنگ بادی</span>
-      <span>تپانچه بادی</span>
-      <span>تیراندازی ورزشی</span>
-      <small>جزئیات رشته‌ها پس از اعلام رسمی منتشر می‌شود</small>
-    </div>
-  </section>
-
-  <section class="section section-dark" id="about">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">هیأت تیراندازی استان ایلام</p>
-          <h2>اعضای هیأت‌رئیسه</h2>
-        </div>
-        <p>نام‌ها و سمت‌ها مطابق اطلاعات اعلام‌شده توسط هیأت.</p>
-      </header>
-
-      <ul class="board-grid">
-        <li class="board-card"><h3>امیرحسین اکبری</h3><p>رئیس هیأت</p></li>
-        <li class="board-card"><h3>آیت قمری</h3><p>دبیر هیأت</p></li>
-        <li class="board-card"><h3>فاطمه پورصفر</h3><p>نایب‌رئیس</p></li>
-        <li class="board-card"><h3>محمدامین موسی‌نژاد</h3><p>خزانه‌دار</p></li>
-        <li class="board-card"><h3>آقای شهبازی</h3><p>عضو هیأت‌رئیسه</p></li>
-        <li class="board-card"><h3>آقای صالحیان</h3><p>عضو هیأت‌رئیسه</p></li>
-        <li class="board-card"><h3>خانم غیاثی</h3><p>عضو هیأت‌رئیسه</p></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section section-tinted" id="committees">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">ساختار اجرایی</p>
-          <h2>کمیته‌ها و بازرسی</h2>
-        </div>
-        <p>رئیس هر کمیته و بخش بازرسی مطابق اطلاعات اعلام‌شده توسط هیأت.</p>
-      </header>
-      <ul class="committee-list">
-        <li><span class="committee-no">۰۱</span><div><h4>کمیته مسابقات</h4><p>رئیس: آقای بهمن اکبری</p></div></li>
-        <li><span class="committee-no">۰۲</span><div><h4>کمیته اهداف پروازی</h4><p>رئیس: آقای سلیمانی</p></div></li>
-        <li><span class="committee-no">۰۳</span><div><h4>کمیته گلوله‌زنی</h4><p>رئیس: آقای فریادیان</p></div></li>
-        <li><span class="committee-no">۰۴</span><div><h4>کمیته انضباطی</h4><p>نام رئیس در انتظار اعلام</p></div></li>
-        <li><span class="committee-no">۰۵</span><div><h4>کمیته فرهنگی</h4><p>رئیس: آقای سحری</p></div></li>
-        <li><span class="committee-no">۰۶</span><div><h4>بازرسی</h4><p>نام رئیس در انتظار اعلام</p></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section" id="competitions">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">قسمت مسابقات</p>
-          <h2>مسابقات استان</h2>
-        </div>
-        <p>مسابقات رسمی هیأت پس از اعلام، با شرایط شرکت در این بخش معرفی می‌شوند.</p>
-      </header>
-      <div class="empty-state">
-        <p>تقویم ۱۴۰۵ شامل ۲۴ مسابقه است؛ جزئیات هر مسابقه در بخش «برنامهٔ مسابقات» آمده است.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-tinted" id="registration">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">ثبت‌نام جدید</p>
-          <h2>ثبت‌نام ورزشکاران</h2>
-        </div>
-        <p>ثبت‌نام ورزشکاران جدید پس از راه‌اندازی سامانهٔ امن فعال می‌شود.</p>
-      </header>
-      <form class="member-form" id="member-form" aria-describedby="member-note">
-        <div class="form-grid">
-          <label class="form-field">
-            <span>نام</span>
-            <input type="text" name="first_name" maxlength="100" autocomplete="given-name" disabled>
-          </label>
-          <label class="form-field">
-            <span>نام خانوادگی</span>
-            <input type="text" name="last_name" maxlength="100" autocomplete="family-name" disabled>
-          </label>
-          <label class="form-field">
-            <span>شماره موبایل</span>
-            <input type="tel" name="phone" maxlength="20" inputmode="tel" autocomplete="tel" disabled>
-          </label>
-          <label class="form-field">
-            <span>شهر</span>
-            <input type="text" name="city" maxlength="100" autocomplete="address-level2" disabled>
-          </label>
-          <label class="form-field form-field-wide">
-            <span>رشته</span>
-            <select name="discipline" disabled>
-              <option value="">انتخاب کنید</option>
-              <option value="air_rifle">تفنگ بادی</option>
-              <option value="air_pistol">تپانچه بادی</option>
-              <option value="sport_shooting">تیراندازی ورزشی</option>
-            </select>
-          </label>
-        </div>
-        <div class="form-footer">
-          <button class="btn btn-primary" type="submit" disabled>ارسال درخواست</button>
-          <p id="member-note">درخواست شما فقط برای بررسی هیأت ثبت می‌شود و جز مدیران هیأت کسی به اطلاعات آن دسترسی ندارد.</p>
-          <button class="btn btn-primary" type="submit" hidden>ارسال</button>
-        </div>
-        <p id="member-status" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </section>
-
-  <section class="section" id="schedule">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">تقویم و رویدادها</p>
-          <h2>برنامهٔ مسابقات</h2>
-        </div>
-        <span class="pill">تقویم رسمی ۱۴۰۵ · ۲۴ مسابقه</span>
-      </header>
-
-      <ul class="event-list">
-        <li class="event-item">
-          <div class="event-date"><strong>۱۷</strong><small>فروردین</small></div>
-          <div class="event-body"><h3>جام پهلوانی نوروز</h3><p>مناسبت: فرهنگ پهلوانی و ورزش</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۹</strong><small>فروردین</small></div>
-          <div class="event-body"><h3>جام قهرمانان ایران</h3><p>مناسبت: روز ارتش</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱</strong><small>اردیبهشت</small></div>
-          <div class="event-body"><h3>جام سعدی</h3><p>مناسبت: بزرگداشت سعدی</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۵</strong><small>اردیبهشت</small></div>
-          <div class="event-body"><h3>جام فردوسی</h3><p>مناسبت: بزرگداشت فردوسی</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۴</strong><small>خرداد</small></div>
-          <div class="event-body"><h3>جام خرداد</h3><p>مناسبت: مناسبت ملی</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۵</strong><small>خرداد</small></div>
-          <div class="event-body"><h3>جام ۱۵ خرداد</h3><p>مناسبت: مناسبت ملی</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۰</strong><small>تیر</small></div>
-          <div class="event-body"><h3>جام صنعت و افتخار</h3><p>مناسبت: روز صنعت و معدن</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۲</strong><small>تیر</small></div>
-          <div class="event-body"><h3>جام فناوری ایران</h3><p>مناسبت: فناوری اطلاعات</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۷</strong><small>مرداد</small></div>
-          <div class="event-body"><h3>جام فهرمانان رسانه</h3><p>مناسبت: روز خبرنگار</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۶</strong><small>مرداد</small></div>
-          <div class="event-body"><h3>جام آزادگان</h3><p>مناسبت: بازگشت آزادگان</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۸</strong><small>شهریور</small></div>
-          <div class="event-body"><h3>جام هفته دولت</h3><p>مناسبت: هفته دولت</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۳۱</strong><small>شهریور</small></div>
-          <div class="event-body"><h3>جام دفاع مقدس</h3><p>مناسبت: آغاز هفته دفاع مقدس</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۶</strong><small>مهر</small></div>
-          <div class="event-body"><h3>مسابقه ویژه هفته دولت</h3><p>مناسبت: مسابقه افتتاحیه</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۰</strong><small>مهر</small></div>
-          <div class="event-body"><h3>جام حافظ</h3><p>مناسبت: بزرگداشت حافظ</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۳</strong><small>آبان</small></div>
-          <div class="event-body"><h3>جام نوجوانان ایران</h3><p>مناسبت: روز دانش‌آموز</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۴</strong><small>آبان</small></div>
-          <div class="event-body"><h3>جام کتاب و فرهنگ</h3><p>مناسبت: هفتهٔ کتاب</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۶</strong><small>آذر</small></div>
-          <div class="event-body"><h3>جام دانشجو</h3><p>مناسبت: روز دانشجو</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۳۰</strong><small>آذر</small></div>
-          <div class="event-body"><h3>جام یلدا</h3><p>مناسبت: شب یلدا</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲</strong><small>دی</small></div>
-          <div class="event-body"><h3>جام پدران ایران</h3><p>مناسبت: روز پدر</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۶</strong><small>دی</small></div>
-          <div class="event-body"><h3>جام سعیت</h3><p>مناسبت: سعت</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۴</strong><small>بهمن</small></div>
-          <div class="event-body"><h3>جام نیمه شعبان</h3><p>مناسبت: نیمه شعبان</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۲</strong><small>بهمن</small></div>
-          <div class="event-body"><h3>جام فجر ایران</h3><p>مناسبت: پیروزی انقلاب</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۱۵</strong><small>اسفند</small></div>
-          <div class="event-body"><h3>جام سبز ایران</h3><p>مناسبت: روز درختکاری</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-        <li class="event-item">
-          <div class="event-date"><strong>۲۹</strong><small>اسفند</small></div>
-          <div class="event-body"><h3>جام نفت ایران</h3><p>مناسبت: ملی شدن صنعت نفت</p></div>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </li>
-      </ul>
-      <p class="footnote">ثبت‌نام مسابقات هنوز فعال نیست و هرگونه تغییر در تاریخ‌ها پس از اعلام رسمی اعمال می‌شود.</p>
-    </div>
-  </section>
-
-  <section class="section section-tinted" id="athletes">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">ورزشکاران استان ایلام</p>
-          <h2>معرفی قهرمانان</h2>
-        </div>
-        <p>اطلاعات تأییدشدهٔ ورزشکاران پس از اعلام رسمی در این بخش درج می‌شود.</p>
-      </header>
-      <div class="empty-state">
-        <p>هنوز اطلاعات تأییدشده‌ای برای نمایش وجود ندارد.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="competition-registration">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">ثبت‌نام شرکت در مسابقه</p>
-          <h2>ثبت‌نام مسابقات</h2>
-        </div>
-        <p>ثبت‌نام در مسابقات پس از اعلام برنامهٔ رسمی فعال می‌شود.</p>
-      </header>
-      <div class="status-panel">
-        <span class="status status-off">غیرفعال</span>
-        <p>هیچ مسابقه‌ای برای ثبت‌نام در دسترس نیست.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-tinted" id="courses" aria-labelledby="courses-title">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">ثبت‌نام دوره مربیگری و داوری</p>
-          <h2 id="courses-title">دوره‌های مربیگری و داوری</h2>
-        </div>
-        <p>برای ثبت‌نام در دوره‌ها، پس از راه‌اندازی سامانهٔ امن و اعلام رسمی، از این بخش اطلاع پیدا خواهید کرد.</p>
-      </header>
-
-      <div class="notice" role="note">
-        <strong>توجه</strong>
-        <span>ثبت‌نام آنلاین دوره‌ها فعال نیست. تا اعلام رسمی، هیچ اطلاعات شخصی یا مدرکی را ارسال نکنید.</span>
-      </div>
-
-      <div class="course-grid">
-        <article class="course-card">
-          <h3>دوره مربیگری</h3>
-          <p>سطوح درجه ۳، ۲ و ۱ پس از اعلام رسمی منتشر می‌شوند.</p>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </article>
-        <article class="course-card">
-          <h3>دوره داوری</h3>
-          <p>سطوح درجه ۳، ۲ و ۱ پس از اعلام رسمی منتشر می‌شوند.</p>
-          <span class="status status-off">ثبت‌نام غیرفعال</span>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="news">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">بخش اخبار</p>
-          <h2>آخرین اخبار هیأت</h2>
-        </div>
-        <p>اخبار و اطلاعیه‌ها پس از تأیید رسمی منتشر می‌شوند.</p>
-      </header>
-      <div class="empty-state">
-        <p>در حال حاضر خبر یا اطلاعیهٔ تأییدشده‌ای منتشر نشده است.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-tinted" id="insurance">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">ثبت‌نامهٔ بیمه</p>
-          <h2>بیمه ورزشی</h2>
-        </div>
-        <p>ثبت‌نام بیمهٔ ورزشی در این نسخه فعال نیست.</p>
-      </header>
-      <div class="status-panel">
-        <span class="status status-off">غیرفعال</span>
-        <p>اطلاعات بیمه و شرایط آن پس از راه‌اندازی سامانه و اعلام رسمی منتشر می‌شود.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="payment">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">پرداخت هزینه</p>
-          <h2>شهریه و ساچمه</h2>
-        </div>
-        <p>پرداخت حق عضویت (شهریه) و خرید ساچمه در این نسخه فعال نیست.</p>
-      </header>
-      <div class="status-panel">
-        <span class="status status-off">غیرفعال</span>
-        <p>درگاه پرداخت و فروش ساچمه پس از راه‌اندازی امن منتشر می‌شود. تا آن زمان، پرداختی انجام ندهید.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-tinted" id="hall">
-    <div class="wrap">
-      <header class="section-head">
-        <div>
-          <p class="kicker">محیط سالن</p>
-          <h2>سالن تیراندازی</h2>
-        </div>
-        <p>تصویر زیر بازسازی مفهومی است و عکس مستند سالن نیست.</p>
-      </header>
-      <figure class="hall">
-        <img src="assets/empty-hall-updated-reference.png" alt="بازسازی مفهومی سالن تیراندازی خالی، بدون حضور افراد" loading="lazy">
-        <figcaption>
-          <strong>تصویر مفهومی؛ عکس مستند سالن نیست</strong>
-          <span>این تصویر بر اساس تصاویر ارسالی بازسازی شده و وضعیت واقعی سالن ایلام را نشان نمی‌دهد.</span>
-        </figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="cta">
-    <div class="wrap cta-inner">
+<section class="course-preview-section section" id="courses" aria-labelledby="courses-title">
+  <div class="wrap">
+    <div class="section-heading">
       <div>
-        <h2>اطلاعات رسمی را دنبال کنید</h2>
-        <p>ثبت‌نام و خدمات آنلاین پس از راه‌اندازی سامانهٔ امن فعال می‌شوند.</p>
+        <span class="kicker">پیش‌نمایش غیرعملیاتی</span>
+        <h2 id="courses-title">ثبت‌نام دوره‌های مربیگری و داوری</h2>
       </div>
-      <a class="btn btn-primary" href="#registration">وضعیت ثبت‌نام</a>
+      <p>این بخش فقط برای بازبینی چیدمان است؛ ثبت‌نام دوره‌ها هنوز فعال نیست.</p>
     </div>
-  </section>
+    <div class="course-warning" role="note">
+      <strong>هشدار مهم</strong>
+      <span>این یک طرح نمایشی است و هیچ اطلاعاتی ارسال یا ذخیره نمی‌شود. تا راه‌اندازی سامانهٔ ثبت‌نام امن، لطفاً اطلاعات واقعی وارد نکنید و هیچ مدرکی ارسال نکنید.</span>
+    </div>
+    <div class="course-groups">
+      <article class="course-group">
+        <div class="course-group-heading"><span aria-hidden="true">◎</span><div><span class="kicker">مسیر آموزشی</span><h3>دوره مربیگری</h3></div></div>
+        <div class="course-options" aria-label="گزینه‌های نمایشی دوره مربیگری">
+          <div class="course-option"><span>درجه ۳</span><small>گزینهٔ نمایشی</small></div>
+          <div class="course-option"><span>درجه ۲</span><small>گزینهٔ نمایشی</small></div>
+          <div class="course-option"><span>درجه ۱</span><small>گزینهٔ نمایشی</small></div>
+        </div>
+      </article>
+      <article class="course-group">
+        <div class="course-group-heading"><span aria-hidden="true">✦</span><div><span class="kicker">مسیر آموزشی</span><h3>دوره داوری</h3></div></div>
+        <div class="course-options" aria-label="گزینه‌های نمایشی دوره داوری">
+          <div class="course-option"><span>درجه ۳</span><small>گزینهٔ نمایشی</small></div>
+          <div class="course-option"><span>درجه ۲</span><small>گزینهٔ نمایشی</small></div>
+          <div class="course-option"><span>درجه ۱</span><small>گزینهٔ نمایشی</small></div>
+        </div>
+      </article>
+    </div>
+    <div class="mock-fields-heading">
+      <div><span class="kicker">چیدمان پیشنهادی</span><h3>اطلاعات متقاضی و مدارک</h3></div>
+      <span>همهٔ جایگاه‌ها غیرفعال‌اند</span>
+    </div>
+    <div class="mock-fields">
+      <div class="mock-field"><span class="mock-label">نام و نام خانوادگی</span><div class="mock-control">جایگاه نمایشی · غیرفعال</div></div>
+      <div class="mock-field"><span class="mock-label">شماره تلفن</span><div class="mock-control">جایگاه نمایشی · غیرفعال</div></div>
+      <div class="mock-field"><span class="mock-label">نام پدر</span><div class="mock-control">جایگاه نمایشی · غیرفعال</div></div>
+      <div class="mock-field"><span class="mock-label">کد ملی</span><div class="mock-control">جایگاه نمایشی · غیرفعال</div></div>
+      <div class="mock-field mock-document"><span class="mock-label">مدرک تحصیلی</span><div class="mock-control">محل نمایش مدرک · غیرفعال</div></div>
+      <div class="mock-field mock-document"><span class="mock-label">تصویر شناسنامه</span><div class="mock-control">محل نمایش مدرک · غیرفعال</div></div>
+      <div class="mock-field mock-document"><span class="mock-label">عکس پرسنلی</span><div class="mock-control">محل نمایش تصویر · غیرفعال</div></div>
+      <div class="mock-field mock-document"><span class="mock-label">تصویر کارت ملی</span><div class="mock-control">محل نمایش مدرک · غیرفعال</div></div>
+    </div>
+    <p class="course-preview-footnote">در این پیش‌نمایش هیچ فرم یا امکان بارگذاری فایلی وجود ندارد.</p>
+  </div>
+</section>
+
+<section class="athletes-section section" id="athletes">
+  <div class="wrap">
+    <div class="section-heading">
+      <div>
+        <span class="kicker">ورزشکاران استان ایلام</span>
+        <h2>اطلاعات و افتخارات ورزشکاران</h2>
+      </div>
+      <span class="quiet-label">اطلاعات تأییدشدهٔ ورزشکاران هنوز منتشر نشده است</span>
+    </div>
+    <div class="athlete-grid">
+      <article class="athlete-card">
+        <div class="athlete-visual portrait-one"><div class="no-portrait">بدون تصویر افراد</div><span class="sample-tag">تصویر افراد درج نشده</span></div>
+        <div class="athlete-info">
+          <span class="kicker">اطلاعات رسمی</span>
+          <h3>اطلاعات ورزشکاران</h3>
+          <p>نام، رشته و افتخارات پس از اعلام رسمی درج می‌شوند.</p>
+          <span class="inactive-label">اطلاعات رسمی منتشر نشده است</span>
+        </div>
+      </article>
+      <article class="athlete-card">
+        <div class="athlete-visual portrait-two"><div class="no-portrait">بدون تصویر افراد</div><span class="sample-tag">تصویر افراد درج نشده</span></div>
+        <div class="athlete-info">
+          <span class="kicker">اطلاعات رسمی</span>
+          <h3>اطلاعات ورزشکاران</h3>
+          <p>نام، رشته و افتخارات پس از اعلام رسمی درج می‌شوند.</p>
+          <span class="inactive-label">اطلاعات رسمی منتشر نشده است</span>
+        </div>
+      </article>
+      <div class="athlete-manifesto">
+        <span class="large-target" aria-hidden="true"></span>
+        <span class="kicker">فراتر از نتیجه</span>
+        <h3>قهرمانی،<br/>پیش از سکو<br/><em>آغاز می‌شود.</em></h3>
+        <p>اطلاعات ورزشکاران و نتایج تأییدشده پس از اعلام رسمی در این بخش درج می‌شوند.</p>
+        <a href="#services">مشاهدهٔ وضعیت خدمات <span>←</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section wrap" id="calendar" aria-labelledby="calendar-title">
+  <div class="section-heading">
+    <div>
+      <span class="kicker">تقویم و رویدادها · ۱۴۰۵</span>
+      <h2 id="calendar-title">تقویم مسابقات</h2>
+    </div>
+    <span class="pill">در انتظار برنامهٔ رسمی</span>
+  </div>
+
+  <fieldset class="calendar-filters">
+    <legend>نوع رویداد</legend>
+    <label class="filter-box"><input checked disabled type="checkbox"/> <span>مسابقات استانی</span></label>
+    <label class="filter-box"><input disabled type="checkbox"/> <span>مسابقات کشوری و بین‌المللی</span></label>
+    <p class="filter-note">فیلترها در این نسخهٔ بازبینی فعال نیستند.</p>
+  </fieldset>
+
+  <div class="calendar-list">
+    <details class="month"><summary><span class="month-name">فروردین</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱۷ فروردین</span><span class="cal-name">جام پهلوانی نوروز</span><span class="cal-occasion">فرهنگ پهلوانی و ورزش</span></li>
+      <li><span class="cal-date">۲۹ فروردین</span><span class="cal-name">جام قهرمانان ایران</span><span class="cal-occasion">روز ارتش</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">اردیبهشت</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱ اردیبهشت</span><span class="cal-name">جام سعدی</span><span class="cal-occasion">بزرگداشت سعدی</span></li>
+      <li><span class="cal-date">۲۵ اردیبهشت</span><span class="cal-name">جام فردوسی</span><span class="cal-occasion">بزرگداشت فردوسی</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">خرداد</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱۴ خرداد</span><span class="cal-name">جام خرداد</span><span class="cal-occasion">مناسبت ملی</span></li>
+      <li><span class="cal-date">۱۵ خرداد</span><span class="cal-name">جام ۱۵ خرداد</span><span class="cal-occasion">مناسبت ملی</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">تیر</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱۰ تیر</span><span class="cal-name">جام صنعت و افتخار</span><span class="cal-occasion">روز صنعت و معدن</span></li>
+      <li><span class="cal-date">۲۲ تیر</span><span class="cal-name">جام فناوری ایران</span><span class="cal-occasion">فناوری اطلاعات</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">مرداد</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱۷ مرداد</span><span class="cal-name">جام فهرمانان رسانه</span><span class="cal-occasion">روز خبرنگار</span></li>
+      <li><span class="cal-date">۲۶ مرداد</span><span class="cal-name">جام آزادگان</span><span class="cal-occasion">بازگشت آزادگان</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">شهریور</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۸ شهریور</span><span class="cal-name">جام هفته دولت</span><span class="cal-occasion">هفته دولت</span></li>
+      <li><span class="cal-date">۳۱ شهریور</span><span class="cal-name">جام دفاع مقدس</span><span class="cal-occasion">آغاز هفته دفاع مقدس</span></li>
+    </ul></div></details>
+    <details class="month current" open><summary><span class="month-name">مهر</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۶ مهر</span><span class="cal-name">مسابقه ویژه هفته دولت</span><span class="cal-occasion">مسابقه افتتاحیه</span></li>
+      <li><span class="cal-date">۲۰ مهر</span><span class="cal-name">جام حافظ</span><span class="cal-occasion">بزرگداشت حافظ</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">آبان</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱۳ آبان</span><span class="cal-name">جام نوجوانان ایران</span><span class="cal-occasion">روز دانش‌آموز</span></li>
+      <li><span class="cal-date">۲۴ آبان</span><span class="cal-name">جام کتاب و فرهنگ</span><span class="cal-occasion">هفتهٔ کتاب</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">آذر</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱۶ آذر</span><span class="cal-name">جام دانشجو</span><span class="cal-occasion">روز دانشجو</span></li>
+      <li><span class="cal-date">۳۰ آذر</span><span class="cal-name">جام یلدا</span><span class="cal-occasion">شب یلدا</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">دی</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۲ دی</span><span class="cal-name">جام پدران ایران</span><span class="cal-occasion">روز پدر</span></li>
+      <li><span class="cal-date">۱۶ دی</span><span class="cal-name">جام سعیت</span><span class="cal-occasion">سعت</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">بهمن</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۴ بهمن</span><span class="cal-name">جام نیمه شعبان</span><span class="cal-occasion">نیمه شعبان</span></li>
+      <li><span class="cal-date">۲۲ بهمن</span><span class="cal-name">جام فجر ایران</span><span class="cal-occasion">پیروزی انقلاب</span></li>
+    </ul></div></details>
+    <details class="month"><summary><span class="month-name">اسفند</span><span class="month-count">۲ مسابقه <i aria-hidden="true">⌄</i></span></summary><div class="month-body"><ul class="cal-events">
+      <li><span class="cal-date">۱۵ اسفند</span><span class="cal-name">جام سبز ایران</span><span class="cal-occasion">روز درختکاری</span></li>
+      <li><span class="cal-date">۲۹ اسفند</span><span class="cal-name">جام نفت ایران</span><span class="cal-occasion">ملی شدن صنعت نفت</span></li>
+    </ul></div></details>
+  </div>
+  <p class="section-footnote">این تقویم سالانهٔ مسابقات ۱۴۰۵ است (۱۲ ماه، ۲۴ مسابقه). ثبت‌نام مسابقات هنوز فعال نیست و هرگونه تغییر پس از اعلام رسمی اعمال می‌شود.</p>
+</section>
+
+<section class="section wrap" id="news">
+  <div class="section-heading">
+    <div>
+      <span class="kicker">مجلهٔ تیراندازی</span>
+      <h2>در جریان هدف بمانید.</h2>
+    </div>
+    <span class="quiet-label">جایگاه اخبار و اطلاعیه‌های تأییدشده</span>
+  </div>
+  <div class="news-list">
+    <article class="news-item">
+      <div class="news-date">تاریخ اعلام نشده</div>
+      <div class="news-body">
+        <span class="kicker">اخبار هیأت</span>
+        <h3>خبر رسمی منتشر نشده</h3>
+        <p>محتوای تأییدشده‌ای برای انتشار در دسترس نیست.</p>
+      </div>
+    </article>
+    <article class="news-item">
+      <div class="news-date">تاریخ اعلام نشده</div>
+      <div class="news-body">
+        <span class="kicker">اطلاعیه‌های هیأت</span>
+        <h3>اطلاعیه‌ای منتشر نشده</h3>
+        <p>محتوای تأییدشده‌ای برای انتشار در دسترس نیست.</p>
+      </div>
+    </article>
+    <article class="news-item">
+      <div class="news-date">تاریخ اعلام نشده</div>
+      <div class="news-body">
+        <span class="kicker">گزارش‌های ورزشی</span>
+        <h3>گزارش رسمی منتشر نشده</h3>
+        <p>محتوای تأییدشده‌ای برای انتشار در دسترس نیست.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="about-section section" id="about">
+  <div class="wrap">
+    <div class="section-heading">
+      <div>
+        <span class="kicker">هیأت تیراندازی استان ایلام</span>
+        <h2>اعضای هیأت‌رئیسه</h2>
+      </div>
+      <p>نام‌ها و سمت‌ها مطابق اطلاعات اعلام‌شده توسط صاحب سایت.</p>
+    </div>
+    <div class="board-grid">
+      <article class="board-card"><span aria-hidden="true" class="member-monogram">◎</span><small>هیأت‌رئیسه</small><h3>امیرحسین اکبری</h3><p>رئیس هیأت</p></article>
+      <article class="board-card"><span aria-hidden="true" class="member-monogram">◎</span><small>هیأت‌رئیسه</small><h3>آیت قمری</h3><p>دبیر هیأت</p></article>
+      <article class="board-card"><span aria-hidden="true" class="member-monogram">◎</span><small>هیأت‌رئیسه</small><h3>فاطمه پورصفر</h3><p>نایب‌رئیس</p></article>
+      <article class="board-card"><span aria-hidden="true" class="member-monogram">◎</span><small>هیأت‌رئیسه</small><h3>محمدامین موسی‌نژاد</h3><p>خزانه‌دار</p></article>
+      <article class="board-card"><span aria-hidden="true" class="member-monogram">◎</span><small>هیأت‌رئیسه</small><h3>آقای شهبازی</h3><p>عضو هیأت‌رئیسه</p></article>
+      <article class="board-card"><span aria-hidden="true" class="member-monogram">◎</span><small>هیأت‌رئیسه</small><h3>آقای صالحیان</h3><p>عضو هیأت‌رئیسه</p></article>
+      <article class="board-card"><span aria-hidden="true" class="member-monogram">◎</span><small>هیأت‌رئیسه</small><h3>خانم غیاثی</h3><p>عضو هیأت‌رئیسه</p></article>
+    </div>
+
+    <div class="committees-heading">
+      <h3>کمیته‌ها و بازرسی</h3>
+      <span>عناوین و نام‌ها مطابق اطلاعات اعلام‌شده توسط صاحب سایت</span>
+    </div>
+    <div class="committee-grid">
+      <article><span>۰۱</span><div><h4>کمیته مسابقات</h4><p>رئیس: آقای بهمن اکبری</p></div><b aria-hidden="true">↖</b></article>
+      <article><span>۰۲</span><div><h4>کمیته اهداف پروازی</h4><p>رئیس: آقای سلیمانی</p></div><b aria-hidden="true">↖</b></article>
+      <article><span>۰۳</span><div><h4>کمیته گلوله‌زنی</h4><p>رئیس: آقای فریادیان</p></div><b aria-hidden="true">↖</b></article>
+      <article><span>۰۴</span><div><h4>کمیته انضباطی</h4><p>نام رئیس در انتظار اعلام</p></div><b aria-hidden="true">↖</b></article>
+      <article><span>۰۵</span><div><h4>کمیته فرهنگی</h4><p>رئیس: آقای سحری</p></div><b aria-hidden="true">↖</b></article>
+      <article><span>۰۶</span><div><h4>بازرسی</h4><p>نام رئیس در انتظار اعلام</p></div><b aria-hidden="true">↖</b></article>
+    </div>
+
+    <section aria-labelledby="empty-hall-title" class="hall-empty">
+      <span class="kicker">محیط سالن تیراندازی · تصویر مفهومی</span>
+      <h3 id="empty-hall-title">بازسازی تصویری سالن خالی</h3>
+      <figure class="hall-concept">
+        <img alt="بازسازی مفهومی سالن تیراندازی خالی با کف سبز، سقف شبکه‌ای روشن، مسیرهای تیراندازی و فضای تماشاگران خالی؛ بدون افراد و اشیای مراسم" src="assets/empty-hall-updated-reference.png"/>
+        <figcaption><strong>تصویر مفهومی · عکس مستند نیست</strong><span>بازسازی مفهومی بر پایه تصاویر ارسالی؛ افراد و اشیای مراسم در تصویر نیستند. جزئیات تصویر، سند وضعیت واقعی سالن ایلام نیستند.</span></figcaption>
+      </figure>
+      <small>عکس واقعی سالن خالی دریافت نشده است؛ تصویر بالا مفهومی است، نه عکس مستند سالن ایلام.</small>
+    </section>
+  </div>
+</section>
+
+<section class="join-section wrap">
+  <div>
+    <span class="kicker">شروع یک مسیر تازه</span>
+    <h2>اطلاع از خدمات، پیش از هر اقدام.</h2>
+    <p>ثبت‌نام ورزشکاران و سایر خدمات آنلاین هنوز فعال نیستند.</p>
+  </div>
+  <a class="button gold" href="#services">مشاهدهٔ وضعیت خدمات</a>
+  <div class="join-rings" aria-hidden="true"></div>
+</section>
+
+<div class="demo-disclaimer wrap">
+  <span aria-hidden="true">ⓘ</span>
+  <p><strong>وضعیت خدمات: </strong>ثبت‌نام ورزشکاران، ثبت‌نام مسابقات، بیمه ورزشی، پرداخت حق عضویت و فروش ساچمه در حال حاضر فعال نیستند؛ هیچ فرم ثبت‌نام، پرداخت یا ثبت سفارش فعالی در دسترس نیست. نام و سمت اعضای هیأت‌رئیسه و نام‌های اعلام‌شدهٔ کمیته‌ها مطابق اطلاعات صاحب سایت درج شده‌اند. پیش‌نمایش دوره‌های مربیگری و داوری صرفاً نمایشی است؛ تا راه‌اندازی سامانهٔ امن، اطلاعات واقعی وارد یا مدرکی ارسال نکنید. اطلاعات تکمیل‌نشدهٔ ورزشکاران، رویدادها و خبرها تا زمان اعلام رسمی منتشر نشده‌اند. تصویر سالن، بازسازی مفهومی است و عکس مستند سالن ایلام نیست.</p>
+</div>
 
 </main>
 
 <footer class="site-footer">
   <div class="wrap footer-inner">
-    <div class="brand">
-      <span class="brand-mark" aria-hidden="true"><i></i></span>
-      <span class="brand-text">
-        <strong>هیأت تیراندازی</strong>
-        <small>استان ایلام</small>
-      </span>
-    </div>
-    <p>نسخهٔ بازبینی؛ اطلاعات تأییدنشده منتشر نمی‌شود.</p>
+    <a class="brand" href="#">
+      <img class="site-logo site-logo-footer" src="assets/logo.jpg" alt="لوگوی هیأت تیراندازی استان ایلام" width="44" height="44"/>
+      <span class="brand-text">هیأت تیراندازی استان ایلام</span>
+    </a>
+    <p>دقت در طراحی. تمرکز بر ورزش.</p>
+    <span>© ۱۴۰۵ هیأت تیراندازی استان ایلام</span>
   </div>
 </footer>
 
 <script src="script.js"></script>
-<script src="analytics.js" defer></script>
-<script src="membership.js" defer></script>
-<script src="membership.js" defer></script>
 </body>
 </html>
