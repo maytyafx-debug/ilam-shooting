@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>افتخارات | هیأت تیراندازی ایلام</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .page-header { padding: 120px 0 40px; text-align: center; }
+  .page-header h1 { font-size: 2.2rem; margin-bottom: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; position: relative; overflow: hidden; }
+  .card .medal { position: absolute; top: -20px; left: -20px; width: 120px; height: 120px; border-radius: 50%; filter: blur(10px); }
+  .card.gold .medal { background: radial-gradient(circle, rgba(255,201,60,.2), transparent 70%); }
+  .card.silver .medal { background: radial-gradient(circle, rgba(199,208,218,.2), transparent 70%); }
+  .card.bronze .medal { background: radial-gradient(circle, rgba(217,138,90,.2), transparent 70%); }
+  .rank { font-size: 2.4rem; font-weight: 900; line-height: 1; margin-bottom: 10px; }
+  .gold .rank { color: #FFC93C; } .silver .rank { color: #C7D0DA; } .bronze .rank { color: #D98A5A; }
+  .card h3 { font-size: 1.1rem; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <a href="index.html" class="logo"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#0B0F14" stroke-width="2.5"><circle cx="12" cy="12" r="9"/></svg></span><span>هیأت تیراندازی ایلام</span></a>
+    <nav class="nav-links"><a href="index.html">← بازگشت به خانه</a></nav>
+  </div>
+</header>
+<div class="page-header">
+  <h1>سکوی افتخارات</h1>
+  <p>درخشش ورزشکاران استان ایلام در میادین کشوری و بین‌المللی</p>
+</div>
+<div class="container">
+  <div class="grid">
+    <div class="card gold"><div class="medal"></div><div class="rank">۰۱</div><h3>مدال طلای کشوری تفنگ بادی</h3><p>مسابقات قهرمانی کشور · ۱۴۰۴ · رکورد ۶۲۸.۵</p></div>
+    <div class="card silver"><div class="medal"></div><div class="rank">۰۲</div><h3>نقره تیمی تپانچه ۱۰ متر</h3><p>المپیاد استعدادهای برتر · ۱۴۰۴ · تیم استان</p></div>
+    <div class="card bronze"><div class="medal"></div><div class="rank">۰۳</div><h3>برنز انفرادی تراپ</h3><p>جام فدراسیون · ۱۴۰۳ · ایلام</p></div>
+  </div>
+</div>
+<footer><p>© ۱۴۰۵ هیأت تیراندازی ایلام</p></footer>
+</body>
+</html>
