@@ -54,3 +54,14 @@ The demo now includes:
 
 ## Confidentiality of athlete aggregate reports
 Athlete counts split by age band and gender are private management reports. Only the tenant-scoped `president` and `tenant_admin` roles can read them. Public pages show a locked notice, never the figures. The proposed SQL migration applies this restriction with RLS. This is not active until the migration is reviewed, deployed to a dedicated backend, and tested with real authenticated roles.
+
+
+## Subscription and commercial model
+- Commercial model: SaaS subscription plus a separately quoted one-time setup fee.
+- Plans: Basic, Professional, and Enterprise.
+- Terms: 3 months at list price; 6 months with a proposed 8% discount; 12 months priced as 10 months (about 16.67% off).
+- Enterprise, setup, onboarding, customization, and premium support require a scoped quote.
+- Published UI deliberately shows quote-required pricing rather than invented currency amounts.
+- The subscription panel and plan catalogue are demo-only. No checkout, payment processing, automatic renewal, or entitlement enforcement is active.
+- Before production billing: implement server-side subscription state, invoice records, payment-provider webhooks, idempotency, audit logs, cancellation/refund rules, data retention, and tenant-scoped authorization. Never trust browser-supplied payment or tenant status.
+- Subscription expiry must not automatically erase customer content. Apply contract-defined read-only/export/grace-period behavior after legal and operational review.
