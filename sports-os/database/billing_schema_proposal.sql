@@ -117,7 +117,12 @@ alter table sports_private.subscription_audit_events enable row level security;
 -- The trusted server uses service_role only from a protected environment.
 -- Do not expose service_role credentials to browser code or tenant users.
 revoke all on all tables in schema sports_private from public, anon, authenticated;
-grant select, insert, update on all tables in schema sports_private to service_role;
+grant select, insert, update on sports_private.subscription_plans to service_role;
+grant select, insert, update on sports_private.tenant_subscriptions to service_role;
+grant select, insert, update on sports_private.invoices to service_role;
+grant select, insert, update on sports_private.payment_events to service_role;
+-- Audit records are append-only even for the billing service role.
+grant select, insert on sports_private.subscription_audit_events to service_role;
 grant usage, select on all sequences in schema sports_private to service_role;
 
 alter default privileges in schema sports_private
