@@ -89,12 +89,52 @@ create or replace function public.sports_touch_updated_at()
 returns trigger
 language plpgsql
 set search_path = public, pg_temp
-as $$
+as $
 begin
   new.updated_at = now();
   return new;
 end;
-$$;
+$;
+
+create or replace function public.sports_guard_tenant_owned_row()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $
+begin
+  if new.tenant_id is distinct from old.tenant_id then
+    raise exception 'tenant_id is immutable';
+  end if;
+  return new;
+end;
+$;
+
+create or replace function public.sports_guard_content_review()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $
+begin
+  if tg_op = 'INSERT' then
+    if new.status not in ('draft','in_review') then
+      raise exception 'new content must start as draft or in_review';
+    end if;
+    new.reviewed_by := null;
+    new.published_at := null;
+  else
+    if new.created_by is distinct from old.created_by then
+      raise exception 'created_by is immutable';
+    end if;
+    if new.status in ('approved','published') and old.status not in ('approved','published') then
+      new.reviewed_by := auth.uid();
+    end if;
+    if new.status = 'published' and old.status <> 'published' then
+      new.published_at := now();
+    end if;
+  end if;
+  return new;
+end;
+$;
 
 drop trigger if exists sports_tenants_touch_updated_at on public.sports_tenants;
 create trigger sports_tenants_touch_updated_at
@@ -105,6 +145,26 @@ drop trigger if exists sports_content_touch_updated_at on public.sports_content_
 create trigger sports_content_touch_updated_at
 before update on public.sports_content_items
 for each row execute function public.sports_touch_updated_at();
+
+drop trigger if exists sports_content_guard_tenant on public.sports_content_items;
+create trigger sports_content_guard_tenant
+before update on public.sports_content_items
+for each row execute function public.sports_guard_tenant_owned_row();
+
+drop trigger if exists sports_media_guard_tenant on public.sports_media_assets;
+create trigger sports_media_guard_tenant
+before update on public.sports_media_assets
+for each row execute function public.sports_guard_tenant_owned_row();
+
+drop trigger if exists sports_memberships_guard_tenant on public.sports_tenant_memberships;
+create trigger sports_memberships_guard_tenant
+before update on public.sports_tenant_memberships
+for each row execute function public.sports_guard_tenant_owned_row();
+
+drop trigger if exists sports_content_guard_review on public.sports_content_items;
+create trigger sports_content_guard_review
+before insert or update on public.sports_content_items
+for each row execute function public.sports_guard_content_review();
 
 -- SECURITY DEFINER helpers avoid recursive membership-table RLS checks.
 create or replace function public.sports_is_tenant_member(target_tenant uuid)
@@ -190,6 +250,7 @@ on public.sports_content_items for insert
 with check (
   public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor'])
   and created_by = auth.uid()
+  and status in ('draft','in_review')
 );
 
 drop policy if exists sports_content_update on public.sports_content_items;
@@ -234,6 +295,7 @@ on public.sports_media_assets for insert
 with check (
   public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor'])
   and created_by = auth.uid()
+  and rights_status = 'pending'
 );
 
 drop policy if exists sports_media_update on public.sports_media_assets;
