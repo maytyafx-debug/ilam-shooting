@@ -65,3 +65,28 @@ The current web demo is static. The tenant switcher reads `tenants.json`; the ad
 - Public pages may show only a locked notice explaining that the report is available in the authorized management console.
 - Authorization must be enforced by database RLS and verified server-side identity; hiding a UI element is not access control.
 - The role `president` is tenant-scoped and must be granted only through a trusted administrator workflow.
+
+
+## Subscription and billing architecture
+### Commercial model
+- SaaS subscriptions are sold as Basic, Professional, and Enterprise plans.
+- Term options: 3 months (list price), 6 months (proposed 8% discount), and 12 months (10 paid months; approximately 16.67% discount).
+- One-time setup and onboarding fees are separate from recurring subscription fees.
+- Enterprise scope and premium support are quoted separately.
+- Actual prices remain quote-based until hosting, support, tax, and contractual costs are validated.
+
+### Required production records
+- `subscription_plans`: versioned catalogue of entitlements and list-price metadata.
+- `tenant_subscriptions`: tenant-scoped plan, term, start/end dates, renewal preference, and lifecycle state.
+- `invoices`: immutable invoice number, amounts, currency, tax breakdown, due date, and status.
+- `payment_events`: provider event IDs, verification state, idempotency key, and audit metadata; never store card secrets.
+- `subscription_audit_events`: append-only records for plan changes, renewals, cancellations, and administrative overrides.
+
+### Security and lifecycle
+- Subscription changes and entitlement checks must be server-side; the browser is display-only.
+- Verify payment-provider signatures and process webhooks idempotently.
+- A tenant cannot change its own paid status or grant itself entitlements.
+- Platform billing operators and tenant content administrators have separate permissions.
+- Do not expose payment secrets or provider service keys in frontend code.
+- Expiry must follow a documented grace/read-only/export policy and must not trigger silent data deletion.
+- No payment processing or real billing state is active in the current demo. Implement only after dedicated backend isolation, legal review, and security testing.
