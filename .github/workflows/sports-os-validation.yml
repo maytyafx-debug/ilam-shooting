@@ -19,6 +19,8 @@ on:
       - "register-competition.html"
       - "register-member.html"
       - "calendar.html"
+      - "functions/api/submit.js"
+      - "supabase/migrations/**"
 
 permissions:
   contents: read
