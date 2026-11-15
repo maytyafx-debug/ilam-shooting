@@ -42,3 +42,11 @@ This folder is a prototype foundation, not a production SaaS service. Do not col
 - `database/001_core.sql` is a proposed Supabase/PostgreSQL schema with tenant-scoped content, media, memberships, audit records, and RLS policies.
 - The migration has not been applied to any database. Apply it only to a new, dedicated Sports OS project after independent SQL/RLS review and test coverage.
 - Membership provisioning, audit writes, and privileged state transitions must run through trusted server-side functions; never expose a service-role key in browser code.
+
+
+## Reporting
+The demo now includes:
+- Annual aggregate statistics by age band and gender (fictional demonstration values only; no individual athlete profiles).
+- Historical medal summaries by provincial, national, Asian, world, and Olympic level, split by gold/silver/bronze.
+- The SQL proposal adds aggregate-only reporting and a structured historical medal archive with tenant-scoped RLS.
+- Public small demographic cells are suppressed below five. Medal entries require official source references before publication.
