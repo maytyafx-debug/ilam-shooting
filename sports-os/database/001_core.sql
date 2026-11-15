@@ -450,22 +450,6 @@ language plpgsql
 set search_path = public, pg_temp
 as $$
 begin
-  if tg_op = 'UPDATE' and new.tenant_id is distinct from old.tenant_id then
-    raise exception 'tenant_id is immutable';
-  end if;
-  if tg_op = 'UPDATE' and new.created_by is distinct from old.created_by then
-    raise exception 'created_by is immutable';
-  end if;
-  return new;
-end;
-$$;
-
-create or replace function public.sports_guard_historical_medal()
-returns trigger
-language plpgsql
-set search_path = public, pg_temp
-as $$
-begin
   if tg_op = 'UPDATE' then
     if new.tenant_id is distinct from old.tenant_id then
       raise exception 'tenant_id is immutable';
@@ -473,16 +457,41 @@ begin
     if new.created_by is distinct from old.created_by then
       raise exception 'created_by is immutable';
     end if;
+  elsif new.status <> 'draft' then
+    raise exception 'new aggregate reports must start as draft';
+  end if;
+  return new;
+end;
+$;
+
+create or replace function public.sports_guard_historical_medal()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  if tg_op = 'INSERT' then
+    if new.status <> 'draft' then
+      raise exception 'new historical medal records must start as draft';
+    end if;
+    new.reviewed_by := null;
+  else
+    if new.tenant_id is distinct from old.tenant_id then
+      raise exception 'tenant_id is immutable';
+    end if;
+    if new.created_by is distinct from old.created_by then
+      raise exception 'created_by is immutable';
+    end if;
+    if new.status = 'published' and old.status is distinct from 'published' then
+      new.reviewed_by := auth.uid();
+    end if;
   end if;
   if new.status = 'published' and (new.source_reference is null or length(trim(new.source_reference)) = 0) then
     raise exception 'official source reference required before publication';
   end if;
-  if new.status = 'published' and old.status is distinct from 'published' then
-    new.reviewed_by := auth.uid();
-  end if;
   return new;
 end;
-$$;
+$;
 
 drop trigger if exists sports_aggregate_guard on public.sports_aggregate_reports;
 create trigger sports_aggregate_guard
