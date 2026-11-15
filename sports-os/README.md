@@ -65,3 +65,7 @@ Athlete counts split by age band and gender are private management reports. Only
 - The subscription panel and plan catalogue are demo-only. No checkout, payment processing, automatic renewal, or entitlement enforcement is active.
 - Before production billing: implement server-side subscription state, invoice records, payment-provider webhooks, idempotency, audit logs, cancellation/refund rules, data retention, and tenant-scoped authorization. Never trust browser-supplied payment or tenant status.
 - Subscription expiry must not automatically erase customer content. Apply contract-defined read-only/export/grace-period behavior after legal and operational review.
+
+
+## Billing data isolation
+The proposed server-only billing schema is documented in `database/billing_schema_proposal.sql`. It is deliberately outside exposed API schemas, has RLS enabled, and grants no direct billing-table access to browser roles. It is not applied or connected to a payment provider. Only a trusted backend may process subscription state and verified payment events.
