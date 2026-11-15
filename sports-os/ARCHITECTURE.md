@@ -55,3 +55,13 @@ The current web demo is static. The tenant switcher reads `tenants.json`; the ad
 - Each historical record requires event name, year, achievement title, source reference, and an editorial status.
 - Publication requires reviewer/admin approval and an official source reference.
 - This is a historical archive, not a current ranking, performance tracker, or live competition database.
+
+
+## Confidential aggregate statistics access
+- Athlete-count aggregates split by age band and gender are confidential management data.
+- Only users with the `president` or `tenant_admin` role for that same tenant may SELECT these rows.
+- Editors, reviewers, viewers, other tenants, and anonymous/public visitors cannot read these statistics.
+- The public website must never embed real aggregate values in HTML, JavaScript, JSON, or static assets.
+- Public pages may show only a locked notice explaining that the report is available in the authorized management console.
+- Authorization must be enforced by database RLS and verified server-side identity; hiding a UI element is not access control.
+- The role `president` is tenant-scoped and must be granted only through a trusted administrator workflow.
