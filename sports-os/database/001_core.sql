@@ -330,3 +330,169 @@ using (public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer']
 
 -- Membership provisioning, tenant creation, publication transitions, and audit writes
 -- must be implemented as trusted server-side functions. Do not expose service-role keys.
+
+
+-- Annual aggregate athlete statistics only. No person-level athlete records are stored.
+-- Public small cells (<5) must be suppressed to reduce re-identification risk.
+create table if not exists public.sports_aggregate_reports (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references public.sports_tenants(id) on delete cascade,
+  report_year integer not null check (report_year between 1900 and 2200),
+  age_band text not null check (age_band in ('نوجوانان','جوانان','بزرگسالان','پیشکسوتان','نامشخص')),
+  gender_group text not null check (gender_group in ('زن','مرد','ثبت‌نشده')),
+  athlete_count integer,
+  is_suppressed boolean not null default false,
+  status text not null default 'draft' check (status in ('draft','published','archived')),
+  source_reference text not null,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  check (
+    (is_suppressed = true and athlete_count is null)
+    or (is_suppressed = false and athlete_count >= 5)
+  ),
+  unique (tenant_id, report_year, age_band, gender_group)
+);
+
+-- Historical medals are editorial archive entries, not a live ranking/performance system.
+create table if not exists public.sports_historical_medals (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references public.sports_tenants(id) on delete cascade,
+  person_display_name text not null,
+  achievement_title text not null,
+  event_name text not null,
+  medal_level text not null check (medal_level in ('استانی','کشوری','آسیایی','جهانی','المپیک')),
+  medal_type text not null check (medal_type in ('طلا','نقره','برنز')),
+  award_year integer not null check (award_year between 1900 and 2200),
+  source_reference text not null,
+  media_asset_id uuid,
+  status text not null default 'draft' check (status in ('draft','published','archived')),
+  created_by uuid references auth.users(id) on delete set null,
+  reviewed_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  foreign key (media_asset_id, tenant_id)
+    references public.sports_media_assets(id, tenant_id)
+    on delete restrict
+);
+
+create index if not exists sports_aggregate_tenant_year_idx
+  on public.sports_aggregate_reports(tenant_id, report_year desc, status);
+create index if not exists sports_medals_tenant_level_year_idx
+  on public.sports_historical_medals(tenant_id, medal_level, award_year desc, status);
+
+alter table public.sports_aggregate_reports enable row level security;
+alter table public.sports_historical_medals enable row level security;
+
+drop policy if exists sports_aggregate_read on public.sports_aggregate_reports;
+create policy sports_aggregate_read
+on public.sports_aggregate_reports for select
+using (status = 'published' or public.sports_is_tenant_member(tenant_id));
+
+drop policy if exists sports_aggregate_insert on public.sports_aggregate_reports;
+create policy sports_aggregate_insert
+on public.sports_aggregate_reports for insert
+with check (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor'])
+  and created_by = auth.uid()
+  and status = 'draft'
+);
+
+drop policy if exists sports_aggregate_update on public.sports_aggregate_reports;
+create policy sports_aggregate_update
+on public.sports_aggregate_reports for update
+using (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (public.sports_has_tenant_role(tenant_id, array['editor']) and status = 'draft')
+)
+with check (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (public.sports_has_tenant_role(tenant_id, array['editor']) and status = 'draft')
+);
+
+drop policy if exists sports_aggregate_delete on public.sports_aggregate_reports;
+create policy sports_aggregate_delete
+on public.sports_aggregate_reports for delete
+using (public.sports_has_tenant_role(tenant_id, array['tenant_admin']));
+
+drop policy if exists sports_medals_read on public.sports_historical_medals;
+create policy sports_medals_read
+on public.sports_historical_medals for select
+using (status = 'published' or public.sports_is_tenant_member(tenant_id));
+
+drop policy if exists sports_medals_insert on public.sports_historical_medals;
+create policy sports_medals_insert
+on public.sports_historical_medals for insert
+with check (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor'])
+  and created_by = auth.uid()
+  and status = 'draft'
+);
+
+drop policy if exists sports_medals_update on public.sports_historical_medals;
+create policy sports_medals_update
+on public.sports_historical_medals for update
+using (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (public.sports_has_tenant_role(tenant_id, array['editor']) and status = 'draft')
+)
+with check (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (public.sports_has_tenant_role(tenant_id, array['editor']) and status = 'draft')
+);
+
+drop policy if exists sports_medals_delete on public.sports_historical_medals;
+create policy sports_medals_delete
+on public.sports_historical_medals for delete
+using (public.sports_has_tenant_role(tenant_id, array['tenant_admin']));
+
+create or replace function public.sports_guard_aggregate_row()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  if tg_op = 'UPDATE' and new.tenant_id is distinct from old.tenant_id then
+    raise exception 'tenant_id is immutable';
+  end if;
+  if tg_op = 'UPDATE' and new.created_by is distinct from old.created_by then
+    raise exception 'created_by is immutable';
+  end if;
+  return new;
+end;
+$$;
+
+create or replace function public.sports_guard_historical_medal()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  if tg_op = 'UPDATE' then
+    if new.tenant_id is distinct from old.tenant_id then
+      raise exception 'tenant_id is immutable';
+    end if;
+    if new.created_by is distinct from old.created_by then
+      raise exception 'created_by is immutable';
+    end if;
+  end if;
+  if new.status = 'published' and (new.source_reference is null or length(trim(new.source_reference)) = 0) then
+    raise exception 'official source reference required before publication';
+  end if;
+  if new.status = 'published' and old.status is distinct from 'published' then
+    new.reviewed_by := auth.uid();
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists sports_aggregate_guard on public.sports_aggregate_reports;
+create trigger sports_aggregate_guard
+before update on public.sports_aggregate_reports
+for each row execute function public.sports_guard_aggregate_row();
+
+drop trigger if exists sports_medal_guard on public.sports_historical_medals;
+create trigger sports_medal_guard
+before insert or update on public.sports_historical_medals
+for each row execute function public.sports_guard_historical_medal();
+
+-- No athlete-level profiles, participation records, event schedules, performance scores,
+-- or ranking tables are created by this migration.
