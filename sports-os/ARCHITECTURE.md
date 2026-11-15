@@ -90,3 +90,12 @@ The current web demo is static. The tenant switcher reads `tenants.json`; the ad
 - Do not expose payment secrets or provider service keys in frontend code.
 - Expiry must follow a documented grace/read-only/export policy and must not trigger silent data deletion.
 - No payment processing or real billing state is active in the current demo. Implement only after dedicated backend isolation, legal review, and security testing.
+
+
+## Billing data isolation
+- Proposed billing records live in the non-exposed PostgreSQL schema `sports_private`, not in browser-readable tenant tables.
+- The design includes versioned plans, tenant subscriptions, invoices, verified payment-event metadata, and subscription audit events.
+- No direct `anon` or `authenticated` grants or policies are provided for billing tables; only a trusted server environment may use the service role.
+- RLS is enabled as defense in depth. Service-role credentials must never enter browser code, public repositories, or tenant sessions.
+- Payment events store redacted provider metadata only; card numbers, CVV, and payment secrets are never stored.
+- The SQL file is a proposal only. It has not been applied, tested against a database, or connected to a payment provider.
