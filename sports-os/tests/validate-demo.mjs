@@ -2,14 +2,16 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql] = await Promise.all([
+const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
   read("../index.html"),
   read("../app.js"),
   read("../../functions/api/submit.js"),
   read("../database/001_core.sql"),
-  read("../database/billing_schema_proposal.sql")
+  read("../database/billing_schema_proposal.sql"),
+  read("../../supabase/migrations/002_disable_legacy_membership_rpc.sql"),
+  read("../../supabase/migrations/003_restrict_analytics_stats_to_admins.sql")
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
@@ -39,6 +41,9 @@ assert.ok(!/create table[^;]*(athlete_profiles|competition_entries|performance_s
 assert.ok(billingSql.includes("revoke all on all tables in schema sports_private from public, anon, authenticated"));
 assert.ok(billingSql.includes("grant select, insert on sports_private.subscription_audit_events to service_role"));
 assert.ok(!billingSql.includes("grant select, insert, update on all tables in schema sports_private"));
+assert.ok(membershipMigration.includes("revoke execute on function public.submit_membership"));
+assert.ok(analyticsMigration.includes("revoke execute on function public.is_admin()"));
+assert.ok(analyticsMigration.includes("not public.is_admin()"));
 
 
 const shooting = tenants.tenants.find((t) => t.id === "ilam-shooting");
