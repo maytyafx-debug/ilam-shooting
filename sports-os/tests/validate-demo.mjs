@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, html, appJs] = await Promise.all([
+const [pricingText, tenantsText, html, appJs, legacySubmit] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
   read("../index.html"),
-  read("../app.js")
+  read("../app.js"),
+  read("../../functions/api/submit.js")
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
@@ -23,6 +24,10 @@ assert.ok(html.includes('id="pricingCards"'));
 assert.ok(html.includes('id="subscription-preview"'));
 assert.ok(appJs.includes('fetch("pricing.json")'));
 assert.ok(appJs.includes('fetch("tenants.json")'));
+assert.ok(legacySubmit.includes("status: 410"));
+assert.ok(legacySubmit.includes("FORM_SUBMISSIONS_DISABLED"));
+assert.ok(!legacySubmit.includes("api.telegram.org"));
+assert.ok(!legacySubmit.includes("request.formData()"));
 
 const shooting = tenants.tenants.find((t) => t.id === "ilam-shooting");
 assert.ok(shooting);
