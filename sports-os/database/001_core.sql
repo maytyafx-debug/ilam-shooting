@@ -62,7 +62,7 @@ create table if not exists public.sports_content_items (
   unique (tenant_id, slug),
   foreign key (media_asset_id, tenant_id)
     references public.sports_media_assets(id, tenant_id)
-    on delete set null
+    on delete restrict
 );
 
 create table if not exists public.sports_audit_events (
@@ -140,7 +140,12 @@ as $$
       and m.status = 'active'
       and m.role = any(allowed_roles)
   );
-$$;
+$;
+
+revoke all on function public.sports_is_tenant_member(uuid) from public, anon;
+revoke all on function public.sports_has_tenant_role(uuid, text[]) from public, anon;
+grant execute on function public.sports_is_tenant_member(uuid) to authenticated;
+grant execute on function public.sports_has_tenant_role(uuid, text[]) to authenticated;
 
 alter table public.sports_tenants enable row level security;
 alter table public.sports_tenant_memberships enable row level security;
@@ -191,10 +196,18 @@ drop policy if exists sports_content_update on public.sports_content_items;
 create policy sports_content_update
 on public.sports_content_items for update
 using (
-  public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor','reviewer'])
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (
+    public.sports_has_tenant_role(tenant_id, array['editor'])
+    and status in ('draft','in_review')
+  )
 )
 with check (
-  public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor','reviewer'])
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (
+    public.sports_has_tenant_role(tenant_id, array['editor'])
+    and status in ('draft','in_review')
+  )
 );
 
 drop policy if exists sports_content_delete on public.sports_content_items;
@@ -226,8 +239,20 @@ with check (
 drop policy if exists sports_media_update on public.sports_media_assets;
 create policy sports_media_update
 on public.sports_media_assets for update
-using (public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor']))
-with check (public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor']));
+using (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (
+    public.sports_has_tenant_role(tenant_id, array['editor'])
+    and rights_status <> 'approved'
+  )
+)
+with check (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  or (
+    public.sports_has_tenant_role(tenant_id, array['editor'])
+    and rights_status <> 'approved'
+  )
+);
 
 drop policy if exists sports_media_delete on public.sports_media_assets;
 create policy sports_media_delete
