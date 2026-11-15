@@ -12,6 +12,7 @@ A SaaS platform with one shared application core and isolated tenant workspaces.
 
 ## Roles
 - `tenant_admin`: manage tenant profile, memberships through a trusted server workflow, and all tenant content.
+- `president`: tenant-scoped senior role; may access only explicitly authorized aggregate administrative reports, never individual athlete records.
 - `editor`: create and edit draft content and upload proposed media.
 - `reviewer`: review, approve, publish, or archive content.
 - `viewer`: read tenant-private drafts only when explicitly granted.
@@ -99,3 +100,12 @@ The current web demo is static. The tenant switcher reads `tenants.json`; the ad
 - RLS is enabled as defense in depth. Service-role credentials must never enter browser code, public repositories, or tenant sessions.
 - Payment events store redacted provider metadata only; card numbers, CVV, and payment secrets are never stored.
 - The SQL file is a proposal only. It has not been applied, tested against a database, or connected to a payment provider.
+
+
+## Commercial entitlements
+- The commercial catalogue is configuration-driven in `pricing.json`; the browser renders display information only.
+- Plan options are Basic, Professional, and Enterprise with 3/6/12-month terms.
+- A six-month term has a proposed 8% discount. A twelve-month term costs the equivalent of ten monthly payments (approximately 16.67% off).
+- Setup/onboarding is quoted separately; enterprise scope and premium support require a separate quote.
+- Do not enforce plan entitlements in client JavaScript. The trusted backend must resolve subscription state and entitlements.
+- No payment processor, checkout, automatic charge, or production subscription lifecycle is active in this demo.
