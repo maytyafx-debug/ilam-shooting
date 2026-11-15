@@ -50,3 +50,7 @@ The demo now includes:
 - Historical medal summaries by provincial, national, Asian, world, and Olympic level, split by gold/silver/bronze.
 - The SQL proposal adds aggregate-only reporting and a structured historical medal archive with tenant-scoped RLS.
 - Public small demographic cells are suppressed below five. Medal entries require official source references before publication.
+
+
+## Confidentiality of athlete aggregate reports
+Athlete counts split by age band and gender are private management reports. Only the tenant-scoped `president` and `tenant_admin` roles can read them. Public pages show a locked notice, never the figures. The proposed SQL migration applies this restriction with RLS. This is not active until the migration is reviewed, deployed to a dedicated backend, and tested with real authenticated roles.
