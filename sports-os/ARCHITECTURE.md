@@ -41,3 +41,17 @@ Every transition must be authorized server-side and produce an audit event. Publ
 
 ## Current demo limits
 The current web demo is static. The tenant switcher reads `tenants.json`; the admin console is illustrative. There is no login, backend, database, persistent editing, or real tenant security yet. The SQL migration is a proposed foundation only and must be reviewed in an isolated new database before use.
+
+
+## Reporting modules
+### Aggregate demographic reports
+- Annual totals by age band and gender category are stored only as aggregate cells.
+- No names, member IDs, athlete profiles, or person-level participation records are stored in this reporting module.
+- Public cells below five are suppressed; the database constraint prevents publishing a non-suppressed count below five.
+- Every report requires a source reference and passes the editorial approval process.
+
+### Historical medal archive
+- Structured categories: provincial, national, Asian, world, and Olympic; medal types: gold, silver, bronze.
+- Each historical record requires event name, year, achievement title, source reference, and an editorial status.
+- Publication requires reviewer/admin approval and an official source reference.
+- This is a historical archive, not a current ranking, performance tracker, or live competition database.
