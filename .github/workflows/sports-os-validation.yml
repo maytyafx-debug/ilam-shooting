@@ -8,6 +8,8 @@ on:
       - "register-competition.html"
       - "register-member.html"
       - "calendar.html"
+      - "functions/api/submit.js"
+      - "supabase/migrations/**"
   push:
     branches:
       - "feat/metatya-sports-os-foundation-v1"
