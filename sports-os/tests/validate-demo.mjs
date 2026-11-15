@@ -31,8 +31,8 @@ assert.ok(legacySubmit.includes("FORM_SUBMISSIONS_DISABLED"));
 assert.ok(!legacySubmit.includes("api.telegram.org"));
 assert.ok(!legacySubmit.includes("request.formData()"));
 
-assert.ok(!/^as \\$(?!\\$)/m.test(coreSql));
-assert.ok(!/^\\$;$/m.test(coreSql));
+assert.ok(!/^as \$(?!\$)/m.test(coreSql));
+assert.ok(!/^\$;$/m.test(coreSql));
 assert.ok((coreSql.match(/enable row level security/gi) || []).length >= 7);
 assert.ok(coreSql.includes("array['tenant_admin','president']"));
 assert.ok(!/create table[^;]*(athlete_profiles|competition_entries|performance_scores|rankings)/i.test(coreSql));
