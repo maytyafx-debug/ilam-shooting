@@ -16,3 +16,7 @@
 .medal-levels{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:22px 0}.medal-levels>div{background:#f1eee6;padding:11px 6px;text-align:center}.medal-levels b,.medal-levels strong,.medal-levels small{display:block}.medal-levels b{font-size:.68rem;color:#6e7882}.medal-levels strong{font-size:1.45rem;color:#9a793e;margin:6px 0}.medal-levels small{font-size:.55rem;color:#87909a}
 @media(max-width:850px){.report-grid{grid-template-columns:1fr}.reports-section{padding:75px 22px}}
 @media(max-width:520px){.report-panel{padding:16px}.medal-levels{grid-template-columns:repeat(3,1fr)}.report-totals strong{font-size:1.35rem}}
+
+/* Confidential aggregate statistics: public page shows no private values */
+.private-report-lock{margin:24px 0 12px;padding:28px 20px;text-align:center;background:#f5f2eb;border:1px solid #d9cfbd}
+.private-lock-icon{font-size:2rem;margin-bottom:10px}.private-report-lock strong{display:block;font-size:1rem;color:#17283d}.private-report-lock p{max-width:430px;margin:12px auto;color:#687381;font-size:.8rem;line-height:2}.private-report-lock span{display:inline-block;margin-top:8px;padding:8px 13px;border:1px solid #c9b58e;color:#866b3c;font-size:.7rem}
