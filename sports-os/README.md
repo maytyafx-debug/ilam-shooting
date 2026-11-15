@@ -80,3 +80,5 @@ Run `node sports-os/tests/validate-demo.mjs` from the repository root to validat
 - The legacy Cloudflare Pages `/api/submit` handler returns HTTP 410 and does not forward form content to Telegram.
 - The public `submit_membership` RPC was revoked from `PUBLIC`, `anon`, and `authenticated` on the dedicated `ilam-shooting-federation` Supabase project; the matching guarded SQL migration is tracked at `supabase/migrations/002_disable_legacy_membership_rpc.sql`.
 - No membership rows existed when checked. Existing admin and analytics records were not modified.
+
+- The existing analytics statistics RPC now checks the signed-in user against the admin table before returning aggregates; anonymous execution of the admin-check RPC is revoked. The matching migration is tracked at `supabase/migrations/003_restrict_analytics_stats_to_admins.sql`.
