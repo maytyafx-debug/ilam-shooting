@@ -1,52 +1,27 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const forms = document.querySelectorAll("form");
-  
-  forms.forEach(form => {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault(); // جلوگیری از رفرش شدن صفحه
-      
-      const submitBtn = form.querySelector(".btn-submit");
-      const originalText = submitBtn.innerText;
-      submitBtn.innerText = "در حال ارسال...";
-      submitBtn.disabled = true;
+(() => {
+  "use strict";
+  const toggle = document.querySelector(".menu-toggle");
+  const nav = document.querySelector("#primary-nav");
+  if (!toggle || !nav) return;
 
-      const formData = new FormData(form);
+  const closeMenu = () => {
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "باز کردن فهرست");
+    nav.classList.remove("open");
+  };
 
-      try {
-        const response = await fetch("/api/submit", {
-          method: "POST",
-          body: formData
-        });
-
-        if (response.ok) {
-          alert("✅ درخواست شما با موفقیت ثبت شد. کارشناسان ما به‌زودی با شما تماس می‌گیرند.");
-          form.reset(); // پاک کردن فرم
-        } else {
-          alert("❌ متاسفانه خطایی رخ داد. لطفاً دوباره تلاش کنید.");
-        }
-      } catch (error) {
-        alert("❌ خطا در ارتباط با سرور.");
-      } finally {
-        submitBtn.innerText = originalText;
-        submitBtn.disabled = false;
-      }
-    });
+  toggle.addEventListener("click", () => {
+    const isOpen = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "باز کردن فهرست" : "بستن فهرست");
+    nav.classList.toggle("open", !isOpen);
   });
-});
 
-'use strict';
-const menuButton = document.querySelector('.menu-button');
-const navigation = document.querySelector('#navigation');
+  nav.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", closeMenu);
+  });
 
-menuButton.addEventListener('click', () => {
-  const opened = menuButton.getAttribute('aria-expanded') === 'true';
-  menuButton.setAttribute('aria-expanded', String(!opened));
-  navigation.classList.toggle('open', !opened);
-  menuButton.setAttribute('aria-label', opened ? 'باز کردن فهرست' : 'بستن فهرست');
-});
-
-navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-  navigation.classList.remove('open');
-  menuButton.setAttribute('aria-expanded', 'false');
-  menuButton.setAttribute('aria-label', 'باز کردن فهرست');
-}));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu();
+  });
+})();
