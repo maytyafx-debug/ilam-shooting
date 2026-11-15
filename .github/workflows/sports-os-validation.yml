@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "sports-os/**"
+      - ".github/workflows/sports-os-validation.yml"
       - "register-athlete.html"
       - "register-competition.html"
       - "register-member.html"
