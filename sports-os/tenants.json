@@ -15,7 +15,15 @@
       "accent": "#d8b36c",
       "description": "پایگاه عمومی معرفی سازمان، اطلاعیه‌های اداری، گزارش‌های عمومی و آرشیو تاریخی افتخارات تأییدشده.",
       "scopeNotice": "این نمونه فقط برای اطلاع‌رسانی عمومی و امور اداری خنثی است.",
-      "modules": ["organization", "news", "historical-honours", "documents", "media", "contact"]
+      "modules": [
+        "organization",
+        "news",
+        "historical-honours",
+        "documents",
+        "media",
+        "contact",
+        "aggregate-reports"
+      ]
     },
     {
       "id": "wrestling-demo",
@@ -25,7 +33,15 @@
       "accent": "#65c8b2",
       "description": "درگاه معرفی ساختار سازمانی، اخبار عمومی، سوابق تاریخی افتخارات و اسناد قابل انتشار.",
       "scopeNotice": "محتوای این محیط صرفاً نمایشی و غیرواقعی است.",
-      "modules": ["organization", "news", "historical-honours", "documents", "media", "contact"]
+      "modules": [
+        "organization",
+        "news",
+        "historical-honours",
+        "documents",
+        "media",
+        "contact",
+        "aggregate-reports"
+      ]
     },
     {
       "id": "volleyball-demo",
@@ -35,7 +51,15 @@
       "accent": "#78a9ef",
       "description": "وب‌سایت مستقل برای معرفی هیئت، اخبار، آرشیو تاریخی تیم‌ها و افتخارات و اسناد عمومی.",
       "scopeNotice": "محتوای این محیط صرفاً نمایشی و غیرواقعی است.",
-      "modules": ["organization", "news", "historical-honours", "documents", "media", "contact"]
+      "modules": [
+        "organization",
+        "news",
+        "historical-honours",
+        "documents",
+        "media",
+        "contact",
+        "aggregate-reports"
+      ]
     },
     {
       "id": "football-demo",
@@ -45,7 +69,15 @@
       "accent": "#a7c96c",
       "description": "درگاه محتوایی و اداری برای معرفی ساختار، اخبار، آرشیو تاریخی و ارتباط عمومی.",
       "scopeNotice": "محتوای این محیط صرفاً نمایشی و غیرواقعی است.",
-      "modules": ["organization", "news", "historical-honours", "documents", "media", "contact"]
+      "modules": [
+        "organization",
+        "news",
+        "historical-honours",
+        "documents",
+        "media",
+        "contact",
+        "aggregate-reports"
+      ]
     }
   ]
 }
