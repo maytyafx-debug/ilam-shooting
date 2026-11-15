@@ -94,7 +94,7 @@ create index if not exists sports_audit_tenant_created_idx
 create or replace function public.sports_touch_updated_at()
 returns trigger
 language plpgsql
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 as $
 begin
   new.updated_at = now();
@@ -105,7 +105,7 @@ $;
 create or replace function public.sports_guard_tenant_owned_row()
 returns trigger
 language plpgsql
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 as $
 begin
   if new.tenant_id is distinct from old.tenant_id then
@@ -118,7 +118,7 @@ $;
 create or replace function public.sports_guard_content_review()
 returns trigger
 language plpgsql
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 as $
 begin
   if tg_op = 'INSERT' then
@@ -178,7 +178,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 set row_security = off
 as $$
   select exists (
@@ -195,7 +195,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 set row_security = off
 as $$
   select exists (
@@ -356,7 +356,7 @@ create table if not exists public.sports_aggregate_reports (
   created_at timestamptz not null default now(),
   check (
     (is_suppressed = true and athlete_count is null)
-    or (is_suppressed = false and athlete_count >= 5)
+    or (is_suppressed = false and athlete_count is not null and athlete_count >= 5)
   ),
   unique (tenant_id, report_year, age_band, gender_group)
 );
@@ -401,7 +401,7 @@ drop policy if exists sports_aggregate_insert on public.sports_aggregate_reports
 create policy sports_aggregate_insert
 on public.sports_aggregate_reports for insert
 with check (
-  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president','editor'])
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president'])
   and created_by = auth.uid()
   and status = 'draft'
 );
@@ -410,8 +410,7 @@ drop policy if exists sports_aggregate_update on public.sports_aggregate_reports
 create policy sports_aggregate_update
 on public.sports_aggregate_reports for update
 using (
-  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president','reviewer'])
-  or (public.sports_has_tenant_role(tenant_id, array['editor']) and status = 'draft')
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president'])
 )
 with check (
   public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
@@ -457,7 +456,7 @@ using (public.sports_has_tenant_role(tenant_id, array['tenant_admin']));
 create or replace function public.sports_guard_aggregate_row()
 returns trigger
 language plpgsql
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 as $$
 begin
   if tg_op = 'UPDATE' then
@@ -477,7 +476,7 @@ $;
 create or replace function public.sports_guard_historical_medal()
 returns trigger
 language plpgsql
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 as $$
 begin
   if tg_op = 'INSERT' then
@@ -512,6 +511,40 @@ drop trigger if exists sports_medal_guard on public.sports_historical_medals;
 create trigger sports_medal_guard
 before insert or update on public.sports_historical_medals
 for each row execute function public.sports_guard_historical_medal();
+
+
+-- Explicit API grants; RLS policies remain the authorization boundary.
+grant select on public.sports_tenants to anon, authenticated;
+grant update on public.sports_tenants to authenticated;
+
+grant select on public.sports_tenant_memberships to authenticated;
+
+grant select on public.sports_content_items to anon, authenticated;
+grant insert, update, delete on public.sports_content_items to authenticated;
+
+grant select on public.sports_media_assets to anon, authenticated;
+grant insert, update, delete on public.sports_media_assets to authenticated;
+
+grant select on public.sports_audit_events to authenticated;
+
+-- Private aggregate reports: never grant access to anon.
+grant select, insert, update, delete on public.sports_aggregate_reports to authenticated;
+
+grant select on public.sports_historical_medals to anon, authenticated;
+grant insert, update, delete on public.sports_historical_medals to authenticated;
+
+grant all on public.sports_tenants to service_role;
+grant all on public.sports_tenant_memberships to service_role;
+grant all on public.sports_media_assets to service_role;
+grant all on public.sports_content_items to service_role;
+grant all on public.sports_audit_events to service_role;
+grant all on public.sports_aggregate_reports to service_role;
+grant all on public.sports_historical_medals to service_role;
+
+drop policy if exists sports_tenants_public_active on public.sports_tenants;
+create policy sports_tenants_public_active
+on public.sports_tenants for select
+using (status = 'active');
 
 -- No athlete-level profiles, participation records, event schedules, performance scores,
 -- or ranking tables are created by this migration.
