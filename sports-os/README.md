@@ -36,3 +36,9 @@ Every tenant-owned record must carry a non-null tenant identifier. The server de
 
 ## Deployment status
 This folder is a prototype foundation, not a production SaaS service. Do not collect real member, athlete, financial, or sensitive personal data until backend authentication, authorization, privacy, and security controls are implemented and independently tested.
+
+## Backend foundation
+- `ARCHITECTURE.md` defines tenant isolation, roles, content lifecycle, and production security requirements.
+- `database/001_core.sql` is a proposed Supabase/PostgreSQL schema with tenant-scoped content, media, memberships, audit records, and RLS policies.
+- The migration has not been applied to any database. Apply it only to a new, dedicated Sports OS project after independent SQL/RLS review and test coverage.
+- Membership provisioning, audit writes, and privileged state transitions must run through trusted server-side functions; never expose a service-role key in browser code.
