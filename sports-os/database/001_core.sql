@@ -26,6 +26,12 @@ create table if not exists public.sports_tenant_memberships (
   unique (tenant_id, user_id)
 );
 
+alter table public.sports_tenant_memberships
+  drop constraint if exists sports_tenant_memberships_role_check;
+alter table public.sports_tenant_memberships
+  add constraint sports_tenant_memberships_role_check
+  check (role in ('tenant_admin','president','editor','reviewer','viewer'));
+
 create table if not exists public.sports_media_assets (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.sports_tenants(id) on delete cascade,
