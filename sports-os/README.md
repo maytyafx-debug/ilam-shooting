@@ -69,3 +69,7 @@ Athlete counts split by age band and gender are private management reports. Only
 
 ## Billing data isolation
 The proposed server-only billing schema is documented in `database/billing_schema_proposal.sql`. It is deliberately outside exposed API schemas, has RLS enabled, and grants no direct billing-table access to browser roles. It is not applied or connected to a payment provider. Only a trusted backend may process subscription state and verified payment events.
+
+
+## Demo validation
+Run `node sports-os/tests/validate-demo.mjs` from the repository root to validate tenant configuration, plan terms, UI hooks, and disabled legacy participation pages. This is a static smoke test, not a browser, backend, or RLS security test.
