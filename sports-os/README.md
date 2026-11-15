@@ -73,3 +73,10 @@ The proposed server-only billing schema is documented in `database/billing_schem
 
 ## Demo validation
 Run `node sports-os/tests/validate-demo.mjs` from the repository root to validate tenant configuration, plan terms, UI hooks, and disabled legacy participation pages. This is a static smoke test, not a browser, backend, or RLS security test.
+
+
+## Legacy submission shutdown
+- Old registration and competition pages are informational-only and no longer collect form data.
+- The legacy Cloudflare Pages `/api/submit` handler returns HTTP 410 and does not forward form content to Telegram.
+- The public `submit_membership` RPC was revoked from `PUBLIC`, `anon`, and `authenticated` on the dedicated `ilam-shooting-federation` Supabase project; the matching guarded SQL migration is tracked at `supabase/migrations/002_disable_legacy_membership_rpc.sql`.
+- No membership rows existed when checked. Existing admin and analytics records were not modified.
