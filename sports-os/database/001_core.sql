@@ -95,31 +95,31 @@ create or replace function public.sports_touch_updated_at()
 returns trigger
 language plpgsql
 set search_path = pg_catalog, public, pg_temp
-as $
+as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$;
+$$;
 
 create or replace function public.sports_guard_tenant_owned_row()
 returns trigger
 language plpgsql
 set search_path = pg_catalog, public, pg_temp
-as $
+as $$
 begin
   if new.tenant_id is distinct from old.tenant_id then
     raise exception 'tenant_id is immutable';
   end if;
   return new;
 end;
-$;
+$$;
 
 create or replace function public.sports_guard_content_review()
 returns trigger
 language plpgsql
 set search_path = pg_catalog, public, pg_temp
-as $
+as $$
 begin
   if tg_op = 'INSERT' then
     if new.status not in ('draft','in_review') then
@@ -140,7 +140,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists sports_tenants_touch_updated_at on public.sports_tenants;
 create trigger sports_tenants_touch_updated_at
@@ -206,7 +206,7 @@ as $$
       and m.status = 'active'
       and m.role = any(allowed_roles)
   );
-$;
+$$;
 
 revoke all on function public.sports_is_tenant_member(uuid) from public, anon;
 revoke all on function public.sports_has_tenant_role(uuid, text[]) from public, anon;
@@ -413,8 +413,7 @@ using (
   public.sports_has_tenant_role(tenant_id, array['tenant_admin','president'])
 )
 with check (
-  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
-  or (public.sports_has_tenant_role(tenant_id, array['editor']) and status = 'draft')
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president'])
 );
 
 drop policy if exists sports_aggregate_delete on public.sports_aggregate_reports;
@@ -471,7 +470,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 create or replace function public.sports_guard_historical_medal()
 returns trigger
@@ -500,7 +499,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists sports_aggregate_guard on public.sports_aggregate_reports;
 create trigger sports_aggregate_guard
