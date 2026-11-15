@@ -1,65 +1,172 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>هیأت تیراندازی استان ایلام | خانه</title>
-<link rel="stylesheet" href="style.css" />
-<style>
-  .hero { padding: 160px 0 80px; text-align: center; }
-  .hero h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; margin-bottom: 20px; }
-  .hero h1 span { background: linear-gradient(135deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; color: transparent; }
-  .hero p { color: var(--muted); font-size: 1.15rem; max-width: 600px; margin: 0 auto 40px; }
-  .hero-btns { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-  .btn { padding: 14px 28px; border-radius: 999px; font-weight: 700; transition: all .3s; }
-  .btn-main { background: var(--brand); color: #0B0F14; }
-  .btn-outline { border: 1px solid var(--border); background: var(--surface); }
-  .btn:hover { transform: translateY(-3px); }
-  .grid-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 40px 0; }
-  .card { background: var(--surface); border: 1px solid var(--border); padding: 30px; border-radius: var(--radius); text-align: center; transition: all .3s; }
-  .card:hover { border-color: var(--brand); transform: translateY(-5px); }
-  .card h3 { color: var(--brand); margin-bottom: 10px; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b2b">
+  <meta name="description" content="پایگاه اطلاع‌رسانی و معرفی ساختار اداری هیئت تیراندازی استان ایلام">
+  <title>هیئت تیراندازی استان ایلام | پایگاه اطلاع‌رسانی</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">رفتن به محتوای اصلی</a>
 
-<header>
-  <div class="container nav">
-    <a href="index.html" class="logo">
-      <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#0B0F14" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="#0B0F14"/></svg></span>
-      <span>هیأت تیراندازی ایلام</span>
-    </a>
-    <nav class="nav-links">
-      <a href="index.html">خانه</a>
-      <a href="news.html">اخبار</a>
-      <a href="calendar.html">تقویم مسابقات</a>
-      <a href="achievements.html">افتخارات</a>
-      <a href="committees.html">کمیته‌ها</a>
-      <a href="register-athlete.html">ثبت‌نام</a>
-    </nav>
-  </div>
-</header>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="صفحه اصلی هیئت تیراندازی استان ایلام">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-copy">
+          <strong>هیئت تیراندازی استان ایلام</strong>
+          <small>پایگاه اطلاع‌رسانی و امور اداری</small>
+        </span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="باز کردن فهرست">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="ناوبری اصلی">
+        <a href="#about">درباره هیئت</a>
+        <a href="#governance">ساختار سازمانی</a>
+        <a href="#news">اخبار و اطلاعیه‌ها</a>
+        <a href="#reports">گزارش‌ها و اسناد</a>
+        <a href="#contact" class="nav-contact">ارتباط اداری</a>
+      </nav>
+    </div>
+  </header>
 
-<section class="hero container">
-  <h1>هدف، فقط یک <span>نقطه نیست.</span></h1>
-  <p>پورتال رسمی هیأت تیراندازی استان ایلام. از ثبت‌نام و آموزش تا مسابقات و افتخارات در کنار شما هستیم.</p>
-  <div class="hero-btns">
-    <a href="register-athlete.html" class="btn btn-main">ثبت‌نام ورزشکاران</a>
-    <a href="register-competition.html" class="btn btn-outline">ثبت‌نام در مسابقات</a>
-  </div>
-</section>
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="container hero-content">
+        <div class="eyebrow"><span class="eyebrow-line"></span> پایگاه رسمی اطلاع‌رسانی</div>
+        <h1>شفافیت در مدیریت،<br><em>اعتماد در مسیر خدمت.</em></h1>
+        <p class="hero-lead">درگاه معرفی هیئت تیراندازی استان ایلام؛ مرجعی برای آشنایی با ساختار سازمانی، اطلاعیه‌های اداری، گزارش عملکرد و اسناد عمومی.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#about">آشنایی با هیئت <span aria-hidden="true">←</span></a>
+          <a class="button button-ghost" href="#reports">مشاهده گزارش‌ها</a>
+        </div>
+        <div class="hero-note"><span class="status-dot"></span> اطلاع‌رسانی رسمی و محتوای تأییدشده</div>
+      </div>
+      <div class="hero-side-label" aria-hidden="true">ILAM / PUBLIC INFORMATION</div>
+      <div class="hero-bottom container">
+        <span>ایلام · ایران</span>
+        <span>اطلاع‌رسانی / پاسخ‌گویی / شفافیت</span>
+      </div>
+    </section>
 
-<section class="container">
-  <div class="grid-links">
-    <a href="news.html" class="card"><h3>اخبار و اطلاعیه‌ها</h3><p>آخرین اخبار هیأت</p></a>
-    <a href="calendar.html" class="card"><h3>تقویم مسابقات</h3><p>۲۴ رویداد استانی در سال ۱۴۰۵</p></a>
-    <a href="achievements.html" class="card"><h3>سکوی افتخار</h3><p>مدال‌آوران استان ایلام</p></a>
-  </div>
-</section>
+    <section class="intro-section section-pad" id="about">
+      <div class="container intro-layout">
+        <div class="section-kicker">
+          <span>01 / درباره ما</span>
+          <i></i>
+        </div>
+        <div class="intro-copy">
+          <p class="overline">یک نهاد استانی، یک مسئولیت عمومی</p>
+          <h2>معرفی روشن؛<br><em>ارتباط مسئولانه.</em></h2>
+          <p>این پایگاه با هدف دسترسی آسان به اطلاعات عمومی و اداری هیئت، انتشار اطلاعیه‌های رسمی و ارائه گزارش‌های قابل بررسی طراحی شده است. محتوای این وب‌سایت پس از دریافت و تأیید از مراجع مسئول منتشر می‌شود.</p>
+          <a class="text-link" href="#governance">آشنایی با ساختار سازمانی <span aria-hidden="true">←</span></a>
+        </div>
+        <div class="intro-stamp" aria-label="هیئت تیراندازی استان ایلام">
+          <div class="stamp-ring"><span>ILAM PROVINCE</span><strong>ایلام</strong><small>پایگاه اطلاع‌رسانی</small></div>
+        </div>
+      </div>
+    </section>
 
-<footer class="container">
-  <p>ایلام، جاده مهران، قلاویزان، خانه تیراندازی استان، سالن بین‌المللی ایثار</p>
-  <p style="margin-top:10px;">© ۱۴۰۵ تمامی حقوق محفوظ است.</p>
-</footer>
+    <section class="governance-section section-pad" id="governance">
+      <div class="container">
+        <div class="section-heading">
+          <div><span class="section-index">02 / ساختار</span><h2>ساختار و <em>مسئولیت‌ها</em></h2></div>
+          <p>اطلاعات سازمانی و شرح مسئولیت‌ها، پس از تأیید رسمی در این بخش منتشر می‌شوند.</p>
+        </div>
+        <div class="governance-grid">
+          <article class="info-card info-card-feature">
+            <span class="card-number">01</span><span class="card-symbol">◈</span>
+            <h3>مدیریت هیئت</h3>
+            <p>معرفی جایگاه‌های مدیریتی، مسئولیت‌های عمومی و مسیرهای پاسخ‌گویی اداری.</p>
+            <small>اطلاعات تکمیلی پس از تأیید رسمی</small>
+          </article>
+          <article class="info-card">
+            <span class="card-number">02</span><span class="card-symbol">⌘</span>
+            <h3>امور اداری</h3>
+            <p>اطلاع‌رسانی درباره فرآیندهای عمومی اداری و اسناد سازمانی قابل انتشار.</p>
+            <small>اطلاعات تکمیلی پس از تأیید رسمی</small>
+          </article>
+          <article class="info-card">
+            <span class="card-number">03</span><span class="card-symbol">▤</span>
+            <h3>گزارش و نظارت</h3>
+            <p>انتشار گزارش‌های عمومی عملکرد، جمع‌بندی فعالیت‌های اداری و شفاف‌سازی.</p>
+            <small>اطلاعات تکمیلی پس از تأیید رسمی</small>
+          </article>
+        </div>
+      </div>
+    </section>
 
+    <section class="news-section section-pad" id="news">
+      <div class="container">
+        <div class="section-heading">
+          <div><span class="section-index">03 / رسانه</span><h2>اخبار و <em>اطلاعیه‌ها</em></h2></div>
+          <p>در این بخش فقط خبرها و اطلاعیه‌های عمومی و تأییدشده هیئت منتشر می‌شوند.</p>
+        </div>
+        <div class="news-feature">
+          <div class="news-art" aria-hidden="true">
+            <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+            <div class="art-core">ILAM<span>NEWSROOM</span></div>
+            <span class="art-coordinate">33°38′N<br>46°25′E</span>
+          </div>
+          <div class="news-feature-copy">
+            <span class="tag">اتاق خبر</span>
+            <h3>مرجع اطلاعیه‌های رسمی هیئت</h3>
+            <p>خبرها، اطلاعیه‌های اداری و گزارش‌های عمومی پس از بررسی و تأیید مسئولان مربوط در این قسمت قرار می‌گیرند.</p>
+            <span class="pending-note"><i></i> محتوای خبری در انتظار دریافت و تأیید روابط عمومی</span>
+          </div>
+        </div>
+        <div class="news-list">
+          <article><span class="news-date">اطلاعیه</span><div><h3>اطلاعیه‌های اداری</h3><p>محل انتشار اطلاعیه‌های عمومی و رسمی</p></div><span class="news-arrow">↙</span></article>
+          <article><span class="news-date">گزارش</span><div><h3>گزارش‌های عملکرد</h3><p>خلاصه گزارش‌های قابل انتشار و تأییدشده</p></div><span class="news-arrow">↙</span></article>
+          <article><span class="news-date">رسانه</span><div><h3>آرشیو خبرها</h3><p>دسته‌بندی و نگهداری سوابق اطلاع‌رسانی</p></div><span class="news-arrow">↙</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="reports-section section-pad" id="reports">
+      <div class="container reports-layout">
+        <div>
+          <span class="section-index">04 / شفافیت</span>
+          <h2>گزارش‌ها و<br><em>اسناد عمومی</em></h2>
+          <p>گزارش‌های سالانه، اسناد سازمانی قابل انتشار و اطلاعات عمومی در این بخش بایگانی خواهند شد. از انتشار اطلاعات شخصی یا اسناد محرمانه خودداری می‌شود.</p>
+          <span class="pending-note"><i></i> آرشیو در حال آماده‌سازی</span>
+        </div>
+        <div class="document-stack" aria-label="بخش اسناد عمومی">
+          <div class="document-row"><span class="doc-icon">PDF</span><span><strong>گزارش عملکرد</strong><small>نسخه عمومی پس از تأیید</small></span><b>۰۱</b></div>
+          <div class="document-row"><span class="doc-icon">DOC</span><span><strong>اسناد سازمانی</strong><small>نسخه قابل انتشار</small></span><b>۰۲</b></div>
+          <div class="document-row"><span class="doc-icon">INFO</span><span><strong>اطلاعات عمومی</strong><small>راهنمای ارتباط اداری</small></span><b>۰۳</b></div>
+          <div class="archive-foot">PUBLIC DOCUMENTS / ILAM</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-section section-pad" id="contact">
+      <div class="container contact-panel">
+        <div><span class="section-index">05 / ارتباط</span><h2>برای امور اداری،<br><em>از مسیر رسمی اقدام کنید.</em></h2></div>
+        <div class="contact-copy">
+          <p>اطلاعات تماس، نشانی و ساعات پاسخ‌گویی پس از تأیید مرجع مسئول در این بخش درج خواهد شد.</p>
+          <span class="pending-note"><i></i> اطلاعات تماس در انتظار تأیید</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-main">
+      <a class="brand footer-brand" href="#top">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-copy"><strong>هیئت تیراندازی استان ایلام</strong><small>پایگاه اطلاع‌رسانی و امور اداری</small></span>
+      </a>
+      <p>اطلاعات عمومی، شفاف و قابل پیگیری.</p>
+      <a class="back-top" href="#top">بازگشت به بالا ↑</a>
+    </div>
+    <div class="container footer-bottom"><span>© کلیه حقوق این پایگاه محفوظ است.</span><span>ILAM · OFFICIAL INFORMATION PORTAL</span></div>
+  </footer>
+  <script src="script.js" defer></script>
 </body>
 </html>
