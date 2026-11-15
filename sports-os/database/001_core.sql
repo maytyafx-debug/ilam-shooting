@@ -20,7 +20,7 @@ create table if not exists public.sports_tenant_memberships (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.sports_tenants(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
-  role text not null check (role in ('tenant_admin','editor','reviewer','viewer')),
+  role text not null check (role in ('tenant_admin','president','editor','reviewer','viewer')),
   status text not null default 'invited' check (status in ('invited','active','disabled')),
   created_at timestamptz not null default now(),
   unique (tenant_id, user_id)
@@ -333,7 +333,9 @@ using (public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer']
 
 
 -- Annual aggregate athlete statistics only. No person-level athlete records are stored.
+-- Confidential: only the tenant president and tenant administrator can read these reports.
 -- Public small cells (<5) must be suppressed to reduce re-identification risk.
+-- Regardless of suppression, this report table is private to president/admin roles.
 create table if not exists public.sports_aggregate_reports (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.sports_tenants(id) on delete cascade,
@@ -385,13 +387,15 @@ alter table public.sports_historical_medals enable row level security;
 drop policy if exists sports_aggregate_read on public.sports_aggregate_reports;
 create policy sports_aggregate_read
 on public.sports_aggregate_reports for select
-using (status = 'published' or public.sports_is_tenant_member(tenant_id));
+using (
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president'])
+);
 
 drop policy if exists sports_aggregate_insert on public.sports_aggregate_reports;
 create policy sports_aggregate_insert
 on public.sports_aggregate_reports for insert
 with check (
-  public.sports_has_tenant_role(tenant_id, array['tenant_admin','editor'])
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president','editor'])
   and created_by = auth.uid()
   and status = 'draft'
 );
@@ -400,7 +404,7 @@ drop policy if exists sports_aggregate_update on public.sports_aggregate_reports
 create policy sports_aggregate_update
 on public.sports_aggregate_reports for update
 using (
-  public.sports_has_tenant_role(tenant_id, array['tenant_admin','reviewer'])
+  public.sports_has_tenant_role(tenant_id, array['tenant_admin','president','reviewer'])
   or (public.sports_has_tenant_role(tenant_id, array['editor']) and status = 'draft')
 )
 with check (
