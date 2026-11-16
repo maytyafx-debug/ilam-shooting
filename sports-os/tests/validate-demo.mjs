@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog, foundationSpec] = await Promise.all([
+const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog, foundationSpec, supabaseAudit] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
   read("../config/shooting-disciplines.json"),
@@ -15,7 +15,8 @@ const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, core
   read("../../supabase/migrations/003_restrict_analytics_stats_to_admins.sql"),
   read("../MASTER_BLUEPRINT.md"),
   read("../IMPLEMENTATION_BACKLOG.md"),
-  read("../FOUNDATION_SPEC.md")
+  read("../FOUNDATION_SPEC.md"),
+  read("../SUPABASE_READ_ONLY_AUDIT_2026-11-16.md")
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
@@ -77,6 +78,8 @@ assert.ok(foundationSpec.includes("## 3. Role and permission model"));
 assert.ok(foundationSpec.includes("## 4. State machines"));
 assert.ok(foundationSpec.includes("## 6. Minimum acceptance tests"));
 assert.ok(foundationSpec.includes("Guardian sees only the linked minor"));
+assert.ok(supabaseAudit.includes("No database schema, data, policies, functions, credentials or project settings were changed."));
+assert.ok(supabaseAudit.includes("public.record_pageview(p_path text)"));
 assert.ok(!JSON.stringify(tenants).match(/کشتی|والیبال|فوتبال/), "Non-shooting tenants must not be configured.");
 assert.ok(shooting.modules.includes("organization"));
 assert.ok(shooting.modules.includes("historical-honours"));
