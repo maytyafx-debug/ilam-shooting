@@ -1,10 +1,11 @@
-# METATYA Sports OS — Architecture v1
+# METATYA Sports OS — Shooting Sports Architecture v1
 
 ## Product shape
-A SaaS platform with one shared application core and isolated tenant workspaces. Each tenant receives its own public website, theme, domain mapping, organization profile, editors, approved news, public documents, media library, and historical honours archive.
+A modular SaaS platform dedicated to sports shooting. The initial pilot tenant is the Ilam Shooting Board. Future organizational expansion may add other shooting-sport boards and clubs, but this product scope does not include other sports.
 
 ## Tenant model
-- A tenant represents one sports federation/board at a regional or organizational level.
+- A tenant represents a shooting-sport federation/board at a regional or organizational level.
+- The current configuration contains only `ilam-shooting`.
 - Tenant-owned records always include `tenant_id`.
 - Tenant selection in the browser is presentation only. The server must derive and enforce tenant scope from verified host/session membership.
 - No cross-tenant query is permitted by default.
@@ -21,7 +22,7 @@ A SaaS platform with one shared application core and isolated tenant workspaces.
 ## Shared content types
 - `news`, `notice`, `organization`, `honour`, `document`.
 - The honours type is a historical editorial archive, not a live performance database.
-- There are deliberately no competition scheduling, participant registration, athlete performance, score capture, or ranking tables in this foundation.
+- The current public/demo foundation does not yet implement operational competition scheduling, participant registration, athlete performance, score capture, or ranking workflows. These are planned product domains and require separate backend implementation and acceptance tests.
 
 ## Content lifecycle
 `draft → in_review → approved → published → archived`
