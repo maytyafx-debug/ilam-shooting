@@ -14,6 +14,7 @@ This is a planning and acceptance artifact. It does not claim that listed capabi
 | Area | Current evidence | Status |
 |---|---|---|
 | Integrated shooting product blueprint | `sports-os/MASTER_BLUEPRINT.md` committed on the execution branch | DEFINED |
+| Foundation data, role and workflow specification | `sports-os/FOUNDATION_SPEC.md` | DEFINED |
 | Shooting-only pilot tenant config | `sports-os/tenants.json` contains only Ilam shooting | IMPLEMENTED (static configuration) |
 | Shooting discipline catalogue | `sports-os/config/shooting-disciplines.json` | IMPLEMENTED (static catalogue only) |
 | Public demo | Static HTML/CSS/JS, no authenticated backend | IMPLEMENTED (demo only) |
