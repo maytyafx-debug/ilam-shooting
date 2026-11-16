@@ -15,6 +15,12 @@ The discipline catalogue covers air rifle, air pistol, fixed targets, moving tar
 - Admin interface is a UI preview only; it has no authentication, database, persistence, or real publishing capability.
 - No personal data is collected or transmitted.
 
+## Integrated foundation specification
+- `MASTER_BLUEPRINT.md` describes the complete shooting-only product architecture.
+- `FOUNDATION_SPEC.md` defines core entities, scoped role permissions, workflow states, API resource groups, and minimum acceptance tests.
+- `IMPLEMENTATION_BACKLOG.md` records evidence-based implementation status and staged delivery gates.
+- `config/shooting-disciplines.json` is the canonical shooting-only discipline catalogue; it is not a technical rules engine.
+
 ## Run locally
 From the repository root:
 ```bash
