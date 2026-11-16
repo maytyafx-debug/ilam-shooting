@@ -14,6 +14,7 @@ on:
   push:
     branches:
       - "feat/metatya-sports-os-foundation-v1"
+      - "feat/sports-os-shooting-integrated-v1"
     paths:
       - "sports-os/**"
       - "register-athlete.html"
