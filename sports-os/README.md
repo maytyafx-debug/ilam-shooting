@@ -89,3 +89,7 @@ Run `node sports-os/tests/validate-demo.mjs` from the repository root to validat
 - No membership rows existed when checked. Existing admin and analytics records were not modified.
 
 - The existing analytics statistics RPC now checks the signed-in user against the admin table before returning aggregates; anonymous execution of the admin-check RPC is revoked. The matching migration is tracked at `supabase/migrations/003_restrict_analytics_stats_to_admins.sql`.
+
+
+## Next.js application
+A runnable Next.js App Router application now lives directly in this folder. See [README_NEXTJS.md](README_NEXTJS.md) for Node.js requirements, environment variables, setup commands, Supabase configuration, and current validation limits. Run `npm install` from `sports-os/` (not from the repository root).
