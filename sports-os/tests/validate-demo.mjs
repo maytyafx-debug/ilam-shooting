@@ -55,6 +55,10 @@ assert.ok(analyticsMigration.includes("not public.is_admin()"));
 
 const shooting = tenants.tenants.find((t) => t.id === "ilam-shooting");
 assert.ok(shooting);
+assert.equal(tenants.tenants.length, 1, "Shooting edition must contain only the Ilam shooting tenant.");
+assert.equal(tenants.tenants[0].id, "ilam-shooting");
+assert.equal(tenants.tenants[0].sport, "تیراندازی");
+assert.ok(!JSON.stringify(tenants).match(/کشتی|والیبال|فوتبال/), "Non-shooting tenants must not be configured.");
 assert.ok(shooting.modules.includes("organization"));
 assert.ok(shooting.modules.includes("historical-honours"));
 for (const forbidden of ["athlete-registration", "competition-registration", "performance-tracking", "ranking"]) {
