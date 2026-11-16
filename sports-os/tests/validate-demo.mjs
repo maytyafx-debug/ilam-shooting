@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration] = await Promise.all([
+const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
   read("../index.html"),
@@ -11,7 +11,8 @@ const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql,
   read("../database/001_core.sql"),
   read("../database/billing_schema_proposal.sql"),
   read("../../supabase/migrations/002_disable_legacy_membership_rpc.sql"),
-  read("../../supabase/migrations/003_restrict_analytics_stats_to_admins.sql")
+  read("../../supabase/migrations/003_restrict_analytics_stats_to_admins.sql"),
+  read("../MASTER_BLUEPRINT.md")
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
@@ -24,6 +25,12 @@ for (const plan of pricing.plans) {
   assert.ok(Math.abs(plan.termOptions[2].discountPercent - 16.67) < 0.01);
 }
 assert.equal(pricing.pricingStatus, "quote_required");
+assert.ok(masterBlueprint.includes("Scope: Sports shooting administration and management only."));
+assert.ok(masterBlueprint.includes("Talent Identification & Development"));
+assert.ok(masterBlueprint.includes("Competition and result integrity"));
+assert.ok(masterBlueprint.includes("METATYA Sovereign Ownership"));
+assert.ok(masterBlueprint.includes("immutable encrypted backups"));
+assert.ok(masterBlueprint.includes("No merge to main, production deployment"));
 assert.ok(html.includes('id="pricingCards"'));
 assert.ok(html.includes('id="subscription-preview"'));
 assert.ok(appJs.includes('fetch("pricing.json")'));
