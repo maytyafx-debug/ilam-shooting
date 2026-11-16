@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog] = await Promise.all([
+const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog, foundationSpec] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
   read("../config/shooting-disciplines.json"),
@@ -14,7 +14,8 @@ const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, core
   read("../../supabase/migrations/002_disable_legacy_membership_rpc.sql"),
   read("../../supabase/migrations/003_restrict_analytics_stats_to_admins.sql"),
   read("../MASTER_BLUEPRINT.md"),
-  read("../IMPLEMENTATION_BACKLOG.md")
+  read("../IMPLEMENTATION_BACKLOG.md"),
+  read("../FOUNDATION_SPEC.md")
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
@@ -72,6 +73,10 @@ assert.deepEqual(disciplineCatalogue.disciplines.map((d) => d.id), [
 assert.ok(disciplineCatalogue.disciplines.every((d) => d.ruleSetRequired === true));
 assert.ok(backlog.includes("No merge to `main`"));
 assert.ok(backlog.includes("UNREVIEWED"));
+assert.ok(foundationSpec.includes("## 3. Role and permission model"));
+assert.ok(foundationSpec.includes("## 4. State machines"));
+assert.ok(foundationSpec.includes("## 6. Minimum acceptance tests"));
+assert.ok(foundationSpec.includes("Guardian sees only the linked minor"));
 assert.ok(!JSON.stringify(tenants).match(/کشتی|والیبال|فوتبال/), "Non-shooting tenants must not be configured.");
 assert.ok(shooting.modules.includes("organization"));
 assert.ok(shooting.modules.includes("historical-honours"));
