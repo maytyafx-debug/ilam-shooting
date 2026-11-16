@@ -1,7 +1,7 @@
 # METATYA Sports OS — Shooting Sports Architecture v1
 
 ## Product shape
-A modular SaaS platform dedicated to sports shooting. The initial pilot tenant is the Ilam Shooting Board. Future organizational expansion may add other shooting-sport boards and clubs, but this product scope does not include other sports.
+METATYA Sports OS is a modular, multi-discipline sports management platform. This repository is the first implementation and primary working foundation of METATYA Sports OS. It contains two strictly separated layers: (1) Core Sports Layer, providing reusable, discipline-agnostic capabilities for clubs, member profiles, events, results, roles, and auditability; and (2) the Shooting module, containing shooting-specific workflows, terminology, rules, and configuration. The initial pilot tenant is the Ilam Shooting Board. Future sport disciplines must integrate through the shared Core contracts without copying or coupling their domain logic to the Shooting module.
 
 ## Tenant model
 - A tenant represents a shooting-sport federation/board at a regional or organizational level.
@@ -110,3 +110,24 @@ The current web demo is static. The tenant switcher reads `tenants.json`; the ad
 - Setup/onboarding is quoted separately; enterprise scope and premium support require a separate quote.
 - Do not enforce plan entitlements in client JavaScript. The trusted backend must resolve subscription state and entitlements.
 - No payment processor, checkout, automatic charge, or production subscription lifecycle is active in this demo.
+
+
+## Core Sports Layer — repository architecture decision
+
+The management decision is that `ilam-shooting` is not a standalone product. It is the first implementation and primary core repository of **METATYA Sports OS**.
+
+### Module boundaries
+- `src/core-sports/` contains discipline-agnostic contracts, services, Supabase access, authorization, and reusable UI.
+- Shooting-specific rules, event formats, scoring semantics, terminology, and workflows remain in the Shooting module and existing files.
+- Other disciplines integrate through stable Core types and service contracts; they must not import Shooting-specific domain logic.
+- Shared records live in the isolated PostgreSQL schema `sports_core`. Existing `public` objects, including `public.members`, are not modified or reused.
+- Tenant scope and permissions must remain explicit; cross-tenant access is denied by default.
+
+### Shared entities and authorization
+The initial shared entities are `profiles`, `clubs`, `members`, `events`, `results`, and `audit_logs`. RLS is enabled on every table. Admins manage Core records; referees read member/event context and INSERT results only; members read only their own profile, linked member record, and results.
+
+### Supabase API exposure
+Add `sports_core` to Supabase Dashboard → API Settings → Exposed schemas before using PostgREST. The application uses the caller's access token and RLS; a service-role key is never used in browser or request-scoped code.
+
+### Migration safety
+The Core migration is additive and namespaced. It creates objects only in `sports_core`; it does not drop, rename, or alter existing public tables, policies, functions, or migrations. Applying SQL is a separate deployment operation and is not performed by a Git commit.
