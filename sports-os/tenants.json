@@ -1,7 +1,7 @@
 {
   "platform": {
     "name": "METATYA Sports OS",
-    "tagline": "ONE PLATFORM · MANY SPORTS COMMUNITIES",
+    "tagline": "SHOOTING SPORTS MANAGEMENT",
     "locale": "fa-IR",
     "direction": "rtl",
     "demo": true
@@ -15,60 +15,6 @@
       "accent": "#d8b36c",
       "description": "پایگاه عمومی معرفی سازمان، اطلاعیه‌های اداری، گزارش‌های عمومی و آرشیو تاریخی افتخارات تأییدشده.",
       "scopeNotice": "این نمونه فقط برای اطلاع‌رسانی عمومی و امور اداری خنثی است.",
-      "modules": [
-        "organization",
-        "news",
-        "historical-honours",
-        "documents",
-        "media",
-        "contact",
-        "aggregate-reports"
-      ]
-    },
-    {
-      "id": "wrestling-demo",
-      "name": "هیئت کشتی استان نمونه",
-      "sport": "کشتی",
-      "region": "استان نمونه",
-      "accent": "#65c8b2",
-      "description": "درگاه معرفی ساختار سازمانی، اخبار عمومی، سوابق تاریخی افتخارات و اسناد قابل انتشار.",
-      "scopeNotice": "محتوای این محیط صرفاً نمایشی و غیرواقعی است.",
-      "modules": [
-        "organization",
-        "news",
-        "historical-honours",
-        "documents",
-        "media",
-        "contact",
-        "aggregate-reports"
-      ]
-    },
-    {
-      "id": "volleyball-demo",
-      "name": "هیئت والیبال استان نمونه",
-      "sport": "والیبال",
-      "region": "استان نمونه",
-      "accent": "#78a9ef",
-      "description": "وب‌سایت مستقل برای معرفی هیئت، اخبار، آرشیو تاریخی تیم‌ها و افتخارات و اسناد عمومی.",
-      "scopeNotice": "محتوای این محیط صرفاً نمایشی و غیرواقعی است.",
-      "modules": [
-        "organization",
-        "news",
-        "historical-honours",
-        "documents",
-        "media",
-        "contact",
-        "aggregate-reports"
-      ]
-    },
-    {
-      "id": "football-demo",
-      "name": "هیئت فوتبال استان نمونه",
-      "sport": "فوتبال",
-      "region": "استان نمونه",
-      "accent": "#a7c96c",
-      "description": "درگاه محتوایی و اداری برای معرفی ساختار، اخبار، آرشیو تاریخی و ارتباط عمومی.",
-      "scopeNotice": "محتوای این محیط صرفاً نمایشی و غیرواقعی است.",
       "modules": [
         "organization",
         "news",
