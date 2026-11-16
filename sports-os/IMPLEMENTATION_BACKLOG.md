@@ -1,0 +1,94 @@
+# METATYA Sports OS — Integrated Implementation Backlog
+Version: 1.0
+Scope: Shooting sports only; initial pilot: Ilam Shooting Board.
+This is a planning and acceptance artifact. It does not claim that listed capabilities are implemented.
+
+## Status vocabulary
+- DEFINED: requirement and acceptance criteria documented.
+- IMPLEMENTED: code exists in the intended environment.
+- TESTED: defined tests executed and passed.
+- VERIFIED: independent or authorized review confirms evidence.
+- UNREVIEWED: evidence is absent or insufficient.
+
+## Current evidence-based baseline
+| Area | Current evidence | Status |
+|---|---|---|
+| Integrated shooting product blueprint | `sports-os/MASTER_BLUEPRINT.md` committed on the execution branch | DEFINED |
+| Shooting-only pilot tenant config | `sports-os/tenants.json` contains only Ilam shooting | IMPLEMENTED (static configuration) |
+| Shooting discipline catalogue | `sports-os/config/shooting-disciplines.json` | IMPLEMENTED (static catalogue only) |
+| Public demo | Static HTML/CSS/JS, no authenticated backend | IMPLEMENTED (demo only) |
+| Tenant authorization | Requirements documented; no live backend proof | DEFINED / UNREVIEWED |
+| Athlete and guardian registry | Requirements documented; no operational registry | DEFINED |
+| Competition and official results | Requirements documented; no operational workflow | DEFINED |
+| Finance and insurance | Requirements documented; no operational workflow | DEFINED |
+| Security and recovery | Requirements documented; database and restore tests not evidenced | DEFINED / UNREVIEWED |
+| Production deployment | Not authorized or evidenced | UNREVIEWED |
+
+## Work packages and acceptance criteria
+
+### FND-01 — Product scope and governance
+- Keep this product restricted to sports shooting.
+- Pilot tenant is Ilam Shooting Board.
+- Discipline catalogue is versioned and references official rulesets by authority, version and effective date.
+- Product ownership, usage license, technical access and athlete data rights are distinct.
+Acceptance: automated checks reject non-shooting tenants and verify the discipline catalogue.
+
+### FND-02 — Organization and tenancy
+- Model federation, provincial board, county board/committee, club and center.
+- Resolve tenant and organizational scope server-side from authenticated memberships.
+- Deny cross-tenant and cross-unit access by default.
+Acceptance: negative authorization tests prove a user cannot read or change records outside assigned scope.
+
+### FND-03 — Identity and role authorization
+- Support scoped roles for platform owner/operator, federation admin, tenant admin, board official, club admin, coach, referee, expert, finance officer, records officer, reviewer, athlete, guardian and auditor.
+- Every grant records purpose, scope, authorizer, start/end, revocation and audit evidence.
+- Privileged users require MFA.
+Acceptance: role matrix tests cover allowed and denied actions; no browser-only authorization.
+
+### FND-04 — Athlete, guardian and professional records
+- Collect only necessary personal information.
+- Verify guardian relationship and consent where required for minors.
+- Separate sensitive documents from ordinary profile data.
+- Support athlete access, correction requests and scoped access history.
+Acceptance: privacy, consent, correction, retention and access tests pass using synthetic data.
+
+### FND-05 — Competition and result integrity
+- Version rule sets and preserve source authority.
+- Separate entered, provisional, under-review, verified, final, corrected and withdrawn states.
+- Preserve correction history and reason.
+- Require authorized official review and separation of duties.
+Acceptance: workflow and negative permission tests pass; no demo result can be represented as official.
+
+### FND-06 — Finance, insurance and membership
+- Keep payment state server-authoritative.
+- Store provider references and redacted metadata only; never card secrets.
+- Track membership and insurance validity with restricted access.
+Acceptance: reconciliation, webhook signature, idempotency, expiry and access tests pass.
+
+### FND-07 — Facilities and equipment administration
+- Track inventory, custody, maintenance, inspection and service status.
+- Keep this administrative recordkeeping only; no weapon construction, modification or operational-use guidance.
+Acceptance: asset lifecycle, authorization and audit tests pass.
+
+### FND-08 — Talent, training and development
+- Require qualified human review for consequential assessments.
+- Provide documented criteria, correction and appeal paths.
+- Apply additional safeguards for minors.
+Acceptance: human-review and appeal tests pass; no automated high-impact decision.
+
+### FND-09 — Security, privacy, audit and recovery
+- Enforce tenant isolation, least privilege, encryption, secrets separation and audit integrity.
+- Use immutable encrypted backups and isolated restore tests.
+- Require human authorization for risky or irreversible recovery.
+Acceptance: scoped security review, restore evidence, and cross-tenant negative tests pass.
+
+### FND-10 — Pilot readiness
+- Synthetic-data acceptance testing, accessibility, performance, operational runbooks, support training and incident response.
+- Obtain authorized user acceptance and sign-off.
+Acceptance: no production rollout until all critical controls have VERIFIED evidence and owner approval.
+
+## Execution constraints
+- No schema is applied to a live database by this backlog.
+- No merge to `main`, public deployment, domain change, billing activation or third-party data sharing is authorized by this document.
+- Never use real athlete/minor/health/insurance/financial data in the static demo or public repository.
+- Existing SQL proposals require independent review and isolated database tests before use.
