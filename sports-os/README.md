@@ -19,6 +19,7 @@ The discipline catalogue covers air rifle, air pistol, fixed targets, moving tar
 - `MASTER_BLUEPRINT.md` describes the complete shooting-only product architecture.
 - `FOUNDATION_SPEC.md` defines core entities, scoped role permissions, workflow states, API resource groups, and minimum acceptance tests.
 - `IMPLEMENTATION_BACKLOG.md` records evidence-based implementation status and staged delivery gates.
+- `SUPABASE_READ_ONLY_AUDIT_2026-11-16.md` records the existing Ilam Supabase project's schema baseline and security-advisor findings; no live database changes were made.
 - `config/shooting-disciplines.json` is the canonical shooting-only discipline catalogue; it is not a technical rules engine.
 
 ## Run locally
