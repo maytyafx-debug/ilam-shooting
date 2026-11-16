@@ -23,6 +23,7 @@ This is a planning and acceptance artifact. It does not claim that listed capabi
 | Competition and official results | Requirements documented; no operational workflow | DEFINED |
 | Finance and insurance | Requirements documented; no operational workflow | DEFINED |
 | Security and recovery | Requirements documented; database and restore tests not evidenced | DEFINED / UNREVIEWED |
+| Existing Supabase baseline | Read-only audit documented in `sports-os/SUPABASE_READ_ONLY_AUDIT_2026-11-16.md`; live advisor warnings remain open | REVIEW REQUIRED |
 | Production deployment | Not authorized or evidenced | UNREVIEWED |
 
 ## Work packages and acceptance criteria
