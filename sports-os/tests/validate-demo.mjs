@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint] = await Promise.all([
+const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
+  read("../config/shooting-disciplines.json"),
   read("../index.html"),
   read("../app.js"),
   read("../../functions/api/submit.js"),
@@ -12,10 +13,12 @@ const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql,
   read("../database/billing_schema_proposal.sql"),
   read("../../supabase/migrations/002_disable_legacy_membership_rpc.sql"),
   read("../../supabase/migrations/003_restrict_analytics_stats_to_admins.sql"),
-  read("../MASTER_BLUEPRINT.md")
+  read("../MASTER_BLUEPRINT.md"),
+  read("../IMPLEMENTATION_BACKLOG.md")
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
+const disciplineCatalogue = JSON.parse(disciplineText);
 
 assert.deepEqual(pricing.plans.map((p) => p.id), ["basic", "professional", "enterprise"]);
 for (const plan of pricing.plans) {
@@ -58,6 +61,14 @@ assert.ok(shooting);
 assert.equal(tenants.tenants.length, 1, "Shooting edition must contain only the Ilam shooting tenant.");
 assert.equal(tenants.tenants[0].id, "ilam-shooting");
 assert.equal(tenants.tenants[0].sport, "تیراندازی");
+assert.equal(disciplineCatalogue.scope, "shooting-sports-only");
+assert.equal(disciplineCatalogue.status, "catalogue-definition-only");
+assert.deepEqual(disciplineCatalogue.disciplines.map((d) => d.id), [
+  "air-rifle", "air-pistol", "fixed-target", "moving-target", "flying-target-skeet", "sport-bullet-shooting"
+]);
+assert.ok(disciplineCatalogue.disciplines.every((d) => d.ruleSetRequired === true));
+assert.ok(backlog.includes("No merge to `main`"));
+assert.ok(backlog.includes("UNREVIEWED"));
 assert.ok(!JSON.stringify(tenants).match(/کشتی|والیبال|فوتبال/), "Non-shooting tenants must not be configured.");
 assert.ok(shooting.modules.includes("organization"));
 assert.ok(shooting.modules.includes("historical-honours"));
