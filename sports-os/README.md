@@ -1,16 +1,16 @@
-# METATYA Sports OS — Foundation Demo
+# METATYA Sports OS — Shooting Sports Foundation
 
-A multi-tenant, multi-sport public-information and administration portal foundation.
+A shooting-sports-only foundation for the Ilam Shooting Board pilot, designed for federation, club, athlete, coach, referee, competition, records, and administrative workflows.
 
 ## Product boundary
-The foundation provides configurable public websites, organization profiles, verified news, public documents, historical honours archives, media galleries, and content-governance previews. It intentionally excludes operational participation features, event/competition scheduling, athlete enrollment, performance tracking, and ranking calculations for shooting.
+The current deliverable is a static demo plus an integrated shooting-sports architecture blueprint. It does not yet implement live athlete enrollment, competition scheduling, score capture, financial processing, or operational athlete records.
 
-Sport-specific modules must pass a separate safety and legal review before implementation. The demo uses fictional sample content only.
+The discipline catalogue covers air rifle, air pistol, fixed targets, moving targets, flying/clay targets including skeet, and sport bullet-shooting. Rules and eligibility must be validated against the applicable official rule set before production use. The demo uses fictional sample content only.
 
 ## Current implementation
 - Static, responsive RTL Persian product demo.
 - Tenant configuration loaded from `tenants.json`.
-- Sample tenants: Ilam shooting (administrative/public information only), wrestling, volleyball, and football.
+- Single configured pilot tenant: Ilam Shooting Board. No other sport tenants are included.
 - Public content categories are configuration-driven.
 - Admin interface is a UI preview only; it has no authentication, database, persistence, or real publishing capability.
 - No personal data is collected or transmitted.
