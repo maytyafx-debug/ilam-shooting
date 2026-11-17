@@ -13,6 +13,7 @@ const [
   migration,
   securityDoc,
   tenantMigration,
+  rbacMigration,
   services,
   membersApi,
   eventsApi,
@@ -30,6 +31,7 @@ const [
   read("../../supabase/migrations/005_sports_os_namespaced.sql"),
   read("../../SECURITY.md"),
   read("../../supabase/migrations/006_sports_os_tenant_isolation.sql"),
+  read("../../supabase/migrations/007_public_sports_rbac_hardening.sql"),
   read("../lib/core-sports/services.ts"),
   read("../app/api/core-sports/members/route.ts"),
   read("../app/api/core-sports/events/route.ts"),
@@ -59,7 +61,9 @@ assert.ok(logout.includes("auth.signOut()"));
 assert.ok(auth.includes("db.auth.getUser()"));
 assert.ok(auth.includes('["admin", "referee", "member"]'));
 assert.ok(auth.includes("listUserActiveTenants"));
-assert.ok(auth.includes('admin: "admin"'));
+assert.ok(auth.includes('owner: "admin"'));
+assert.ok(auth.includes('referee: "referee"'));
+assert.ok(!auth.includes('athlete: "member"'));
 assert.ok(auth.includes("allowed.includes(role)"));
 assert.ok(auth.includes('.eq("user_id", userId)'));
 assert.ok(auth.includes('.eq("status", "active")'));
@@ -73,6 +77,13 @@ assert.ok(tenantMigration.includes("sports_has_tenant_role"));
 assert.ok(tenantMigration.includes("FOREIGN KEY (member_id,tenant_id)"));
 assert.ok(tenantMigration.includes("FOREIGN KEY (event_id,tenant_id)"));
 assert.ok(tenantMigration.includes("tenant_id is immutable"));
+
+assert.ok(rbacMigration.includes("FORCE ROW LEVEL SECURITY"));
+assert.ok(rbacMigration.includes("REVOKE ALL PRIVILEGES"));
+assert.ok(rbacMigration.includes("FROM PUBLIC, anon, authenticated"));
+assert.ok(rbacMigration.includes("sports_results_insert_admin_referee"));
+assert.ok(rbacMigration.includes("role IN ('owner', 'admin', 'referee')"));
+assert.ok(rbacMigration.includes("sports_prevent_tenant_change"));
 
 assert.match(services, /this\.db\s*\.from\("sports_members"\)/);
 assert.match(services, /this\.db\s*\.from\("sports_events"\)/);
