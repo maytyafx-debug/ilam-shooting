@@ -125,9 +125,14 @@ export default function DashboardPage() {
   }
 
   async function signOut() {
-    await createSupabaseBrowserClient().auth.signOut();
-    router.replace("/login");
-    router.refresh();
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("خروج از حساب انجام نشد.");
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "خروج از حساب انجام نشد.");
+    }
   }
 
   if (!ready) return <main className="shell"><p>در حال بارگذاری پنل...</p></main>;
