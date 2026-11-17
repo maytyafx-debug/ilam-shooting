@@ -111,6 +111,15 @@ export async function requireCoreRole(
     tenantId = activeTenants.tenants[0].id;
   }
 
+  // Make the successful tenant context explicitly non-null for downstream services.
+  if (typeof tenantId !== "string" || tenantId.length === 0) {
+    return {
+      ok: false as const,
+      status: 400,
+      error: "A valid x-tenant-id header is required.",
+    };
+  }
+
   if (
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       tenantId,
