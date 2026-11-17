@@ -35,7 +35,7 @@ assert.ok(migration.includes("ENABLE ROW LEVEL SECURITY"));
 assert.ok(migration.includes("profile_id = (SELECT auth.uid())"));
 assert.ok(migration.includes("recorded_by = (SELECT auth.uid())"));
 assert.ok(migration.includes("sports_results_member_self_read"));
-assert.ok(securityDoc.includes("BLOCKER — multi-tenancy is not yet implemented"));
+assert.ok(securityDoc.includes("IMPLEMENTED IN SOURCE / NOT LIVE-VERIFIED"));
 assert.ok(securityDoc.includes("NOT LIVE-VERIFIED"));
 assert.ok(tenantMigration.includes("sports_tenant_memberships"));
 assert.ok(tenantMigration.includes("sports_current_tenant_id"));
