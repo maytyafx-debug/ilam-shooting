@@ -5,6 +5,7 @@ import { CoreSportsService } from "@/lib/core-sports/services";
 import type { CreateMemberInput } from "@/lib/core-sports/types";
 
 export const runtime = "nodejs";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function GET(request: NextRequest) {
   const tenantId = request.headers.get("x-tenant-id");
@@ -17,7 +18,9 @@ export async function GET(request: NextRequest) {
     console.error("[Sports OS] list members failed:", error);
     return NextResponse.json({ error: "Unable to list members." }, { status: 400 });
   }
-  return NextResponse.json({ members: data });
+  return NextResponse.json({ members: data ?? [] }, {
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -33,8 +36,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (typeof body.full_name !== "string" || !body.full_name.trim() || body.full_name.length > 150) {
-    return NextResponse.json({ error: "Invalid full_name" }, { status: 400 });
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid member data" }, { status: 400 });
+  }
+  if (
+    typeof body.full_name !== "string" ||
+    body.full_name.trim().length < 2 ||
+    body.full_name.trim().length > 150 ||
+    (body.phone != null && (typeof body.phone !== "string" || body.phone.length > 30)) ||
+    (body.sport_type != null && (typeof body.sport_type !== "string" || body.sport_type.length > 120))
+  ) {
+    return NextResponse.json({ error: "Invalid member data" }, { status: 400 });
   }
 
   const { data, error } = await new CoreSportsService(db, auth.tenantId).createMember(body);
