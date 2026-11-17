@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
     console.error("[Sports OS] list members failed:", error);
     return NextResponse.json({ error: "Unable to list members." }, { status: 400 });
   }
-  return NextResponse.json({ members: data ?? [] }, {
+  const visibleMembers = auth.profile.role === "referee"
+    ? (data ?? []).map(({ id, full_name, sport_type }) => ({ id, full_name, sport_type }))
+    : data ?? [];
+
+  return NextResponse.json({ members: visibleMembers }, {
     headers: { "Cache-Control": "private, no-store" },
   });
 }
