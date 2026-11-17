@@ -6,10 +6,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoreEvent, CoreMember } from "@/lib/core-sports/types";
 
 type ApiError = { error?: string };
+type TenantPayload = { tenant?: { id: string; name: string }; error?: string };
 
 export default function DashboardPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [tenantId, setTenantId] = useState("");
+  const [tenantName, setTenantName] = useState("");
   const [members, setMembers] = useState<CoreMember[]>([]);
   const [events, setEvents] = useState<CoreEvent[]>([]);
   const [memberId, setMemberId] = useState("");
@@ -24,26 +27,40 @@ export default function DashboardPage() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function loadData() {
+  async function loadData(activeTenantId: string) {
+    const headers = { "x-tenant-id": activeTenantId };
     const [memberResponse, eventResponse] = await Promise.all([
-      fetch("/api/core-sports/members", { cache: "no-store" }),
-      fetch("/api/core-sports/events", { cache: "no-store" }),
+      fetch("/api/core-sports/members", { cache: "no-store", headers }),
+      fetch("/api/core-sports/events", { cache: "no-store", headers }),
     ]);
+
     if (memberResponse.status === 401 || eventResponse.status === 401) {
       router.replace("/login");
       return;
     }
+
     const memberPayload = await memberResponse.json();
     const eventPayload = await eventResponse.json();
     if (!memberResponse.ok || !eventResponse.ok) {
-      throw new Error((memberPayload as ApiError).error || (eventPayload as ApiError).error || "دریافت اطلاعات ناموفق بود.");
+      const error = new Error(
+        (memberPayload as ApiError).error ||
+        (eventPayload as ApiError).error ||
+        "دریافت اطلاعات ناموفق بود.",
+      );
+      console.error("[Sports OS] dashboard data load failed:", error, {
+        members: memberPayload,
+        events: eventPayload,
+      });
+      throw error;
     }
+
     setMembers(memberPayload.members ?? []);
     setEvents(eventPayload.events ?? []);
   }
 
   useEffect(() => {
     let active = true;
+
     async function init() {
       try {
         const supabase = createSupabaseBrowserClient();
@@ -52,25 +69,52 @@ export default function DashboardPage() {
           router.replace("/login");
           return;
         }
-        await loadData();
+
+        const tenantResponse = await fetch("/api/core-sports/tenant", {
+          cache: "no-store",
+        });
+        const tenantPayload = (await tenantResponse.json()) as TenantPayload;
+        if (!tenantResponse.ok || !tenantPayload.tenant?.id) {
+          throw new Error(tenantPayload.error || "سازمان فعال کاربر مشخص نشد.");
+        }
+
+        if (!active) return;
+        setTenantId(tenantPayload.tenant.id);
+        setTenantName(tenantPayload.tenant.name);
+        await loadData(tenantPayload.tenant.id);
       } catch (error) {
-        if (active) setMessage(error instanceof Error ? error.message : "خطای ارتباط با سرویس");
+        console.error("[Sports OS] dashboard initialization failed:", error);
+        if (active) {
+          setMessage(error instanceof Error ? error.message : "خطای ارتباط با سرویس");
+        }
       } finally {
         if (active) setReady(true);
       }
     }
+
     void init();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [router]);
 
   async function postJson(path: string, body: unknown) {
+    if (!tenantId) throw new Error("سازمان فعال هنوز مشخص نشده است.");
+
     const response = await fetch(path, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-tenant-id": tenantId,
+      },
       body: JSON.stringify(body),
     });
     const payload = await response.json();
-    if (!response.ok) throw new Error((payload as ApiError).error || "عملیات ناموفق بود.");
+    if (!response.ok) {
+      const error = new Error((payload as ApiError).error || "عملیات ناموفق بود.");
+      console.error("[Sports OS] API request failed:", { path, status: response.status, payload });
+      throw error;
+    }
     return payload;
   }
 
@@ -79,13 +123,19 @@ export default function DashboardPage() {
     setBusy(true);
     setMessage("");
     try {
-      await postJson("/api/core-sports/members", { full_name: memberName, sport_type: sportType });
+      await postJson("/api/core-sports/members", {
+        full_name: memberName,
+        sport_type: sportType,
+      });
       setMemberName("");
-      await loadData();
+      await loadData(tenantId);
       setMessage("عضو با موفقیت ثبت شد.");
     } catch (error) {
+      console.error("[Sports OS] member form failed:", error);
       setMessage(error instanceof Error ? error.message : "ثبت عضو ناموفق بود.");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submitEvent(event: FormEvent<HTMLFormElement>) {
@@ -93,14 +143,21 @@ export default function DashboardPage() {
     setBusy(true);
     setMessage("");
     try {
-      await postJson("/api/core-sports/events", { title: eventTitle, sport_type: sportType, event_date: new Date(eventDate).toISOString() });
+      await postJson("/api/core-sports/events", {
+        title: eventTitle,
+        sport_type: sportType,
+        event_date: new Date(eventDate).toISOString(),
+      });
       setEventTitle("");
       setEventDate("");
-      await loadData();
+      await loadData(tenantId);
       setMessage("رویداد با موفقیت ثبت شد.");
     } catch (error) {
+      console.error("[Sports OS] event form failed:", error);
       setMessage(error instanceof Error ? error.message : "ثبت رویداد ناموفق بود.");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submitResult(event: FormEvent<HTMLFormElement>) {
@@ -120,8 +177,11 @@ export default function DashboardPage() {
       setRank("");
       setNotes("");
     } catch (error) {
+      console.error("[Sports OS] result form failed:", error);
       setMessage(error instanceof Error ? error.message : "ثبت نتیجه ناموفق بود.");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function signOut() {
@@ -131,6 +191,7 @@ export default function DashboardPage() {
       router.replace("/login");
       router.refresh();
     } catch (error) {
+      console.error("[Sports OS] sign out failed:", error);
       setMessage(error instanceof Error ? error.message : "خروج از حساب انجام نشد.");
     }
   }
@@ -141,7 +202,10 @@ export default function DashboardPage() {
     <>
       <header className="topbar">
         <div className="shell topbar-inner">
-          <div><div className="brand">METATYA Sports OS</div><small>هسته‌ی مشترک مدیریت ورزش</small></div>
+          <div>
+            <div className="brand">METATYA Sports OS</div>
+            <small>هسته‌ی مشترک مدیریت ورزش{tenantName ? ` — ${tenantName}` : ""}</small>
+          </div>
           <button className="btn secondary" onClick={signOut}>خروج</button>
         </div>
       </header>
@@ -159,7 +223,7 @@ export default function DashboardPage() {
           <form className="form-grid" onSubmit={submitMember}>
             <div className="field"><label htmlFor="member-name">نام و نام خانوادگی</label><input id="member-name" required maxLength={150} value={memberName} onChange={e => setMemberName(e.target.value)} /></div>
             <div className="field"><label htmlFor="member-sport">رشته ورزشی</label><input id="member-sport" value={sportType} onChange={e => setSportType(e.target.value)} /></div>
-            <div className="field full"><button className="btn" disabled={busy}>ثبت عضو</button></div>
+            <div className="field full"><button className="btn" disabled={busy || !tenantId}>ثبت عضو</button></div>
           </form>
         </section>
         <section className="panel">
@@ -167,7 +231,7 @@ export default function DashboardPage() {
           <form className="form-grid" onSubmit={submitEvent}>
             <div className="field"><label htmlFor="event-title">عنوان رویداد</label><input id="event-title" required maxLength={200} value={eventTitle} onChange={e => setEventTitle(e.target.value)} /></div>
             <div className="field"><label htmlFor="event-date">تاریخ و ساعت</label><input id="event-date" type="datetime-local" required value={eventDate} onChange={e => setEventDate(e.target.value)} /></div>
-            <div className="field full"><button className="btn" disabled={busy}>ثبت رویداد</button></div>
+            <div className="field full"><button className="btn" disabled={busy || !tenantId}>ثبت رویداد</button></div>
           </form>
         </section>
         <section className="panel">
@@ -178,7 +242,7 @@ export default function DashboardPage() {
             <div className="field"><label htmlFor="score">امتیاز</label><input id="score" type="number" step="0.001" value={score} onChange={e => setScore(e.target.value)} /></div>
             <div className="field"><label htmlFor="rank">رتبه</label><input id="rank" type="number" min="1" step="1" value={rank} onChange={e => setRank(e.target.value)} /></div>
             <div className="field full"><label htmlFor="notes">توضیحات</label><textarea id="notes" maxLength={2000} value={notes} onChange={e => setNotes(e.target.value)} /></div>
-            <div className="field full"><button className="btn" disabled={busy || members.length === 0 || events.length === 0}>ثبت نتیجه</button></div>
+            <div className="field full"><button className="btn" disabled={busy || !tenantId || members.length === 0 || events.length === 0}>ثبت نتیجه</button></div>
           </form>
           {message && <p className="status" role="status" aria-live="polite">{message}</p>}
         </section>

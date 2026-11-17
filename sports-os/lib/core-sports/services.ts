@@ -2,81 +2,62 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CreateEventInput, CreateMemberInput, CreateResultInput } from "./types";
 
 export class CoreSportsService {
-  private readonly sports;
-
-  constructor(private readonly db: SupabaseClient<any, any, any, any, any>) {
-    this.sports = db.schema("sports_core");
-  }
-
-  private async currentTenantId(): Promise<string> {
-    const { data, error } = await this.sports.rpc("sports_current_tenant_id");
-    if (error || typeof data !== "string") {
-      throw new Error("An authorized active tenant context is required.");
-    }
-    return data;
-  }
+  constructor(
+    private readonly db: SupabaseClient<any, any, any, any, any>,
+    private readonly tenantId: string,
+  ) {}
 
   listMembers() {
-    return this.sports
+    return this.db
       .from("sports_members")
-      .select("id,profile_id,club_id,full_name,membership_number,phone,birth_date,sport_type,status")
+      .select("id,tenant_id,full_name,sport_type,phone,status,created_at")
+      .eq("tenant_id", this.tenantId)
       .order("created_at", { ascending: false });
   }
 
-  async createMember(input: CreateMemberInput) {
-    const tenantId = await this.currentTenantId();
-    return this.sports
+  createMember(input: CreateMemberInput) {
+    return this.db
       .from("sports_members")
       .insert({
-        tenant_id: tenantId,
+        tenant_id: this.tenantId,
         full_name: input.full_name.trim(),
-        club_id: input.club_id ?? null,
-        profile_id: input.profile_id ?? null,
-        membership_number: input.membership_number?.trim() || null,
-        phone: input.phone?.trim() || null,
-        birth_date: input.birth_date || null,
         sport_type: input.sport_type?.trim() || null,
+        phone: input.phone?.trim() || null,
       })
-      .select()
+      .select("id,tenant_id,full_name,sport_type,phone,status,created_at")
       .single();
   }
 
   listEvents() {
-    return this.sports
+    return this.db
       .from("sports_events")
-      .select("id,club_id,title,sport_type,event_date,location,status")
+      .select("id,tenant_id,title,sport_type,event_date,location,status,created_at")
+      .eq("tenant_id", this.tenantId)
       .order("event_date", { ascending: true });
   }
 
-  async createEvent(input: CreateEventInput, userId: string) {
-    const tenantId = await this.currentTenantId();
-    return this.sports
+  createEvent(input: CreateEventInput) {
+    return this.db
       .from("sports_events")
       .insert({
-        tenant_id: tenantId,
+        tenant_id: this.tenantId,
         title: input.title.trim(),
         sport_type: input.sport_type.trim(),
         event_date: input.event_date,
-        club_id: input.club_id ?? null,
-        description: input.description?.trim() || null,
         location: input.location?.trim() || null,
-        created_by: userId,
       })
-      .select()
+      .select("id,tenant_id,title,sport_type,event_date,location,status,created_at")
       .single();
   }
 
-  async createResult(input: CreateResultInput, userId: string) {
-    const tenantId = await this.currentTenantId();
-    const { error } = await this.sports.from("sports_results").insert({
-      tenant_id: tenantId,
+  async createResult(input: CreateResultInput) {
+    return this.db.from("sports_results").insert({
+      tenant_id: this.tenantId,
       event_id: input.event_id,
       member_id: input.member_id,
       score: input.score ?? null,
       rank: input.rank ?? null,
       notes: input.notes?.trim() || null,
-      recorded_by: userId,
     });
-    return { error };
   }
 }

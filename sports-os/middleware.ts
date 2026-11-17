@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const supabase = createServerClient(url, key, {
-    db: { schema: "sports_core" },
+    db: { schema: "public" },
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -22,12 +22,16 @@ export async function middleware(request: NextRequest) {
       setAll(items) {
         items.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
-        items.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        items.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options),
+        );
       },
     },
   });
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (request.nextUrl.pathname === "/" && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
