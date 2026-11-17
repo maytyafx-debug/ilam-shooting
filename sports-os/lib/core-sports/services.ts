@@ -8,6 +8,14 @@ export class CoreSportsService {
     this.sports = db.schema("sports_core");
   }
 
+  private async currentTenantId(): Promise<string> {
+    const { data, error } = await this.sports.rpc("sports_current_tenant_id");
+    if (error || typeof data !== "string") {
+      throw new Error("An authorized active tenant context is required.");
+    }
+    return data;
+  }
+
   listMembers() {
     return this.sports
       .from("sports_members")
@@ -15,10 +23,12 @@ export class CoreSportsService {
       .order("created_at", { ascending: false });
   }
 
-  createMember(input: CreateMemberInput) {
+  async createMember(input: CreateMemberInput) {
+    const tenantId = await this.currentTenantId();
     return this.sports
       .from("sports_members")
       .insert({
+        tenant_id: tenantId,
         full_name: input.full_name.trim(),
         club_id: input.club_id ?? null,
         profile_id: input.profile_id ?? null,
@@ -38,10 +48,12 @@ export class CoreSportsService {
       .order("event_date", { ascending: true });
   }
 
-  createEvent(input: CreateEventInput, userId: string) {
+  async createEvent(input: CreateEventInput, userId: string) {
+    const tenantId = await this.currentTenantId();
     return this.sports
       .from("sports_events")
       .insert({
+        tenant_id: tenantId,
         title: input.title.trim(),
         sport_type: input.sport_type.trim(),
         event_date: input.event_date,
@@ -55,7 +67,9 @@ export class CoreSportsService {
   }
 
   async createResult(input: CreateResultInput, userId: string) {
+    const tenantId = await this.currentTenantId();
     const { error } = await this.sports.from("sports_results").insert({
+      tenant_id: tenantId,
       event_id: input.event_id,
       member_id: input.member_id,
       score: input.score ?? null,
