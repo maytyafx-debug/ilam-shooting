@@ -1,95 +1,188 @@
-# METATYA Sports OS — Shooting Sports Foundation
+# METATYA Sports OS — اپلیکیشن و راهنمای استقرار
 
-A shooting-sports-only foundation for the Ilam Shooting Board pilot, designed for federation, club, athlete, coach, referee, competition, records, and administrative workflows.
+این پوشه شامل اپلیکیشن Next.js محصول METATYA Sports OS است. این برنامه در کنار دمو و پورتال استاتیک ریشه مخزن قرار دارد؛ بنابراین تمام فرمان‌های Node.js باید از همین پوشه اجرا شوند.
 
-## Product boundary
-The current deliverable is a static demo plus an integrated shooting-sports architecture blueprint. It does not yet implement live athlete enrollment, competition scheduling, score capture, financial processing, or operational athlete records.
+## وضعیت فعلی محصول
 
-The discipline catalogue covers air rifle, air pistol, fixed targets, moving targets, flying/clay targets including skeet, and sport bullet-shooting. Rules and eligibility must be validated against the applicable official rule set before production use. The demo uses fictional sample content only.
+- اپلیکیشن بر پایه Next.js App Router است.
+- ورود با Supabase Auth پیاده‌سازی شده است.
+- نشست کاربر با cookie و middleware مدیریت می‌شود.
+- هسته چندمستاجری در SQL با جدول‌های `sports_tenants`، `sports_tenant_memberships`، `sports_members`، `sports_events` و `sports_results` تعریف شده است.
+- فایل `SUPABASE_FINAL_SETUP.sql` نسخه تجمیعی راه‌اندازی این جداول، سیاست‌های RLS، ایندکس‌ها و seed مدیر اولیه است.
+- پنل قابل مشاهده، به‌تنهایی به معنی تکمیل همه گردش‌کارهای عملیاتی یا آمادگی Production نیست.
 
-## Current implementation
-- Static, responsive RTL Persian product demo.
-- Tenant configuration loaded from `tenants.json`.
-- Single configured pilot tenant: Ilam Shooting Board. No other sport tenants are included.
-- Public content categories are configuration-driven.
-- Admin interface is a UI preview only; it has no authentication, database, persistence, or real publishing capability.
-- No personal data is collected or transmitted.
+## نیازمندی‌ها
 
-## Integrated foundation specification
-- `MASTER_BLUEPRINT.md` describes the complete shooting-only product architecture.
-- `FOUNDATION_SPEC.md` defines core entities, scoped role permissions, workflow states, API resource groups, and minimum acceptance tests.
-- `IMPLEMENTATION_BACKLOG.md` records evidence-based implementation status and staged delivery gates.
-- `SUPABASE_READ_ONLY_AUDIT_2026-11-16.md` records the existing Ilam Supabase project's schema baseline and security-advisor findings; no live database changes were made.
-- `config/shooting-disciplines.json` is the canonical shooting-only discipline catalogue; it is not a technical rules engine.
+- Node.js نسخه 20.9 یا جدیدتر
+- npm همراه Node.js
+- پروژه Supabase فعال
+- دسترسی مدیر به Supabase برای تنظیم Auth و اجرای SQL در محیط تازه
 
-## Run locally
-From the repository root:
+## اجرای محلی در Termux یا دسکتاپ
+
+از ریشه مخزن وارد پوشه برنامه شوید:
+
 ```bash
-python -m http.server 8080
+cd sports-os
+npm install
 ```
-Open `http://localhost:8080/sports-os/`.
 
-## Production architecture (next engineering stage)
-1. Tenant-aware API with tenant isolation enforced server-side.
-2. Authentication and role-based authorization (platform owner, tenant admin, editor, reviewer).
-3. PostgreSQL schema with tenant-scoped foreign keys and row-level security.
-4. Media storage with upload validation, malware scanning, and access controls.
-5. Draft/review/publish workflow with immutable audit events.
-6. Backups, restore drills, monitoring, rate limiting, and security testing.
-7. Domain mapping and subscription/billing only after core isolation and security are verified.
+فایل محیط محلی را بسازید:
 
-## Data isolation rules
-Every tenant-owned record must carry a non-null tenant identifier. The server derives tenant scope from verified host/session context, never from an untrusted client-supplied tenant ID alone. Cross-tenant reads and writes must be denied by default and covered by automated tests.
+```bash
+cp .env.example .env.local
+```
 
-## Deployment status
-This folder is a prototype foundation, not a production SaaS service. Do not collect real member, athlete, financial, or sensitive personal data until backend authentication, authorization, privacy, and security controls are implemented and independently tested.
+مقادیر واقعی را در `.env.local` قرار دهید:
 
-## Backend foundation
-- `ARCHITECTURE.md` defines tenant isolation, roles, content lifecycle, and production security requirements.
-- `database/001_core.sql` is a proposed Supabase/PostgreSQL schema with tenant-scoped content, media, memberships, audit records, and RLS policies.
-- The migration has not been applied to any database. Apply it only to a new, dedicated Sports OS project after independent SQL/RLS review and test coverage.
-- Membership provisioning, audit writes, and privileged state transitions must run through trusted server-side functions; never expose a service-role key in browser code.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY
+```
 
+سپس سرور توسعه را اجرا کنید:
 
-## Reporting
-The demo now includes:
-- Annual aggregate statistics by age band and gender (fictional demonstration values only; no individual athlete profiles).
-- Historical medal summaries by provincial, national, Asian, world, and Olympic level, split by gold/silver/bronze.
-- The SQL proposal adds aggregate-only reporting and a structured historical medal archive with tenant-scoped RLS.
-- Public small demographic cells are suppressed below five. Medal entries require official source references before publication.
+```bash
+npm run dev
+```
 
+آدرس محلی: `http://localhost:3000`
 
-## Confidentiality of athlete aggregate reports
-Athlete counts split by age band and gender are private management reports. Only the tenant-scoped `president` and `tenant_admin` roles can read them. Public pages show a locked notice, never the figures. The proposed SQL migration applies this restriction with RLS. This is not active until the migration is reviewed, deployed to a dedicated backend, and tested with real authenticated roles.
+برای توقف سرور از `Ctrl + C` استفاده کنید.
 
+## فرمان‌های کنترل کیفیت
 
-## Subscription and commercial model
-- Commercial model: SaaS subscription plus a separately quoted one-time setup fee.
-- Plans: Basic, Professional, and Enterprise.
-- Terms: 3 months at list price; 6 months with a proposed 8% discount; 12 months priced as 10 months (about 16.67% off).
-- Enterprise, setup, onboarding, customization, and premium support require a scoped quote.
-- Published UI deliberately shows quote-required pricing rather than invented currency amounts.
-- The subscription panel and plan catalogue are demo-only. No checkout, payment processing, automatic renewal, or entitlement enforcement is active.
-- Before production billing: implement server-side subscription state, invoice records, payment-provider webhooks, idempotency, audit logs, cancellation/refund rules, data retention, and tenant-scoped authorization. Never trust browser-supplied payment or tenant status.
-- Subscription expiry must not automatically erase customer content. Apply contract-defined read-only/export/grace-period behavior after legal and operational review.
+همه فرمان‌ها را از پوشه `sports-os/` اجرا کنید:
 
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
 
-## Billing data isolation
-The proposed server-only billing schema is documented in `database/billing_schema_proposal.sql`. It is deliberately outside exposed API schemas, has RLS enabled, and grants no direct billing-table access to browser roles. It is not applied or connected to a payment provider. Only a trusted backend may process subscription state and verified payment events.
+برای اجرای نسخه build‌شده:
 
+```bash
+npm run start
+```
 
-## Demo validation
-Run `node sports-os/tests/validate-demo.mjs` from the repository root to validate tenant configuration, plan terms, UI hooks, and disabled legacy participation pages. This is a static smoke test, not a browser, backend, or RLS security test.
+قبل از انتشار، هر سه کنترل typecheck، lint و build باید بدون خطا تمام شوند. صرفاً روشن‌شدن سرور توسعه، موفقیت build یا آمادگی Production را اثبات نمی‌کند.
 
+## متغیرهای محیطی
 
-## Legacy submission shutdown
-- Old registration and competition pages are informational-only and no longer collect form data.
-- The legacy Cloudflare Pages `/api/submit` handler returns HTTP 410 and does not forward form content to Telegram.
-- The public `submit_membership` RPC was revoked from `PUBLIC`, `anon`, and `authenticated` on the dedicated `ilam-shooting-federation` Supabase project; the matching guarded SQL migration is tracked at `supabase/migrations/002_disable_legacy_membership_rpc.sql`.
-- No membership rows existed when checked. Existing admin and analytics records were not modified.
+| نام | کاربرد |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | آدرس API پروژه Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | کلید عمومی anon یا publishable که برای کلاینت مجاز است |
 
-- The existing analytics statistics RPC now checks the signed-in user against the admin table before returning aggregates; anonymous execution of the admin-check RPC is revoked. The matching migration is tracked at `supabase/migrations/003_restrict_analytics_stats_to_admins.sql`.
+**هرگز** کلید `service_role` یا Secret API Key را در متغیرهای `NEXT_PUBLIC_*` قرار ندهید، در کد مرورگر استفاده نکنید یا در Git commit نکنید. فایل‌های `.env.local` و `.env.*.local` در `.gitignore` قرار دارند.
 
+## استقرار روی Vercel
 
-## Next.js application
-A runnable Next.js App Router application now lives directly in this folder. See [README_NEXTJS.md](README_NEXTJS.md) for Node.js requirements, environment variables, setup commands, Supabase configuration, and current validation limits. Run `npm install` from `sports-os/` (not from the repository root).
+### ۱. آماده‌سازی مخزن
+
+مخزن GitHub:
+
+`https://github.com/maytyafx-debug/ilam-shooting`
+
+اپلیکیشن Next.js در زیرپوشه `sports-os/` است، نه ریشه مخزن. این نکته در تنظیمات Vercel بسیار مهم است.
+
+### ۲. ساخت پروژه در Vercel
+
+1. وارد حساب Vercel شوید.
+2. گزینه **Add New → Project** را انتخاب کنید.
+3. مخزن `maytyafx-debug/ilam-shooting` را Import کنید.
+4. در تنظیمات پروژه، **Root Directory** را روی `sports-os` قرار دهید.
+5. اگر Framework به‌صورت خودکار تشخیص داده نشد، **Next.js** را انتخاب کنید.
+6. تنظیمات Build را به این صورت نگه دارید:
+   - Install Command: `npm install`
+   - Build Command: `npm run build`
+   - Output Directory: مقدار پیش‌فرض Next.js
+7. Node.js را روی نسخه 20.x یا جدیدترِ سازگار با نیازمندی پروژه تنظیم کنید.
+
+### ۳. تعریف Environment Variables
+
+در بخش **Project → Settings → Environment Variables** این دو متغیر را اضافه کنید:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+مقادیر را از Supabase Dashboard → Project Settings → API Keys دریافت کنید. کلید عمومی anon/publishable را استفاده کنید؛ کلید service-role یا secret را وارد نکنید.
+
+متغیرها را برای محیط‌های موردنیاز **Production**، **Preview** و **Development** تعریف کنید. پس از تغییر متغیرها، یک Deployment جدید اجرا کنید تا مقادیر جدید اعمال شوند.
+
+### ۴. تنظیم آدرس‌های احراز هویت در Supabase
+
+در Supabase Dashboard به **Authentication → URL Configuration** بروید:
+
+- **Site URL** را روی دامنه Production که Vercel برای پروژه ایجاد کرده است قرار دهید؛ برای نمونه `https://your-project.vercel.app`.
+- در **Redirect URLs** دامنه Production و دامنه‌های Preview موردنیاز را با الگوی مجاز اضافه کنید.
+- برای تست محلی، `http://localhost:3000/**` را نیز اضافه کنید.
+
+دامنه واقعی پروژه خود را جایگزین مثال‌ها کنید. از بازکردن Redirect URLهای نامحدود یا دامنه‌های ناشناس خودداری کنید.
+
+### ۵. اجرای Deployment
+
+1. روی **Deploy** کلیک کنید.
+2. در بخش Deployments، وضعیت Build و خروجی Build Logs را بررسی کنید.
+3. پس از موفقیت Build، دامنه ایجادشده را باز کنید.
+4. صفحه ورود، ورود با حساب آزمایشی مجاز، انتقال به داشبورد و ماندگاری نشست پس از Refresh را بررسی کنید.
+5. همین بررسی‌ها را روی دامنه نهایی و در مرورگر موبایل نیز انجام دهید.
+
+برای انتشار نسخه Production، شاخه‌ای را که در Vercel به‌عنوان Production Branch انتخاب شده بررسی کنید. شاخه توسعه فعلی این پروژه `feat/sports-os-shooting-integrated-v1` است؛ آن را با شاخه Production اشتباه نگیرید. پیش از تغییر شاخه Production، تغییرات را بازبینی و از طریق فرایند Merge مورد تأیید وارد شاخه انتشار کنید.
+
+## راه‌اندازی Supabase در محیط تازه
+
+فایل `SUPABASE_FINAL_SETUP.sql` یک اسکریپت مستقل و تجمیعی برای ساخت جداول چندمستاجری در schema عمومی `public` است. این فایل دو migration ثبت‌شده را تجمیع می‌کند:
+
+- `20261117090249 — sports_multitenancy_core`
+- `20261117090346 — sports_foreign_key_indexes`
+
+مراحل محیط تازه:
+
+1. ابتدا کاربر مدیر را در Supabase Authentication ایجاد کنید.
+2. از دیتابیس هدف و تنظیمات آن نسخه پشتیبان تهیه کنید.
+3. فایل SQL را باز کنید و فقط مقدار `ADMIN_EMAIL_PLACEHOLDER` را با ایمیل همان کاربر Auth جایگزین کنید.
+4. کل فایل را در SQL Editor همان پروژه تازه اجرا کنید.
+5. خروجی اجرا را بررسی کنید؛ سپس وجود پنج جدول، فعال‌بودن RLS، هشت policy و عضویت مدیر را تأیید کنید.
+
+این seed فقط tenant آزمایشی/پایلوت «هیئت تیراندازی استان ایلام» و عضویت مدیر را ایجاد می‌کند. هیچ ورزشکار، والد، نتیجه، پرداخت، بیمه یا پرونده شخصی ساختگی ایجاد نمی‌شود.
+
+**هشدار برای پروژه Supabase فعلی:** migrationهای چندمستاجری در پروژه فعلی قبلاً ثبت و اجرا شده‌اند. این فایل را برای بار دوم روی همان پروژه اجرا نکنید؛ به‌ویژه seed می‌تواند tenant دیگری بسازد. برای محیط موجود ابتدا migration history و داده‌ها را بررسی کنید.
+
+## محدودیت معماری که پیش از Production باید رفع شود
+
+در نسخه فعلی کد کلاینت و سرور Supabase، گزینه `db.schema` روی `sports_core` تنظیم شده است. اما migrationهای چندمستاجری بالا جداول را در schema عمومی `public` ایجاد می‌کنند. بررسی پروژه Supabase فعلی نیز نشان داد schema `sports_core` در آن وجود ندارد.
+
+بنابراین:
+- موفقیت ورود با Supabase Auth، اتصال داده‌های داشبورد را اثبات نمی‌کند.
+- فایل `SUPABASE_FINAL_SETUP.sql` فقط جداول `public.sports_*` را آماده می‌کند و جایگزین migration مربوط به `sports_core` نیست.
+- پیش از استفاده عملیاتی باید قرارداد دیتابیس برنامه و schema واقعی Supabase یکسان‌سازی شود؛ سپس دسترسی‌های RLS و عملیات خواندن/نوشتن با حساب‌های هر نقش آزمون شوند.
+- تا پایان این بررسی، Deployment را پیش‌نمایش فنی بدانید و اطلاعات واقعی ورزشکاران یا افراد زیر سن قانونی را وارد نکنید.
+
+## ساختار اصلی برنامه
+
+- `app/`: صفحات App Router، صفحه ورود، callback و API routes
+- `lib/supabase/`: کلاینت‌های مرورگر و سرور و مدیریت نشست
+- `lib/core-sports/`: قراردادها و سرویس‌های هسته ورزشی
+- `middleware.ts`: تازه‌سازی نشست و هدایت کاربر
+- `next.config.js`: تنظیمات Next.js و محدودسازی مسیرهای Watchpack در Termux
+- `SUPABASE_FINAL_SETUP.sql`: راه‌اندازی دیتابیس چندمستاجری برای محیط تازه
+
+## امنیت و نگهداری
+
+- دسترسی tenant باید در سمت سرور و با عضویت معتبر کاربر تعیین شود؛ شناسه tenant ارسالی مرورگر به‌تنهایی قابل اعتماد نیست.
+- RLS باید روی همه جدول‌های قابل دسترسی از Data API فعال باشد.
+- برای عملیات مدیریتی حساس، فقط از مسیر سرور مورد اعتماد استفاده شود.
+- قبل از ورود داده واقعی، کنترل دسترسی، جداسازی tenant، ثبت رویدادهای ممیزی، پشتیبان‌گیری و بازیابی آزمایش شوند.
+- داده‌های واقعی ورزشکاران، اطلاعات تماس، سوابق پزشکی، مالی یا بیمه‌ای را تا تکمیل کنترل‌های امنیتی و رضایت‌های لازم وارد نکنید.
+- تغییرات دیتابیس را با migration نسخه‌بندی‌شده انجام دهید؛ از اجرای SQL ناشناخته یا تکراری روی Production خودداری کنید.
+
+## اسناد تکمیلی
+
+- `MASTER_BLUEPRINT.md`: نقشه معماری محصول
+- `FOUNDATION_SPEC.md`: مشخصات هسته و نقش‌ها
+- `IMPLEMENTATION_BACKLOG.md`: وضعیت و مراحل توسعه
+- `ARCHITECTURE.md`: معماری فنی و جداسازی tenant
+- `README_NEXTJS.md`: راهنمای تکمیلی اپلیکیشن Next.js
+- `SUPABASE_READ_ONLY_AUDIT_2026-11-16.md`: ممیزی پایه Supabase
