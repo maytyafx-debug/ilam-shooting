@@ -6,6 +6,20 @@ import type { CreateResultInput } from "@/lib/core-sports/types";
 
 export const runtime = "nodejs";
 
+export async function GET(request: NextRequest) {
+  const tenantId = request.headers.get("x-tenant-id");
+  const db = await createSupabaseServerClient();
+  const auth = await requireCoreRole(db, ["admin", "referee"], tenantId);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const { data, error } = await new CoreSportsService(db, auth.tenantId).listResults();
+  if (error) {
+    console.error("[Sports OS] list results failed:", error);
+    return NextResponse.json({ error: "Unable to list results." }, { status: 400 });
+  }
+  return NextResponse.json({ results: data ?? [] }, { headers: { "Cache-Control": "no-store" } });
+}
+
 export async function POST(request: NextRequest) {
   const tenantId = request.headers.get("x-tenant-id");
   const db = await createSupabaseServerClient();
