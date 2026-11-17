@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
     console.error("[Sports OS] list events failed:", error);
     return NextResponse.json({ error: "Unable to list events." }, { status: 400 });
   }
-  return NextResponse.json({ events: data });
+  return NextResponse.json({ events: data ?? [] }, {
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -33,10 +35,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid event data" }, { status: 400 });
+  }
   if (
-    typeof body.title !== "string" || !body.title.trim() || body.title.length > 200 ||
-    typeof body.sport_type !== "string" || !body.sport_type.trim() ||
-    typeof body.event_date !== "string" || !Number.isFinite(Date.parse(body.event_date))
+    typeof body.title !== "string" ||
+    body.title.trim().length < 2 ||
+    body.title.trim().length > 200 ||
+    typeof body.sport_type !== "string" ||
+    body.sport_type.trim().length < 2 ||
+    body.sport_type.length > 120 ||
+    typeof body.event_date !== "string" ||
+    !Number.isFinite(Date.parse(body.event_date)) ||
+    (body.location != null && (typeof body.location !== "string" || body.location.length > 250))
   ) {
     return NextResponse.json({ error: "Invalid event data" }, { status: 400 });
   }
