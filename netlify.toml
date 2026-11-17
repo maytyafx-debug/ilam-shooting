@@ -1,5 +1,6 @@
 "$schema" = "https://open-api.netlify.com/netlify.schema.json"
 
+# Supabase public client configuration is managed in Netlify site environment variables.
 [build]
   base = "sports-os"
   command = "npm run build"
