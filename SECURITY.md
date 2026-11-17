@@ -54,20 +54,24 @@ Expected policy behavior:
 
 ## 4. Multi-tenancy and organization isolation
 
-**BLOCKER — multi-tenancy is not yet implemented in the operational `sports_core` schema.**
+**IMPLEMENTED IN SOURCE / NOT LIVE-VERIFIED.** Migration `006_sports_os_tenant_isolation.sql` adds a tenant registry and tenant-membership relation to the operational `sports_core` schema.
 
-The current operational model has `sports_clubs` and nullable `club_id` fields, but it has no authoritative tenant-membership relation and no `tenant_id` on operational rows. The current admin/referee policies are role-wide rather than tenant-scoped. Therefore, the current model is suitable only for a single isolated pilot environment; it does **not** prove isolation between multiple clubs or federations.
+- Existing pilot records are mapped to one explicit `ilam-shooting-pilot` tenant. This is a proposed single-pilot backfill, not a verified mapping for any already multi-organization database.
+- Operational clubs, members, events, results and audit logs receive a non-null `tenant_id`.
+- Composite foreign keys bind club, member, event and result references to the same tenant.
+- Tenant memberships carry tenant-scoped roles: `tenant_admin`, `referee`, and `athlete`. Existing profile roles are mapped for the first pilot only.
+- RLS checks active membership and tenant-scoped role. Suspended tenants and disabled/invited memberships do not resolve as an active tenant.
+- The `x-tenant-id` request header selects a tenant context, but the database independently validates membership. The header is never treated as authorization.
+- API handlers require a valid `x-tenant-id`, check active membership and tenant-scoped role, and pass the context to the Supabase server client.
+- Operational write services obtain the authorized tenant ID from the database helper; they do not trust a tenant ID from the JSON body.
+- Tenant ownership is immutable and composite foreign keys prevent cross-tenant references.
+- Tenant membership provisioning remains owner-controlled; authenticated clients have read-only access to membership rows.
 
-Before enabling multiple organizations, implement and test:
-1. A tenant/organization registry and membership table with explicit tenant-scoped roles.
-2. Non-null tenant ownership on every tenant-owned operational row (including members, events, results, files and audit records).
-3. Composite foreign keys or equivalent database constraints preventing cross-tenant references.
-4. RLS predicates that verify both the authenticated user and active membership in the row's tenant.
-5. Server-side tenant resolution and authorization. A tenant ID supplied by a browser is a selector only, never proof of access.
-6. Negative integration tests proving tenant A cannot read, insert, update, delete, reference or infer tenant B records.
-7. A reviewed backfill/bootstrap plan for existing rows before enforcing non-null tenant ownership.
+**Integration limitation:** the browser UI still needs a tenant selector/context and must send `x-tenant-id` on operational API calls. Until that UI flow and its UX are implemented, the APIs intentionally reject requests without a tenant header.
 
-Do not onboard a second club/federation or store its records until this blocker is closed. The separate public `sports_tenants` proposal in `sports-os/database/001_core.sql` is not wired to the current `sports_core` operational tables and must not be treated as an implemented substitute.
+**Migration safety:** migration 006 has been committed as source only. It has NOT been run against Supabase. Before applying it, inspect the target database for existing tenant boundaries and confirm that mapping all current pilot records to one tenant is correct. If the database contains more than one real organization, stop and prepare an explicit row-by-row mapping and backup/restore plan instead of applying the default backfill.
+
+**Remaining verification:** run two-tenant integration tests proving tenant A cannot read, insert, update, delete, reference or infer tenant B records; test suspended tenants, disabled memberships, role changes, audit triggers and service-role boundaries. Until these tests pass against an isolated Supabase test project, multi-tenant production readiness is NOT VERIFIED.
 
 ## 5. Secrets, environment and data handling
 
@@ -83,10 +87,14 @@ Do not onboard a second club/federation or store its records until this blocker 
 | Previous Next.js production build (commit `00620b96a756dccc4696f4e89463f7a84eb6c9ef`) | SUCCESS |
 | Previous TypeScript validation | SUCCESS |
 | Previous demo/legacy validation | SUCCESS |
-| Auth/RBAC source hardening in this review | IMPLEMENTED; CI pending |
-| Static security regression checks in this review | Added; CI pending |
+| Auth/RBAC source hardening | IMPLEMENTED; static CI checks passed |
+| Tenant schema, membership model and tenant-scoped RLS source | IMPLEMENTED IN MIGRATION 006; NOT LIVE-VERIFIED |
+| Tenant-aware API guards and tenant-scoped writes | IMPLEMENTED IN SOURCE; static CI checks passed |
+| Static security regression checks | SUCCESS in GitHub Actions |
 | Live Supabase Auth/RLS integration tests | NOT RUN |
-| Cross-tenant isolation tests | BLOCKED — operational tenant model not implemented |
+| Two-tenant isolation integration tests | NOT RUN — requires isolated Supabase test project and seeded tenants |
+| Browser tenant selector/context | NOT IMPLEMENTED |
+| Production security approval | NOT GRANTED |
 | Production security approval | NOT GRANTED |
 
 ## 7. Pre-production acceptance checklist
@@ -95,8 +103,10 @@ Do not onboard a second club/federation or store its records until this blocker 
 - [ ] Verify exact Auth redirect URLs, email confirmation policy, session expiry and leaked-password protection.
 - [ ] Test admin/referee/member authorization with separate accounts.
 - [ ] Test RLS with anon, authenticated users of each role, and a service-role boundary review.
-- [ ] Verify all tenant isolation tests after implementing the tenant model.
+- [ ] Implement browser tenant selection and send `x-tenant-id` on operational API requests.
+- [ ] Apply migration 006 only after reviewing existing data boundaries and approving the single-pilot backfill.
+- [ ] Verify two-tenant isolation tests, including negative cross-tenant reads and writes.
 - [ ] Verify audit logging, backup/restore, retention and incident response.
 - [ ] Run dependency/security scanning and an independent application/database security review.
 
-**Conclusion:** the current branch contains a hardened single-pilot authentication/RBAC baseline and documented RLS intent. It is not a production security certification and is not multi-tenant ready.
+**Conclusion:** the branch now contains a proposed tenant-aware operational schema, tenant-scoped RLS, API authorization and tenant-scoped write paths. Migration 006 has not been applied, browser tenant selection and live integration tests remain outstanding, and this is not a production security certification.
