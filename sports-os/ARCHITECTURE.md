@@ -22,7 +22,7 @@ METATYA Sports OS is a modular, multi-discipline sports management platform. Thi
 ## Shared content types
 - `news`, `notice`, `organization`, `honour`, `document`.
 - The honours type is a historical editorial archive, not a live performance database.
-- The current public/demo foundation does not yet implement operational competition scheduling, participant registration, athlete performance, score capture, or ranking workflows. These are planned product domains and require separate backend implementation and acceptance tests.
+- The current Next.js pilot implements only basic member records, event records, and score/result capture. It does not yet implement competition entries, official assignments, provisional/final result review, protests, versioned corrections, athlete performance history, or rankings. These require separate backend workflows and acceptance tests.
 
 ## Content lifecycle
 `draft → in_review → approved → published → archived`
@@ -41,8 +41,8 @@ Every transition must be authorized server-side and produce an audit event. Publ
 9. Automated tests for cross-tenant access denial and role boundaries.
 10. Privacy review and retention policy before accepting personal information.
 
-## Current demo limits
-The current web demo is static. The tenant switcher reads `tenants.json`; the admin console is illustrative. There is no login, backend, database, persistent editing, or real tenant security yet. The SQL migration is a proposed foundation only and must be reviewed in an isolated new database before use.
+## Current demo and pilot limits
+The public website remains a static product/demo layer. A separate Next.js pilot application now provides Supabase Auth login, verified tenant selection, and basic member/event/result operations against the active `public.sports_*` tables. The public static demo is not the authenticated management console. The pilot is not production-ready and must use synthetic data until privacy, authorization, backup/restore, and independent security gates pass.
 
 
 ## Reporting modules
@@ -117,17 +117,17 @@ The current web demo is static. The tenant switcher reads `tenants.json`; the ad
 The management decision is that `ilam-shooting` is not a standalone product. It is the first implementation and primary core repository of **METATYA Sports OS**.
 
 ### Module boundaries
-- `src/core-sports/` contains discipline-agnostic contracts, services, Supabase access, authorization, and reusable UI.
+- `sports-os/lib/core-sports/` contains the current discipline-agnostic TypeScript contracts, services, and role guard. The earlier `src/core-sports/` path is not the active Next.js application path.
 - Shooting-specific rules, event formats, scoring semantics, terminology, and workflows remain in the Shooting module and existing files.
 - Other disciplines integrate through stable Core types and service contracts; they must not import Shooting-specific domain logic.
-- Shared records live in the isolated PostgreSQL schema `sports_core`. Existing `public` objects, including `public.members`, are not modified or reused.
+- The intended long-term isolation target is a dedicated Sports OS database/schema. The connected pilot currently uses five `public.sports_*` tables protected by RLS and FORCE RLS. The repository migrations 005/006 describe an older `sports_core` design and are not the active runtime; do not apply them to the connected project.
 - Tenant scope and permissions must remain explicit; cross-tenant access is denied by default.
 
 ### Shared entities and authorization
 The initial shared entities are `profiles`, `clubs`, `members`, `events`, `results`, and `audit_logs`. RLS is enabled on every table. Admins manage Core records; referees read member/event context and INSERT results only; members read only their own profile, linked member record, and results.
 
 ### Supabase API exposure
-Add `sports_core` to Supabase Dashboard → API Settings → Exposed schemas before using PostgREST. The application uses the caller's access token and RLS; a service-role key is never used in browser or request-scoped code.
+The current application uses the Supabase `public` schema and the caller's Auth session; RLS is the final database authorization layer. Do not expose or switch to `sports_core` until a separately reviewed migration and integration test plan is approved. A service-role key is never used in browser or request-scoped code.
 
 ### Migration safety
 The Core migration is additive and namespaced. It creates objects only in `sports_core`; it does not drop, rename, or alter existing public tables, policies, functions, or migrations. Applying SQL is a separate deployment operation and is not performed by a Git commit.
