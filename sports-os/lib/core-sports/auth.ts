@@ -1,9 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CoreRole } from "./types";
 
+const CORE_ROLES: readonly CoreRole[] = ["admin", "referee", "member"];
+
 export async function requireCoreRole(
   db: SupabaseClient<any, any, any, any, any>,
-  allowed: CoreRole[],
+  allowed: readonly CoreRole[],
 ) {
   const { data: { user }, error: userError } = await db.auth.getUser();
   if (userError || !user) {
@@ -19,13 +21,19 @@ export async function requireCoreRole(
   if (profileError || !profile) {
     return { ok: false as const, status: 403, error: "Profile not provisioned" };
   }
-  if (!allowed.includes(profile.role as CoreRole)) {
+
+  const role = profile.role as CoreRole;
+  if (!CORE_ROLES.includes(role) || !allowed.includes(role)) {
     return { ok: false as const, status: 403, error: "Forbidden" };
   }
 
   return {
     ok: true as const,
     user,
-    profile: profile as { id: string; role: CoreRole; full_name: string },
+    profile: {
+      id: profile.id,
+      role,
+      full_name: profile.full_name,
+    },
   };
 }
