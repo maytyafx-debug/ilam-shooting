@@ -27,15 +27,12 @@ export async function GET() {
     );
   }
 
-  if (result.tenants.length > 1) {
-    return NextResponse.json(
-      {
-        error: "More than one active organization is available; an organization must be selected.",
-        tenants: result.tenants,
-      },
-      { status: 409 },
-    );
-  }
-
-  return NextResponse.json({ tenant: result.tenants[0] });
+  // Return the complete, server-verified membership list. The client may choose
+  // one of these tenants, but every API request re-checks membership and role.
+  return NextResponse.json({
+    tenants: result.tenants,
+    tenant: result.tenants.length === 1 ? result.tenants[0] : null,
+  }, {
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }
