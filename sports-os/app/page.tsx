@@ -213,7 +213,7 @@ export default function DashboardPage() {
         if (role === "member") {
           setMessage("پنل شخصی ورزشکار هنوز فعال نشده است؛ دسترسی اطلاعات سازمانی برای این نقش مسدود است.");
         } else {
-          await loadData(selected.id);
+          await loadData(selected.id, role);
         }
       } catch (error) {
         console.error("[Sports OS] dashboard initialization failed:", error);
@@ -265,7 +265,7 @@ export default function DashboardPage() {
         setMessage("پنل شخصی ورزشکار هنوز فعال نشده است؛ دسترسی اطلاعات سازمانی برای این نقش مسدود است.");
         return;
       }
-      await loadData(selected.id);
+      await loadData(selected.id, role);
     } catch (error) {
       console.error("[Sports OS] tenant switch failed:", error);
       setMessage(error instanceof Error ? error.message : "بارگذاری سازمان ناموفق بود.");
