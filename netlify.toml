@@ -1,6 +1,8 @@
 "$schema" = "https://open-api.netlify.com/netlify.schema.json"
 
-# Supabase public client configuration is managed in Netlify site environment variables.
+# The repository contains the Next.js application in sports-os/.
+# Netlify runs the build from that directory; the Next.js plugin serves
+# App Router routes such as / and /login (no SPA fallback rewrite is needed).
 [build]
   base = "sports-os"
   command = "npm run build"
