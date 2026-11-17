@@ -428,16 +428,18 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="shell grid">
-        <section className="page-intro">
-          <div>
-            <h1 className="page-heading">داشبورد مدیریتی</h1>
-            <p className="muted">مدیریت امن اعضا، رویدادها و نتایج ورزشی در محدوده سازمان فعال</p>
-          </div>
-          <button className="btn secondary" onClick={refreshData} disabled={busy || !canRecordResults}>
-            {busy ? "در حال پردازش..." : "به‌روزرسانی"}
-          </button>
-        </section>
+      <main className="shell grid gap-4">
+        {canManage && (
+          <section className="page-intro">
+            <div>
+              <h1 className="page-heading">داشبورد مدیریتی</h1>
+              <p className="muted">مدیریت امن اعضا، رویدادها و نتایج ورزشی در محدوده سازمان فعال</p>
+            </div>
+            <button className="btn secondary" onClick={refreshData} disabled={busy}>
+              {busy ? "در حال پردازش..." : "به‌روزرسانی"}
+            </button>
+          </section>
+        )}
 
         {message && <p className="status" role="status" aria-live="polite">{message}</p>}
 
