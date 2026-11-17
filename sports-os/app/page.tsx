@@ -3,16 +3,26 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { CoreEvent, CoreMember, CoreResult } from "@/lib/core-sports/types";
+import type { CoreEvent, CoreMember, CoreResult, CoreRole } from "@/lib/core-sports/types";
 
 type ApiError = { error?: string };
-type TenantPayload = { tenant?: { id: string; name: string }; error?: string };
+type TenantOption = { id: string; name: string; slug: string; role: string };
+type TenantPayload = { tenant?: TenantOption | null; tenants?: TenantOption[]; error?: string };
+
+function mapRole(role: string): CoreRole {
+  if (role === "owner" || role === "admin") return "admin";
+  if (role === "referee") return "referee";
+  return "member";
+}
 
 export default function DashboardPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [tenantOptions, setTenantOptions] = useState<TenantOption[]>([]);
   const [tenantId, setTenantId] = useState("");
   const [tenantName, setTenantName] = useState("");
+  const [activeRole, setActiveRole] = useState<CoreRole | null>(null);
   const [members, setMembers] = useState<CoreMember[]>([]);
   const [events, setEvents] = useState<CoreEvent[]>([]);
   const [results, setResults] = useState<CoreResult[]>([]);
@@ -22,11 +32,22 @@ export default function DashboardPage() {
   const [rank, setRank] = useState("");
   const [notes, setNotes] = useState("");
   const [memberName, setMemberName] = useState("");
+  const [memberPhone, setMemberPhone] = useState("");
   const [sportType, setSportType] = useState("تیراندازی ورزشی");
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
   const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
+
+  const canManage = activeRole === "admin";
+  const canRecordResults = activeRole === "admin" || activeRole === "referee";
+  const roleLabel = activeRole === "admin"
+    ? "مدیر سازمان"
+    : activeRole === "referee"
+      ? "داور"
+      : activeRole === "member"
+        ? "عضو"
+        : "بدون نقش فعال";
 
   async function loadData(activeTenantId: string) {
     const headers = { "x-tenant-id": activeTenantId };
@@ -36,14 +57,17 @@ export default function DashboardPage() {
       fetch("/api/core-sports/results", { cache: "no-store", headers }),
     ]);
 
-    if (memberResponse.status === 401 || eventResponse.status === 401 || resultResponse.status === 401) {
+    if ([memberResponse, eventResponse, resultResponse].some((response) => response.status === 401)) {
       router.replace("/login");
       return;
     }
 
-    const memberPayload = await memberResponse.json();
-    const eventPayload = await eventResponse.json();
-    const resultPayload = await resultResponse.json();
+    const [memberPayload, eventPayload, resultPayload] = await Promise.all([
+      memberResponse.json(),
+      eventResponse.json(),
+      resultResponse.json(),
+    ]);
+
     if (!memberResponse.ok || !eventResponse.ok || !resultResponse.ok) {
       const error = new Error(
         (memberPayload as ApiError).error ||
@@ -76,18 +100,34 @@ export default function DashboardPage() {
           return;
         }
 
-        const tenantResponse = await fetch("/api/core-sports/tenant", {
-          cache: "no-store",
-        });
+        const tenantResponse = await fetch("/api/core-sports/tenant", { cache: "no-store" });
         const tenantPayload = (await tenantResponse.json()) as TenantPayload;
-        if (!tenantResponse.ok || !tenantPayload.tenant?.id) {
-          throw new Error(tenantPayload.error || "سازمان فعال کاربر مشخص نشد.");
+        if (!tenantResponse.ok) {
+          throw new Error(tenantPayload.error || "سازمان فعالی برای این حساب پیدا نشد.");
         }
 
+        const options = tenantPayload.tenants ?? (tenantPayload.tenant ? [tenantPayload.tenant] : []);
+        if (options.length === 0) {
+          throw new Error("این حساب عضویت فعال در هیچ سازمانی ندارد.");
+        }
         if (!active) return;
-        setTenantId(tenantPayload.tenant.id);
-        setTenantName(tenantPayload.tenant.name);
-        await loadData(tenantPayload.tenant.id);
+
+        setTenantOptions(options);
+        if (options.length === 1) {
+          const selected = options[0];
+          const role = mapRole(selected.role);
+          setTenantId(selected.id);
+          setTenantName(selected.name);
+          setActiveRole(role);
+
+          if (role === "member") {
+            setMessage("پنل شخصی ورزشکار هنوز فعال نشده است؛ دسترسی اطلاعات سازمانی برای این نقش مسدود است.");
+          } else {
+            await loadData(selected.id);
+          }
+        } else {
+          setMessage("برای مشاهده اطلاعات، ابتدا سازمان فعال را انتخاب کنید.");
+        }
       } catch (error) {
         console.error("[Sports OS] dashboard initialization failed:", error);
         if (active) {
@@ -104,8 +144,37 @@ export default function DashboardPage() {
     };
   }, [router]);
 
+  async function changeTenant(nextTenantId: string) {
+    const selected = tenantOptions.find((tenant) => tenant.id === nextTenantId);
+    if (!selected) return;
+
+    setBusy(true);
+    setMessage("");
+    setMembers([]);
+    setEvents([]);
+    setResults([]);
+    setTenantId(selected.id);
+    setTenantName(selected.name);
+
+    const role = mapRole(selected.role);
+    setActiveRole(role);
+
+    try {
+      if (role === "member") {
+        setMessage("پنل شخصی ورزشکار هنوز فعال نشده است؛ دسترسی اطلاعات سازمانی برای این نقش مسدود است.");
+        return;
+      }
+      await loadData(selected.id);
+    } catch (error) {
+      console.error("[Sports OS] tenant switch failed:", error);
+      setMessage(error instanceof Error ? error.message : "بارگذاری سازمان ناموفق بود.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function postJson(path: string, body: unknown) {
-    if (!tenantId) throw new Error("سازمان فعال هنوز مشخص نشده است.");
+    if (!tenantId) throw new Error("سازمان فعال هنوز انتخاب نشده است.");
 
     const response = await fetch(path, {
       method: "POST",
@@ -131,9 +200,11 @@ export default function DashboardPage() {
     try {
       await postJson("/api/core-sports/members", {
         full_name: memberName,
+        phone: memberPhone || null,
         sport_type: sportType,
       });
       setMemberName("");
+      setMemberPhone("");
       await loadData(tenantId);
       setMessage("عضو با موفقیت ثبت شد.");
     } catch (error) {
@@ -149,13 +220,18 @@ export default function DashboardPage() {
     setBusy(true);
     setMessage("");
     try {
+      const parsedDate = new Date(eventDate);
+      if (!Number.isFinite(parsedDate.getTime())) throw new Error("تاریخ رویداد معتبر نیست.");
+
       await postJson("/api/core-sports/events", {
         title: eventTitle,
         sport_type: sportType,
-        event_date: new Date(eventDate).toISOString(),
+        event_date: parsedDate.toISOString(),
+        location: eventLocation || null,
       });
       setEventTitle("");
       setEventDate("");
+      setEventLocation("");
       await loadData(tenantId);
       setMessage("رویداد با موفقیت ثبت شد.");
     } catch (error) {
@@ -180,12 +256,28 @@ export default function DashboardPage() {
       });
       await loadData(tenantId);
       setMessage("نتیجه با موفقیت ثبت شد.");
+      setMemberId("");
+      setEventId("");
       setScore("");
       setRank("");
       setNotes("");
     } catch (error) {
       console.error("[Sports OS] result form failed:", error);
       setMessage(error instanceof Error ? error.message : "ثبت نتیجه ناموفق بود.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function refreshData() {
+    if (!tenantId || !canRecordResults) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      await loadData(tenantId);
+      setMessage("اطلاعات به‌روزرسانی شد.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "به‌روزرسانی ناموفق بود.");
     } finally {
       setBusy(false);
     }
@@ -211,60 +303,200 @@ export default function DashboardPage() {
         <div className="shell topbar-inner">
           <div>
             <div className="brand">METATYA Sports OS</div>
-            <small>هسته‌ی مشترک مدیریت ورزش{tenantName ? ` — ${tenantName}` : ""}</small>
+            <small>هسته مشترک مدیریت ورزش{tenantName ? " — " + tenantName : ""}</small>
           </div>
-          <button className="btn secondary" onClick={signOut}>خروج</button>
+          <div className="topbar-actions">
+            {tenantOptions.length > 1 && (
+              <div className="tenant-switcher">
+                <label htmlFor="active-tenant">سازمان فعال</label>
+                <select
+                  id="active-tenant"
+                  value={tenantId}
+                  disabled={busy}
+                  onChange={(event) => void changeTenant(event.target.value)}
+                >
+                  <option value="">انتخاب سازمان</option>
+                  {tenantOptions.map((tenant) => (
+                    <option key={tenant.id} value={tenant.id}>{tenant.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <span className="role-chip">{roleLabel}</span>
+            <button className="btn secondary" onClick={signOut}>خروج</button>
+          </div>
         </div>
       </header>
+
       <main className="shell grid">
-        <section>
-          <h1 className="page-heading">داشبورد مدیریتی</h1>
-          <p className="muted">مدیریت اعضا، رویدادها و نتایج ورزشی</p>
+        <section className="page-intro">
+          <div>
+            <h1 className="page-heading">داشبورد مدیریتی</h1>
+            <p className="muted">مدیریت امن اعضا، رویدادها و نتایج ورزشی در محدوده سازمان فعال</p>
+          </div>
+          <button className="btn secondary" onClick={refreshData} disabled={busy || !canRecordResults}>
+            {busy ? "در حال پردازش..." : "به‌روزرسانی"}
+          </button>
         </section>
-        <section className="stats">
-          <div className="stat"><span className="muted">اعضای قابل مشاهده</span><strong>{members.length}</strong></div>
-          <div className="stat"><span className="muted">رویدادهای قابل مشاهده</span><strong>{events.length}</strong></div>
-        </section>
-        <section className="panel">
-          <h2 className="section-title">ثبت عضو جدید</h2>
-          <form className="form-grid" onSubmit={submitMember}>
-            <div className="field"><label htmlFor="member-name">نام و نام خانوادگی</label><input id="member-name" required maxLength={150} value={memberName} onChange={e => setMemberName(e.target.value)} /></div>
-            <div className="field"><label htmlFor="member-sport">رشته ورزشی</label><input id="member-sport" value={sportType} onChange={e => setSportType(e.target.value)} /></div>
-            <div className="field full"><button className="btn" disabled={busy || !tenantId}>ثبت عضو</button></div>
-          </form>
-        </section>
-        <section className="panel">
-          <h2 className="section-title">ثبت رویداد جدید</h2>
-          <form className="form-grid" onSubmit={submitEvent}>
-            <div className="field"><label htmlFor="event-title">عنوان رویداد</label><input id="event-title" required maxLength={200} value={eventTitle} onChange={e => setEventTitle(e.target.value)} /></div>
-            <div className="field"><label htmlFor="event-date">تاریخ و ساعت</label><input id="event-date" type="datetime-local" required value={eventDate} onChange={e => setEventDate(e.target.value)} /></div>
-            <div className="field full"><button className="btn" disabled={busy || !tenantId}>ثبت رویداد</button></div>
-          </form>
-        </section>
-        <section className="panel">
-          <h2 className="section-title">ثبت نتیجه رویداد</h2>
-          <form className="form-grid" onSubmit={submitResult}>
-            <div className="field"><label htmlFor="member">ورزشکار / عضو</label><select id="member" required value={memberId} onChange={e => setMemberId(e.target.value)}><option value="">انتخاب عضو</option>{members.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}</select></div>
-            <div className="field"><label htmlFor="event">رویداد</label><select id="event" required value={eventId} onChange={e => setEventId(e.target.value)}><option value="">انتخاب رویداد</option>{events.map(v => <option key={v.id} value={v.id}>{v.title}</option>)}</select></div>
-            <div className="field"><label htmlFor="score">امتیاز</label><input id="score" type="number" step="0.001" value={score} onChange={e => setScore(e.target.value)} /></div>
-            <div className="field"><label htmlFor="rank">رتبه</label><input id="rank" type="number" min="1" step="1" value={rank} onChange={e => setRank(e.target.value)} /></div>
-            <div className="field full"><label htmlFor="notes">توضیحات</label><textarea id="notes" maxLength={2000} value={notes} onChange={e => setNotes(e.target.value)} /></div>
-            <div className="field full"><button className="btn" disabled={busy || !tenantId || members.length === 0 || events.length === 0}>ثبت نتیجه</button></div>
-          </form>
-          {message && <p className="status" role="status" aria-live="polite">{message}</p>}
-        </section>
-        <section className="panel">
-          <h2 className="section-title">فهرست اعضا</h2>
-          {members.length === 0 ? <p className="muted">عضوی ثبت نشده است.</p> : <ul className="list">{members.map(member => <li key={member.id}>{member.full_name} <span className="muted">— {member.sport_type || "رشته ثبت نشده"}</span></li>)}</ul>}
-        </section>
-        <section className="panel">
-          <h2 className="section-title">رویدادها</h2>
-          {events.length === 0 ? <p className="muted">رویدادی ثبت نشده است.</p> : <ul className="list">{events.map(item => <li key={item.id}>{item.title} — {new Date(item.event_date).toLocaleDateString("fa-IR")}</li>)}</ul>}
-        </section>
-        <section className="panel">
-          <h2 className="section-title">نتایج ثبت‌شده</h2>
-          {results.length === 0 ? <p className="muted">هنوز نتیجه‌ای ثبت نشده است.</p> : <div className="table-wrap"><table className="results-table"><thead><tr><th>ورزشکار</th><th>رویداد</th><th>امتیاز</th><th>رتبه</th><th>توضیحات</th><th>تاریخ ثبت</th></tr></thead><tbody>{results.map(result => <tr key={result.id}><td>{members.find(member => member.id === result.member_id)?.full_name ?? "عضو نامشخص"}</td><td>{events.find(item => item.id === result.event_id)?.title ?? "رویداد نامشخص"}</td><td>{result.score ?? "—"}</td><td>{result.rank ?? "—"}</td><td>{result.notes || "—"}</td><td>{new Date(result.created_at).toLocaleDateString("fa-IR")}</td></tr>)}</tbody></table></div>}
-        </section>
+
+        {message && <p className="status" role="status" aria-live="polite">{message}</p>}
+
+        {!tenantId && tenantOptions.length > 1 && (
+          <section className="panel empty-state">
+            <h2 className="section-title">انتخاب سازمان</h2>
+            <p className="muted">این حساب به چند سازمان دسترسی دارد. برای ادامه، سازمان موردنظر را از فهرست بالای صفحه انتخاب کنید.</p>
+          </section>
+        )}
+
+        {tenantId && activeRole === "member" && (
+          <section className="panel empty-state">
+            <h2 className="section-title">پنل شخصی ورزشکار</h2>
+            <p className="muted">این نقش فقط برای دسترسی شخصی طراحی شده است. تا زمان تکمیل اتصال امن حساب کاربری به پرونده ورزشکار، نمایش و ویرایش اطلاعات شخصی غیرفعال می‌ماند.</p>
+          </section>
+        )}
+
+        {tenantId && canRecordResults && (
+          <>
+            <section className="stats">
+              <div className="stat"><span className="muted">اعضای قابل مشاهده</span><strong>{members.length}</strong></div>
+              <div className="stat"><span className="muted">رویدادهای قابل مشاهده</span><strong>{events.length}</strong></div>
+              <div className="stat"><span className="muted">نتایج ثبت‌شده</span><strong>{results.length}</strong></div>
+            </section>
+
+            {canManage && (
+              <section className="panel">
+                <h2 className="section-title">ثبت عضو جدید</h2>
+                <form className="form-grid" onSubmit={submitMember}>
+                  <div className="field">
+                    <label htmlFor="member-name">نام و نام خانوادگی</label>
+                    <input id="member-name" required maxLength={150} value={memberName} onChange={(event) => setMemberName(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="member-phone">شماره تماس (اختیاری)</label>
+                    <input id="member-phone" type="tel" maxLength={30} value={memberPhone} onChange={(event) => setMemberPhone(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="member-sport">رشته ورزشی</label>
+                    <input id="member-sport" maxLength={120} value={sportType} onChange={(event) => setSportType(event.target.value)} />
+                  </div>
+                  <div className="field full">
+                    <button className="btn" disabled={busy || !tenantId}>ثبت عضو</button>
+                  </div>
+                </form>
+              </section>
+            )}
+
+            {canManage && (
+              <section className="panel">
+                <h2 className="section-title">ثبت رویداد جدید</h2>
+                <form className="form-grid" onSubmit={submitEvent}>
+                  <div className="field">
+                    <label htmlFor="event-title">عنوان رویداد</label>
+                    <input id="event-title" required maxLength={200} value={eventTitle} onChange={(event) => setEventTitle(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="event-date">تاریخ و ساعت</label>
+                    <input id="event-date" type="datetime-local" required value={eventDate} onChange={(event) => setEventDate(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="event-location">محل برگزاری (اختیاری)</label>
+                    <input id="event-location" maxLength={250} value={eventLocation} onChange={(event) => setEventLocation(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="event-sport">رشته ورزشی</label>
+                    <input id="event-sport" maxLength={120} value={sportType} onChange={(event) => setSportType(event.target.value)} />
+                  </div>
+                  <div className="field full">
+                    <button className="btn" disabled={busy || !tenantId}>ثبت رویداد</button>
+                  </div>
+                </form>
+              </section>
+            )}
+
+            <section className="panel">
+              <h2 className="section-title">ثبت نتیجه رویداد</h2>
+              {canRecordResults ? (
+                <form className="form-grid" onSubmit={submitResult}>
+                  <div className="field">
+                    <label htmlFor="member">ورزشکار / عضو</label>
+                    <select id="member" required value={memberId} onChange={(event) => setMemberId(event.target.value)}>
+                      <option value="">انتخاب عضو</option>
+                      {members.map((member) => <option key={member.id} value={member.id}>{member.full_name}</option>)}
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="event">رویداد</label>
+                    <select id="event" required value={eventId} onChange={(event) => setEventId(event.target.value)}>
+                      <option value="">انتخاب رویداد</option>
+                      {events.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="score">امتیاز</label>
+                    <input id="score" type="number" min="0" step="0.001" value={score} onChange={(event) => setScore(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="rank">رتبه</label>
+                    <input id="rank" type="number" min="1" step="1" value={rank} onChange={(event) => setRank(event.target.value)} />
+                  </div>
+                  <div className="field full">
+                    <label htmlFor="notes">توضیحات</label>
+                    <textarea id="notes" maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} />
+                  </div>
+                  <div className="field full">
+                    <button className="btn" disabled={busy || members.length === 0 || events.length === 0}>ثبت نتیجه</button>
+                  </div>
+                </form>
+              ) : <p className="muted">دسترسی ثبت نتیجه برای این نقش فعال نیست.</p>}
+            </section>
+
+            <section className="panel">
+              <h2 className="section-title">فهرست اعضا</h2>
+              {members.length === 0
+                ? <p className="muted">عضوی ثبت نشده است.</p>
+                : <ul className="list">{members.map((member) => (
+                    <li key={member.id}>
+                      {member.full_name}
+                      <span className="muted"> — {member.sport_type || "رشته ثبت نشده"}</span>
+                    </li>
+                  ))}</ul>}
+            </section>
+
+            <section className="panel">
+              <h2 className="section-title">رویدادها</h2>
+              {events.length === 0
+                ? <p className="muted">رویدادی ثبت نشده است.</p>
+                : <ul className="list">{events.map((item) => (
+                    <li key={item.id}>
+                      {item.title}
+                      <span className="muted"> — {new Date(item.event_date).toLocaleDateString("fa-IR")}</span>
+                      {item.location && <span className="muted"> — {item.location}</span>}
+                    </li>
+                  ))}</ul>}
+            </section>
+
+            <section className="panel">
+              <h2 className="section-title">نتایج ثبت‌شده</h2>
+              {results.length === 0
+                ? <p className="muted">هنوز نتیجه‌ای ثبت نشده است.</p>
+                : <div className="table-wrap">
+                    <table className="results-table">
+                      <thead><tr><th>ورزشکار</th><th>رویداد</th><th>امتیاز</th><th>رتبه</th><th>توضیحات</th><th>تاریخ ثبت</th></tr></thead>
+                      <tbody>{results.map((result) => (
+                        <tr key={result.id}>
+                          <td>{members.find((member) => member.id === result.member_id)?.full_name ?? "عضو نامشخص"}</td>
+                          <td>{events.find((item) => item.id === result.event_id)?.title ?? "رویداد نامشخص"}</td>
+                          <td>{result.score ?? "—"}</td>
+                          <td>{result.rank ?? "—"}</td>
+                          <td>{result.notes || "—"}</td>
+                          <td>{new Date(result.created_at).toLocaleDateString("fa-IR")}</td>
+                        </tr>
+                      ))}</tbody>
+                    </table>
+                  </div>}
+            </section>
+          </>
+        )}
       </main>
     </>
   );
