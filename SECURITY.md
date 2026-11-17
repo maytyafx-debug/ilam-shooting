@@ -108,9 +108,10 @@ Migrations `007_public_sports_rbac_hardening.sql` and `008_public_sports_rbac_po
 | Check | Result |
 |---|---|
 | Previous Next.js production build (before the current dashboard update) | SUCCESS |
-| Current multi-tenant dashboard build and TypeScript validation | PENDING latest GitHub Actions run |
-| Current static security regression checks | PENDING latest GitHub Actions run |
-| Demo/legacy validation | Previously SUCCESS; re-run in latest workflow |
+| Current multi-tenant dashboard TypeScript validation | SUCCESS in GitHub Actions run #108 |
+| Current Next.js production build | SUCCESS in GitHub Actions run #108 |
+| Current static security regression checks | SUCCESS in GitHub Actions run #108 |
+| Demo/legacy validation and legacy JavaScript syntax | SUCCESS in GitHub Actions run #108 |
 | Auth/RBAC source hardening | IMPLEMENTED; earlier static CI checks passed |
 | Live public-schema RLS, FORCE RLS and grants | LIVE READ-BACK VERIFIED |
 | Live tenant resolution for the existing identity | VERIFIED: original tenant visible; QA tenant not visible |
@@ -120,6 +121,8 @@ Migrations `007_public_sports_rbac_hardening.sql` and `008_public_sports_rbac_po
 | Member self-service / verified account-to-member link | BLOCKED BY DESIGN; NOT IMPLEMENTED |
 | Backup/restore exercise in an isolated environment | NOT EVIDENCED |
 | Independent production security approval | NOT GRANTED |
+
+Latest source validation evidence: [GitHub Actions run #108](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44086200664) — SUCCESS at commit `250a0529597a53636e95fb63759f398909218bd8`. This validates source/build checks only, not live role integration or production security.
 
 ## 7. Pre-production acceptance checklist
 
