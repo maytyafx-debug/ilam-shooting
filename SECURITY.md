@@ -103,21 +103,21 @@ Repository migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_i
 | Check | Result |
 |---|---|
 | Previous Next.js production build (before the current dashboard update) | SUCCESS |
-| Current multi-tenant dashboard TypeScript validation | SUCCESS in GitHub Actions run #108 |
-| Current Next.js production build | SUCCESS in GitHub Actions run #108 |
-| Current static security regression checks | SUCCESS in GitHub Actions run #108 |
-| Demo/legacy validation and legacy JavaScript syntax | SUCCESS in GitHub Actions run #108 |
+| Current multi-tenant dashboard TypeScript validation | SUCCESS in GitHub Actions run #110 |
+| Current Next.js production build | SUCCESS in GitHub Actions run #110 |
+| Current static security regression checks | SUCCESS in GitHub Actions run #110 |
+| Demo/legacy validation and legacy JavaScript syntax | SUCCESS in GitHub Actions run #110 |
 | Auth/RBAC source hardening | IMPLEMENTED; earlier static CI checks passed |
 | Live public-schema RLS, FORCE RLS and grants | LIVE READ-BACK VERIFIED |
 | Live tenant resolution for the existing identity | VERIFIED: original tenant visible; QA tenant not visible |
-| Multi-tenant dashboard selector | IMPLEMENTED; session persistence and stale-response guard included in this revision; CI tracked on the branch workflow |
+| Multi-tenant dashboard selector | IMPLEMENTED; session persistence and stale-response guard included; CI SUCCESS in run #110 |
 | Separate admin/referee/member/Tenant2 Auth accounts | NOT PROVISIONED |
 | Full two-user/two-tenant integration matrix | NOT RUN |
 | Member self-service / verified account-to-member link | BLOCKED BY DESIGN; NOT IMPLEMENTED |
 | Backup/restore exercise in an isolated environment | NOT EVIDENCED |
 | Independent production security approval | NOT GRANTED |
 
-Latest source validation evidence: [GitHub Actions run #108](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44086200664) — SUCCESS at commit `250a0529597a53636e95fb63759f398909218bd8`. This validates source/build checks only, not live role integration or production security.
+Latest source validation evidence: [GitHub Actions run #110](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44088065437) — SUCCESS at commit `dd6bdd46373dec86bc9ece84695c95c1e0f5615c`. This run passed TypeScript validation, Next.js production build, static security regression checks, legacy JavaScript syntax, and demo/legacy validation. This validates source/build checks only, not live role integration or production security.
 
 ## 7. Pre-production acceptance checklist
 
