@@ -74,9 +74,9 @@ assert.ok(tenantMigration.includes("FOREIGN KEY (member_id,tenant_id)"));
 assert.ok(tenantMigration.includes("FOREIGN KEY (event_id,tenant_id)"));
 assert.ok(tenantMigration.includes("tenant_id is immutable"));
 
-assert.ok(services.includes('this.db.from("sports_members")'));
-assert.ok(services.includes('this.db.from("sports_events")'));
-assert.ok(services.includes('this.db.from("sports_results")'));
+assert.match(services, /this\\.db\\s*\\.from\\("sports_members"\\)/);
+assert.match(services, /this\\.db\\s*\\.from\\("sports_events"\\)/);
+assert.match(services, /this\\.db\\s*\\.from\\("sports_results"\\)/);
 assert.ok(services.includes("tenant_id: this.tenantId"));
 assert.ok(!services.includes('rpc("sports_current_tenant_id")'));
 for (const route of [membersApi, eventsApi, resultsApi]) {
