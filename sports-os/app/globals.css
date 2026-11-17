@@ -55,3 +55,19 @@ main { padding: 32px 0 56px; }
 .results-table th, .results-table td { padding: 12px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .results-table th { background: #f7f9fa; font-weight: 700; }
 .results-table tbody tr:hover { background: #fafcfc; }
+
+
+.topbar-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tenant-switcher { display: grid; gap: 4px; min-width: 190px; }
+.tenant-switcher label { color: #e6efed; font-size: 12px; }
+.tenant-switcher select { width: 100%; border: 1px solid #52716c; border-radius: 9px; padding: 8px 10px; background: #173b36; color: white; }
+.tenant-switcher select:disabled { opacity: .6; }
+.role-chip { display: inline-flex; align-items: center; border: 1px solid #52716c; border-radius: 999px; padding: 7px 12px; color: #e6efed; font-size: 13px; white-space: nowrap; }
+.page-intro { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.empty-state { border-style: dashed; }
+@media (max-width: 680px) {
+  .topbar-actions { width: 100%; align-items: stretch; }
+  .tenant-switcher { flex: 1 1 100%; }
+  .page-intro { align-items: stretch; flex-direction: column; }
+  .page-intro .btn { width: 100%; }
+}
