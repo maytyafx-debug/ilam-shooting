@@ -17,6 +17,7 @@ assert.ok(login.includes("router.replace"));
 assert.ok(callback.includes("exchangeCodeForSession"));
 assert.ok(callback.includes('next.startsWith("/")'));
 assert.ok(callback.includes('!next.startsWith("//")'));
+assert.ok(callback.includes("redirectUrl.origin !== requestUrl.origin"));
 assert.ok(callback.includes("auth_callback_failed"));
 assert.ok(middleware.includes('pathname === "/"'));
 assert.ok(middleware.includes("auth.getUser()"));
