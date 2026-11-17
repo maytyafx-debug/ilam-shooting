@@ -18,7 +18,7 @@ This is a planning and acceptance artifact. It does not claim that listed capabi
 | Shooting-only pilot tenant config | `sports-os/tenants.json` contains only Ilam shooting | IMPLEMENTED (static configuration) |
 | Shooting discipline catalogue | `sports-os/config/shooting-disciplines.json` | IMPLEMENTED (static catalogue only) |
 | Public demo | Static HTML/CSS/JS, no authenticated backend | IMPLEMENTED (demo only) |
-| Tenant authorization | Five active `public.sports_*` tables have RLS + FORCE RLS; owner/admin/referee policy set is live; one existing identity was verified to see only its assigned tenant. Full two-user/two-tenant negative tests remain pending. | IMPLEMENTED / PARTIALLY TESTED / UNREVIEWED |
+| Tenant authorization | Five active `public.sports_*` tables have RLS + FORCE RLS; owner/admin/referee policy set is live; one existing identity was verified to see only its assigned tenant. Dashboard selection is session-persisted as a hint, and each operational API request revalidates membership/role. Full two-user/two-tenant negative tests remain pending. | IMPLEMENTED / PARTIALLY TESTED / UNREVIEWED |
 | Identity and role authorization | Supabase Auth session, server-side membership/role guard, admin/referee/member mapping, and multi-tenant selection implemented. Referee/member real-account tests remain pending. | IMPLEMENTED / STATIC-TESTED |
 | Basic member registry | Tenant-scoped member create/list endpoints and dashboard; not yet a complete athlete/guardian registry. | IMPLEMENTED (BASIC) |
 | Basic events and results | Tenant-scoped event and result create/list endpoints; no official competition lifecycle, review, protest, or versioned correction workflow. | IMPLEMENTED (BASIC) / DEFINED (FULL WORKFLOW) |

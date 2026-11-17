@@ -5,13 +5,19 @@ METATYA Sports OS is a modular, multi-discipline sports management platform. Thi
 
 ## Tenant model
 - A tenant represents a shooting-sport federation/board at a regional or organizational level.
+- **Active pilot database contract:** the Next.js application uses `public.sports_tenants`, `public.sports_tenant_memberships`, `public.sports_members`, `public.sports_events`, and `public.sports_results` only.
 - The current configuration contains only `ilam-shooting`.
 - Tenant-owned records always include `tenant_id`.
-- Tenant selection in the browser is presentation only. The server must derive and enforce tenant scope from verified host/session membership.
+- If the authenticated user has multiple active memberships, the dashboard lets them select an organization and remembers the last selection for the current browser session only.
+- The selected ID is sent as `x-tenant-id` on every operational API request. It is a selection hint only: every API route revalidates the authenticated user, active membership, and role server-side.
 - No cross-tenant query is permitted by default.
 - Platform operations and tenant operations use separate authorization paths.
 
 ## Roles
+
+The active pilot currently maps persisted membership roles as follows: `owner`/`admin` → application `admin`; `referee` → `referee`; `coach`/`staff`/`member` → application `member`. The `member` operational self-service view remains blocked until a verified Auth-user-to-athlete/member link is implemented.
+
+The broader target model below is architectural scope, not a claim that every role is implemented in the current pilot.
 - `tenant_admin`: manage tenant profile, memberships through a trusted server workflow, and all tenant content.
 - `president`: tenant-scoped senior role; may access only explicitly authorized aggregate administrative reports, never individual athlete records.
 - `editor`: create and edit draft content and upload proposed media.
@@ -129,5 +135,5 @@ The initial shared entities are `profiles`, `clubs`, `members`, `events`, `resul
 ### Supabase API exposure
 The current application uses the Supabase `public` schema and the caller's Auth session; RLS is the final database authorization layer. Do not expose or switch to `sports_core` until a separately reviewed migration and integration test plan is approved. A service-role key is never used in browser or request-scoped code.
 
-### Migration safety
-The Core migration is additive and namespaced. It creates objects only in `sports_core`; it does not drop, rename, or alter existing public tables, policies, functions, or migrations. Applying SQL is a separate deployment operation and is not performed by a Git commit.
+### Migration and schema safety
+The active runtime is bound to the five `public.sports_*` tables listed above. Repository migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_isolation.sql`, plus the older `src/core-sports/` prototype, describe a legacy `sports_core` design and are **not** the active runtime. Do not apply those legacy migrations to the connected pilot. A Git commit or deployment does not execute SQL; any future schema transition requires a separately reviewed migration, verified backup, explicit approval, and integration tests.

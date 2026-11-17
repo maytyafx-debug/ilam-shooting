@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoreEvent, CoreMember, CoreResult, CoreRole } from "@/lib/core-sports/types";
@@ -8,6 +8,25 @@ import type { CoreEvent, CoreMember, CoreResult, CoreRole } from "@/lib/core-spo
 type ApiError = { error?: string };
 type TenantOption = { id: string; name: string; slug: string; role: string };
 type TenantPayload = { tenant?: TenantOption | null; tenants?: TenantOption[]; error?: string };
+
+const ACTIVE_TENANT_STORAGE_KEY = "metatya-sports-os-active-tenant";
+
+function readStoredTenantId(): string {
+  try {
+    return window.sessionStorage.getItem(ACTIVE_TENANT_STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function persistActiveTenant(tenantId: string | null) {
+  try {
+    if (tenantId) window.sessionStorage.setItem(ACTIVE_TENANT_STORAGE_KEY, tenantId);
+    else window.sessionStorage.removeItem(ACTIVE_TENANT_STORAGE_KEY);
+  } catch {
+    // Storage is a convenience only; the server still verifies every tenant request.
+  }
+}
 
 function mapRole(role: string): CoreRole {
   if (role === "owner" || role === "admin") return "admin";
@@ -17,6 +36,7 @@ function mapRole(role: string): CoreRole {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const tenantLoadSequence = useRef(0);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tenantOptions, setTenantOptions] = useState<TenantOption[]>([]);
@@ -50,23 +70,47 @@ export default function DashboardPage() {
         : "بدون نقش فعال";
 
   async function loadData(activeTenantId: string) {
+    if (!activeTenantId) throw new Error("سازمان فعال هنوز انتخاب نشده است.");
+
+    const requestId = ++tenantLoadSequence.current;
     const headers = { "x-tenant-id": activeTenantId };
-    const [memberResponse, eventResponse, resultResponse] = await Promise.all([
-      fetch("/api/core-sports/members", { cache: "no-store", headers }),
-      fetch("/api/core-sports/events", { cache: "no-store", headers }),
-      fetch("/api/core-sports/results", { cache: "no-store", headers }),
-    ]);
+    let memberResponse: Response;
+    let eventResponse: Response;
+    let resultResponse: Response;
+
+    try {
+      [memberResponse, eventResponse, resultResponse] = await Promise.all([
+        fetch("/api/core-sports/members", { cache: "no-store", headers }),
+        fetch("/api/core-sports/events", { cache: "no-store", headers }),
+        fetch("/api/core-sports/results", { cache: "no-store", headers }),
+      ]);
+    } catch (error) {
+      if (requestId !== tenantLoadSequence.current) return;
+      throw error;
+    }
+
+    if (requestId !== tenantLoadSequence.current) return;
 
     if ([memberResponse, eventResponse, resultResponse].some((response) => response.status === 401)) {
       router.replace("/login");
       return;
     }
 
-    const [memberPayload, eventPayload, resultPayload] = await Promise.all([
-      memberResponse.json(),
-      eventResponse.json(),
-      resultResponse.json(),
-    ]);
+    let memberPayload: any;
+    let eventPayload: any;
+    let resultPayload: any;
+    try {
+      [memberPayload, eventPayload, resultPayload] = await Promise.all([
+        memberResponse.json(),
+        eventResponse.json(),
+        resultResponse.json(),
+      ]);
+    } catch (error) {
+      if (requestId !== tenantLoadSequence.current) return;
+      throw error;
+    }
+
+    if (requestId !== tenantLoadSequence.current) return;
 
     if (!memberResponse.ok || !eventResponse.ok || !resultResponse.ok) {
       const error = new Error(
@@ -76,6 +120,7 @@ export default function DashboardPage() {
         "دریافت اطلاعات ناموفق بود.",
       );
       console.error("[Sports OS] dashboard data load failed:", error, {
+        tenantId: activeTenantId,
         members: memberPayload,
         events: eventPayload,
         results: resultPayload,
@@ -108,25 +153,34 @@ export default function DashboardPage() {
 
         const options = tenantPayload.tenants ?? (tenantPayload.tenant ? [tenantPayload.tenant] : []);
         if (options.length === 0) {
+          persistActiveTenant(null);
           throw new Error("این حساب عضویت فعال در هیچ سازمانی ندارد.");
         }
         if (!active) return;
 
         setTenantOptions(options);
-        if (options.length === 1) {
-          const selected = options[0];
-          const role = mapRole(selected.role);
-          setTenantId(selected.id);
-          setTenantName(selected.name);
-          setActiveRole(role);
+        const storedTenantId = readStoredTenantId();
+        const selected = options.length === 1
+          ? options[0]
+          : options.find((tenant) => tenant.id === storedTenantId) ?? null;
 
-          if (role === "member") {
-            setMessage("پنل شخصی ورزشکار هنوز فعال نشده است؛ دسترسی اطلاعات سازمانی برای این نقش مسدود است.");
-          } else {
-            await loadData(selected.id);
-          }
-        } else {
+        if (!selected) {
+          if (storedTenantId) persistActiveTenant(null);
           setMessage("برای مشاهده اطلاعات، ابتدا سازمان فعال را انتخاب کنید.");
+          return;
+        }
+
+        // Restore only an organization that the server has just verified.
+        persistActiveTenant(selected.id);
+        const role = mapRole(selected.role);
+        setTenantId(selected.id);
+        setTenantName(selected.name);
+        setActiveRole(role);
+
+        if (role === "member") {
+          setMessage("پنل شخصی ورزشکار هنوز فعال نشده است؛ دسترسی اطلاعات سازمانی برای این نقش مسدود است.");
+        } else {
+          await loadData(selected.id);
         }
       } catch (error) {
         console.error("[Sports OS] dashboard initialization failed:", error);
@@ -141,6 +195,7 @@ export default function DashboardPage() {
     void init();
     return () => {
       active = false;
+      tenantLoadSequence.current += 1;
     };
   }, [router]);
 
@@ -148,11 +203,24 @@ export default function DashboardPage() {
     const selected = tenantOptions.find((tenant) => tenant.id === nextTenantId);
     if (!selected) return;
 
+    tenantLoadSequence.current += 1;
+    persistActiveTenant(selected.id);
     setBusy(true);
     setMessage("");
     setMembers([]);
     setEvents([]);
     setResults([]);
+    setMemberId("");
+    setEventId("");
+    setScore("");
+    setRank("");
+    setNotes("");
+    setMemberName("");
+    setMemberPhone("");
+    setSportType("تیراندازی ورزشی");
+    setEventTitle("");
+    setEventDate("");
+    setEventLocation("");
     setTenantId(selected.id);
     setTenantName(selected.name);
 
@@ -173,14 +241,14 @@ export default function DashboardPage() {
     }
   }
 
-  async function postJson(path: string, body: unknown) {
-    if (!tenantId) throw new Error("سازمان فعال هنوز انتخاب نشده است.");
+  async function postJson(path: string, body: unknown, activeTenantId: string) {
+    if (!activeTenantId) throw new Error("سازمان فعال هنوز انتخاب نشده است.");
 
     const response = await fetch(path, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-tenant-id": tenantId,
+        "x-tenant-id": activeTenantId,
       },
       body: JSON.stringify(body),
     });
@@ -198,14 +266,15 @@ export default function DashboardPage() {
     setBusy(true);
     setMessage("");
     try {
+      const activeTenantId = tenantId;
       await postJson("/api/core-sports/members", {
         full_name: memberName,
         phone: memberPhone || null,
         sport_type: sportType,
-      });
+      }, activeTenantId);
       setMemberName("");
       setMemberPhone("");
-      await loadData(tenantId);
+      await loadData(activeTenantId);
       setMessage("عضو با موفقیت ثبت شد.");
     } catch (error) {
       console.error("[Sports OS] member form failed:", error);
@@ -220,6 +289,7 @@ export default function DashboardPage() {
     setBusy(true);
     setMessage("");
     try {
+      const activeTenantId = tenantId;
       const parsedDate = new Date(eventDate);
       if (!Number.isFinite(parsedDate.getTime())) throw new Error("تاریخ رویداد معتبر نیست.");
 
@@ -228,11 +298,11 @@ export default function DashboardPage() {
         sport_type: sportType,
         event_date: parsedDate.toISOString(),
         location: eventLocation || null,
-      });
+      }, activeTenantId);
       setEventTitle("");
       setEventDate("");
       setEventLocation("");
-      await loadData(tenantId);
+      await loadData(activeTenantId);
       setMessage("رویداد با موفقیت ثبت شد.");
     } catch (error) {
       console.error("[Sports OS] event form failed:", error);
@@ -247,14 +317,15 @@ export default function DashboardPage() {
     setBusy(true);
     setMessage("");
     try {
+      const activeTenantId = tenantId;
       await postJson("/api/core-sports/results", {
         member_id: memberId,
         event_id: eventId,
         score: score === "" ? null : Number(score),
         rank: rank === "" ? null : Number(rank),
         notes: notes || null,
-      });
-      await loadData(tenantId);
+      }, activeTenantId);
+      await loadData(activeTenantId);
       setMessage("نتیجه با موفقیت ثبت شد.");
       setMemberId("");
       setEventId("");
@@ -274,7 +345,8 @@ export default function DashboardPage() {
     setBusy(true);
     setMessage("");
     try {
-      await loadData(tenantId);
+      const activeTenantId = tenantId;
+      await loadData(activeTenantId);
       setMessage("اطلاعات به‌روزرسانی شد.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "به‌روزرسانی ناموفق بود.");
@@ -287,6 +359,7 @@ export default function DashboardPage() {
     try {
       const response = await fetch("/api/auth/logout", { method: "POST" });
       if (!response.ok) throw new Error("خروج از حساب انجام نشد.");
+      persistActiveTenant(null);
       router.replace("/login");
       router.refresh();
     } catch (error) {

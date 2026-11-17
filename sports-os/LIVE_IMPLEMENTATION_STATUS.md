@@ -49,8 +49,9 @@ Implemented in `sports-os/`:
 - Supabase Auth password login with SSR cookie sessions.
 - Server-side user and active-membership verification.
 - Role mapping: owner/admin → admin; referee → referee; coach/staff/member → member.
-- Multi-tenant selector when a user has more than one active tenant membership.
-- Tenant context sent to API routes and revalidated against the authenticated user's membership.
+- Multi-tenant selector when a user has more than one active tenant membership; the last authorized selection is remembered for the current browser session only.
+- The selected `tenant_id` is sent as `x-tenant-id` on every operational API request and revalidated against the authenticated user's active membership and role.
+- Tenant changes clear tenant-bound lists and form selections; a request-sequence guard prevents slower responses from a previous tenant overwriting the newly selected tenant.
 - Admin: create and list members, create and list events, create and list results.
 - Referee: read members/events/results and record results only.
 - Member: operational data remains blocked; no unverified profile-to-athlete mapping is assumed.

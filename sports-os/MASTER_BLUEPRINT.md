@@ -1,6 +1,9 @@
 # METATYA Sports OS — Integrated Shooting Sports Blueprint
 Version: 1.0
 Status: Architecture baseline; implementation evidence is tracked separately.
+
+## Current implementation baseline (2026-11-17)
+The active Next.js pilot is connected to the Supabase `public` schema and uses `public.sports_tenants`, `public.sports_tenant_memberships`, `public.sports_members`, `public.sports_events`, and `public.sports_results`. The dashboard supports server-verified organization selection for users with multiple active memberships. The selected tenant ID is sent as `x-tenant-id` to operational API routes, which independently verify membership and role. This is a basic pilot, not implementation of all domains described in this blueprint. Legacy migrations 005/006 for `sports_core` are not part of the runtime and must not be applied to the connected project.
 Scope: Sports shooting administration and management only. This repository work does not cover archery or other sports products.
 
 ## 1. Product mission

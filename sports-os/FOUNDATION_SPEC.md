@@ -2,7 +2,10 @@
 Version: 1.0
 Product scope: sports shooting only.
 Pilot: Ilam Shooting Board.
-Status: DEFINED. This document is not evidence of a running backend.
+Status: DEFINED. This document is the target foundation specification, not evidence that every listed domain or table is deployed.
+
+## Current pilot implementation boundary
+The active Next.js pilot uses Supabase schema `public` and exactly these operational tables: `public.sports_tenants`, `public.sports_tenant_memberships`, `public.sports_members`, `public.sports_events`, and `public.sports_results`. The broader entity catalogue below is a future design specification; its generic entity names are not a description of current database tables. The legacy `sports_core` migrations are not used by the active runtime and must not be applied to the connected pilot.
 
 ## 1. System boundaries
 The platform is divided into bounded domains, but starts as a modular monolith:
