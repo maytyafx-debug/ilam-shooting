@@ -79,7 +79,8 @@ The intended long-term direction is a dedicated, carefully isolated Sports OS da
 
 - Earlier security-hardening CI passed at commit `d5ccc740fb89d8a636ee5835fecd5d92d793c978`.
 - The current update adds multi-tenant selection, role-gated UI, stricter API validation, unified npm test scripts, and documentation reconciliation.
-- The latest GitHub Actions result for the current update must be checked before calling the new changes tested.
+- GitHub Actions run #108 passed at commit `250a0529597a53636e95fb63759f398909218bd8`: dependency install, TypeScript validation, Next.js production build, static security regression checks, legacy JavaScript syntax, and demo/legacy validation all succeeded.
+- Run evidence: https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44086200664
 - `npm test` now runs TypeScript validation, static security checks, and demo/legacy validation.
 - A successful static test/build does not establish live RLS behavior or production readiness.
 
