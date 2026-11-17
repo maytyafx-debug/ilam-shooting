@@ -49,3 +49,9 @@ main { padding: 32px 0 56px; }
   .topbar-inner { align-items: flex-start; flex-direction: column; }
   .panel { padding: 17px; }
 }
+
+.table-wrap { width: 100%; overflow-x: auto; }
+.results-table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 14px; }
+.results-table th, .results-table td { padding: 12px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.results-table th { background: #f7f9fa; font-weight: 700; }
+.results-table tbody tr:hover { background: #fafcfc; }
