@@ -14,6 +14,7 @@ const [
   securityDoc,
   tenantMigration,
   rbacMigration,
+  membershipCleanup,
   services,
   membersApi,
   eventsApi,
@@ -32,6 +33,7 @@ const [
   read("../../SECURITY.md"),
   read("../../supabase/migrations/006_sports_os_tenant_isolation.sql"),
   read("../../supabase/migrations/007_public_sports_rbac_hardening.sql"),
+  read("../../supabase/migrations/008_public_sports_rbac_policy_cleanup.sql"),
   read("../lib/core-sports/services.ts"),
   read("../app/api/core-sports/members/route.ts"),
   read("../app/api/core-sports/events/route.ts"),
@@ -84,6 +86,7 @@ assert.ok(rbacMigration.includes("FROM PUBLIC, anon, authenticated"));
 assert.ok(rbacMigration.includes("sports_results_insert_admin_referee"));
 assert.ok(rbacMigration.includes("role IN ('owner', 'admin', 'referee')"));
 assert.ok(rbacMigration.includes("sports_prevent_tenant_change"));
+assert.ok(membershipCleanup.includes("DROP POLICY IF EXISTS sports_memberships_select_self"));
 
 assert.match(services, /this\.db\s*\.from\("sports_members"\)/);
 assert.match(services, /this\.db\s*\.from\("sports_events"\)/);
