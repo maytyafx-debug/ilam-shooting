@@ -21,7 +21,6 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        // Development diagnostics: preserve the original Supabase error in the browser console.
         console.error("[METATYA AUTH] signInWithPassword failed:", {
           message: error.message,
           name: error.name,
@@ -29,16 +28,19 @@ export default function LoginPage() {
           code: error.code,
           error,
         });
-        setMessage("ورود انجام نشد. جزئیات خطا در کنسول مرورگر ثبت شده است.");
+        setMessage(`Supabase Auth: ${error.message}`);
         return;
       }
 
       router.replace("/");
       router.refresh();
     } catch (caughtError) {
-      // Also expose client initialization, configuration, and unexpected runtime errors.
       console.error("[METATYA AUTH] Login flow threw an exception:", caughtError);
-      setMessage("فرایند ورود با خطا متوقف شد. جزئیات در کنسول مرورگر ثبت شده است.");
+      const detail =
+        caughtError instanceof Error
+          ? caughtError.message
+          : String(caughtError);
+      setMessage(`Login exception: ${detail}`);
     } finally {
       setBusy(false);
     }
