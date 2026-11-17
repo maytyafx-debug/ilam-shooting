@@ -138,10 +138,13 @@ BEGIN
   END IF;
 
   IF EXISTS (
-    SELECT 1 FROM sports_core.sports_tenant_memberships m
+    SELECT 1
+    FROM sports_core.sports_tenant_memberships m
+    JOIN sports_core.sports_tenants t ON t.id=m.tenant_id
     WHERE m.tenant_id=requested_tenant
       AND m.user_id=(SELECT auth.uid())
       AND m.status='active'
+      AND t.status='active'
   ) THEN
     RETURN requested_tenant;
   END IF;
@@ -174,6 +177,7 @@ REVOKE ALL ON FUNCTION sports_core.sports_has_tenant_role(uuid,text[]) FROM PUBL
 GRANT EXECUTE ON FUNCTION sports_core.sports_current_tenant_id() TO authenticated;
 GRANT EXECUTE ON FUNCTION sports_core.sports_has_tenant_role(uuid,text[]) TO authenticated;
 GRANT SELECT ON sports_core.sports_tenants,sports_core.sports_tenant_memberships TO authenticated;
+GRANT ALL ON sports_core.sports_tenants,sports_core.sports_tenant_memberships TO service_role;
 ALTER TABLE sports_core.sports_tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sports_core.sports_tenant_memberships ENABLE ROW LEVEL SECURITY;
 
