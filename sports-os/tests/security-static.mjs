@@ -99,10 +99,20 @@ for (const route of [membersApi, eventsApi, resultsApi]) {
   assert.ok(route.includes("new CoreSportsService(db, auth.tenantId)"));
 }
 assert.ok(tenantApi.includes("listUserActiveTenants"));
-assert.ok(tenantApi.includes("result.tenants.length > 1"));
+assert.ok(tenantApi.includes("tenants: result.tenants"));
+assert.ok(tenantApi.includes("result.tenants.length === 1"));
 assert.ok(dashboard.includes('fetch("/api/core-sports/tenant"'));
 assert.ok(dashboard.includes('"x-tenant-id": activeTenantId'));
 assert.ok(dashboard.includes('"x-tenant-id": tenantId'));
 assert.ok(dashboard.includes("console.error"));
+assert.ok(dashboard.includes('const canManage = activeRole === "admin"'));
+assert.ok(dashboard.includes('const canRecordResults = activeRole === "admin" || activeRole === "referee"'));
+assert.ok(dashboard.includes('activeRole === "member"'));
+assert.ok(dashboard.includes("tenantOptions.length > 1"));
+assert.ok(dashboard.includes("پنل شخصی ورزشکار هنوز فعال نشده است"));
+assert.ok(membersApi.includes("Invalid member data"));
+assert.ok(eventsApi.includes("Invalid event data"));
+assert.ok(resultsApi.includes("UUID_RE.test(body.event_id)"));
+assert.ok(resultsApi.includes("score < 0"));
 
 console.log("METATYA Sports OS static security checks passed.");
