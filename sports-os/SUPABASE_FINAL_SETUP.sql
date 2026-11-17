@@ -261,8 +261,6 @@ grant insert on table
   public.sports_results
 to authenticated;
 
-commit;
-
 -- 8. Idempotent pilot tenant + first administrator seed ----------------------
 -- Create the admin in Supabase Authentication before running this block.
 -- Replace the literal below with that user's exact Auth email address.
@@ -309,6 +307,8 @@ begin
         status = 'active';
 end;
 $seed$;
+
+commit;
 
 -- No athlete, guardian, payment, insurance, competition or result records are
 -- seeded. Real operational records must be entered only after their workflows,
