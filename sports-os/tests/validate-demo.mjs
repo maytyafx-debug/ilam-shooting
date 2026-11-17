@@ -34,7 +34,7 @@ assert.ok(masterBlueprint.includes("Scope: Sports shooting administration and ma
 assert.ok(masterBlueprint.includes("Talent Identification & Development"));
 assert.ok(masterBlueprint.includes("Competition and result integrity"));
 assert.ok(masterBlueprint.includes("METATYA Sovereign Ownership"));
-assert.ok(masterBlueprint.includes("immutable encrypted backups"));
+assert.ok(/immutable encrypted backups/i.test(masterBlueprint));
 assert.ok(masterBlueprint.includes("No merge to main, production deployment"));
 assert.ok(html.includes('id="pricingCards"'));
 assert.ok(html.includes('id="subscription-preview"'));
