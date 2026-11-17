@@ -41,3 +41,14 @@ export interface CreateResultInput {
   rank?: number | null;
   notes?: string | null;
 }
+
+export interface CoreResult {
+  id: string;
+  tenant_id: string;
+  event_id: string;
+  member_id: string;
+  score: number | null;
+  rank: number | null;
+  notes: string | null;
+  created_at: string;
+}
