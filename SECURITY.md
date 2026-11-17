@@ -52,6 +52,26 @@ Expected policy behavior:
 
 **BLOCKER / NOT LIVE-VERIFIED:** the migration is repository source, not proof that it has been applied to the target Supabase project. Verify migration history, effective grants, policies, function ownership and RLS behavior in the target project before using real data. Do not apply migrations automatically as part of deployment.
 
+### Live pilot database RBAC — public schema
+
+**LIVE-APPLIED AND READ-VERIFIED: 2026-11-17.** The running Next.js pilot uses the five `public.sports_*` tables through the Supabase `public` schema. This is distinct from the proposed `sports_core` schema described in migrations 005 and 006.
+
+Migrations `007_public_sports_rbac_hardening.sql` and `008_public_sports_rbac_policy_cleanup.sql` were applied to the connected pilot project.
+
+- RLS is enabled and **FORCED** on `sports_tenants`, `sports_tenant_memberships`, `sports_members`, `sports_events`, and `sports_results`.
+- Table privileges for `PUBLIC` and `anon` were revoked on those five tables.
+- `authenticated` has only SELECT on tenant and self-membership tables; operational tables have SELECT/INSERT/UPDATE/DELETE grants, constrained by RLS. No client role has TRUNCATE, REFERENCES, or TRIGGER privileges on these tables.
+- `owner` and `admin`: read and manage operational member, event, and result records within their active tenant.
+- `referee`: read members/events/results and insert results only; cannot create or alter members/events, or update/delete results.
+- `coach`, `staff`, and `member`: no direct operational-row access is granted by the current policy set. Athlete self-service remains blocked until a verified Auth-user-to-member-record link and dedicated self-row policies exist.
+- Tenant membership rows are self-readable only. Tenant context still requires an active membership; a request header is not authorization.
+- A database trigger rejects changes to `tenant_id` on member, event, and result rows.
+- Tenant membership provisioning remains owner-controlled; clients receive no membership write privileges.
+
+**Live verification:** all five tables report both RLS enabled and FORCE enabled. The active admin session was simulated under the `authenticated` database role and could read exactly one tenant, membership, member, event, and result. Negative privilege checks confirmed that `anon` cannot read/insert and `authenticated` cannot TRUNCATE or create triggers. The existing pilot row counts remained unchanged (one row in each of the five tables).
+
+**Remaining verification:** no referee or member test identity is currently provisioned, so their positive/negative row-level behavior still needs dedicated test accounts in an isolated test project. This is not production security certification.
+
 ## 4. Multi-tenancy and organization isolation
 
 **IMPLEMENTED IN SOURCE / NOT LIVE-VERIFIED.** Migration `006_sports_os_tenant_isolation.sql` adds a tenant registry and tenant-membership relation to the operational `sports_core` schema.
