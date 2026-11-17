@@ -10,7 +10,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 export async function GET(request: NextRequest) {
   const tenantId = request.headers.get("x-tenant-id");
   const db = await createSupabaseServerClient();
-  const auth = await requireCoreRole(db, ["admin", "referee"], tenantId);
+  const auth = await requireCoreRole(db, ["admin"], tenantId);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const { data, error } = await new CoreSportsService(db, auth.tenantId).listResults();
