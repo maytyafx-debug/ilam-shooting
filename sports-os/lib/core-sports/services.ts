@@ -4,7 +4,7 @@ import type { CreateEventInput, CreateMemberInput, CreateResultInput } from "./t
 export class CoreSportsService {
   private readonly sports;
 
-  constructor(private readonly db: SupabaseClient) {
+  constructor(private readonly db: SupabaseClient<any, any, any, any, any>) {
     this.sports = db.schema("sports_core");
   }
 

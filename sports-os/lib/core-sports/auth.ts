@@ -1,7 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CoreRole } from "./types";
 
-export async function requireCoreRole(db: SupabaseClient, allowed: CoreRole[]) {
+export async function requireCoreRole(
+  db: SupabaseClient<any, any, any, any, any>,
+  allowed: CoreRole[],
+) {
   const { data: { user }, error: userError } = await db.auth.getUser();
   if (userError || !user) {
     return { ok: false as const, status: 401, error: "Unauthenticated" };
