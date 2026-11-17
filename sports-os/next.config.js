@@ -11,11 +11,18 @@ const nextConfig = {
   // under /data/data/com.termux/files/home.
   webpack(config) {
     const currentIgnored = config.watchOptions?.ignored;
-    const ignored = Array.isArray(currentIgnored)
+    const inheritedIgnored = Array.isArray(currentIgnored)
       ? currentIgnored
       : currentIgnored
         ? [currentIgnored]
         : [];
+
+    // Next.js/webpack may provide an empty inherited pattern. Webpack rejects
+    // empty strings in watchOptions.ignored, so retain only valid non-empty
+    // string globs before adding the Termux exclusions.
+    const ignored = inheritedIgnored.filter(
+      (pattern) => typeof pattern === "string" && pattern.trim().length > 0
+    );
 
     config.watchOptions = {
       ...config.watchOptions,
