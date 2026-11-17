@@ -8,7 +8,6 @@ const TENANT_ROLE_TO_CORE: Record<string, CoreRole> = {
   referee: "referee",
   staff: "member",
   coach: "member",
-  athlete: "member",
   member: "member",
 };
 
