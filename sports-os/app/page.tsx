@@ -46,6 +46,10 @@ export default function DashboardPage() {
   const [members, setMembers] = useState<CoreMember[]>([]);
   const [events, setEvents] = useState<CoreEvent[]>([]);
   const [results, setResults] = useState<CoreResult[]>([]);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberSportFilter, setMemberSportFilter] = useState("all");
+  const [eventSearch, setEventSearch] = useState("");
+  const [eventStatusFilter, setEventStatusFilter] = useState("all");
   const [memberId, setMemberId] = useState("");
   const [eventId, setEventId] = useState("");
   const [score, setScore] = useState("");
@@ -68,6 +72,29 @@ export default function DashboardPage() {
       : activeRole === "member"
         ? "عضو"
         : "بدون نقش فعال";
+
+  const normalizedMemberSearch = memberSearch.trim().toLocaleLowerCase();
+  const filteredMembers = members.filter((member) => {
+    const matchesSearch = !normalizedMemberSearch ||
+      member.full_name.toLocaleLowerCase().includes(normalizedMemberSearch) ||
+      (member.phone ?? "").toLocaleLowerCase().includes(normalizedMemberSearch);
+    const matchesSport = memberSportFilter === "all" || (member.sport_type ?? "") === memberSportFilter;
+    return matchesSearch && matchesSport;
+  });
+  const availableSports = Array.from(new Set(members.map((member) => member.sport_type).filter((sport): sport is string => Boolean(sport))));
+  const normalizedEventSearch = eventSearch.trim().toLocaleLowerCase();
+  const filteredEvents = events.filter((item) => {
+    const matchesSearch = !normalizedEventSearch ||
+      item.title.toLocaleLowerCase().includes(normalizedEventSearch) ||
+      (item.location ?? "").toLocaleLowerCase().includes(normalizedEventSearch);
+    const matchesStatus = eventStatusFilter === "all" || item.status === eventStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+  const chartEvents = [...events]
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .slice(-6)
+    .map((item) => ({ ...item, resultCount: results.filter((result) => result.event_id === item.id).length }));
+  const chartMax = Math.max(1, ...chartEvents.map((item) => item.resultCount));
 
   async function loadData(activeTenantId: string) {
     if (!activeTenantId) throw new Error("سازمان فعال هنوز انتخاب نشده است.");
@@ -430,11 +457,54 @@ export default function DashboardPage() {
 
         {tenantId && canRecordResults && (
           <>
-            <section className="stats">
-              <div className="stat"><span className="muted">اعضای قابل مشاهده</span><strong>{members.length}</strong></div>
-              <div className="stat"><span className="muted">رویدادهای قابل مشاهده</span><strong>{events.length}</strong></div>
-              <div className="stat"><span className="muted">نتایج ثبت‌شده</span><strong>{results.length}</strong></div>
-            </section>
+            {canManage && (
+              <>
+                <section className="stats">
+                  <article className="stat stat-members">
+                    <span className="stat-icon" aria-hidden="true">♙</span>
+                    <span className="muted">Total Members · اعضا</span>
+                    <strong>{members.length.toLocaleString("fa-IR")}</strong>
+                    <small>اعضای ثبت‌شده در سازمان فعال</small>
+                  </article>
+                  <article className="stat stat-events">
+                    <span className="stat-icon" aria-hidden="true">▦</span>
+                    <span className="muted">Total Events · رویدادها</span>
+                    <strong>{events.length.toLocaleString("fa-IR")}</strong>
+                    <small>رویدادهای قابل مشاهده</small>
+                  </article>
+                  <article className="stat stat-results">
+                    <span className="stat-icon" aria-hidden="true">▤</span>
+                    <span className="muted">Total Results · نتایج</span>
+                    <strong>{results.length.toLocaleString("fa-IR")}</strong>
+                    <small>نتایج ثبت‌شده</small>
+                  </article>
+                </section>
+                <section className="panel analytics-panel">
+                  <div className="section-heading-row">
+                    <div>
+                      <h2 className="section-title">نمای آماری رویدادها</h2>
+                      <p className="muted">تعداد نتایج ثبت‌شده برای شش رویداد اخیر</p>
+                    </div>
+                    <span className="chart-legend"><i /> تعداد نتایج</span>
+                  </div>
+                  {chartEvents.length === 0 ? (
+                    <p className="muted">برای نمایش نمودار، ابتدا رویدادی ثبت کنید.</p>
+                  ) : (
+                    <div className="bar-chart" role="img" aria-label="نمودار تعداد نتایج به تفکیک رویداد">
+                      {chartEvents.map((item) => (
+                        <div className="bar-chart-column" key={item.id}>
+                          <strong>{item.resultCount.toLocaleString("fa-IR")}</strong>
+                          <div className="bar-chart-track">
+                            <div className="bar-chart-fill" style={{ height: `${Math.max(8, (item.resultCount / chartMax) * 100)}%` }} />
+                          </div>
+                          <span title={item.title}>{item.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
+            )}
 
             {canManage && (
               <section className="panel">
@@ -523,32 +593,60 @@ export default function DashboardPage() {
               ) : <p className="muted">دسترسی ثبت نتیجه برای این نقش فعال نیست.</p>}
             </section>
 
-            <section className="panel">
-              <h2 className="section-title">فهرست اعضا</h2>
-              {members.length === 0
-                ? <p className="muted">عضوی ثبت نشده است.</p>
-                : <ul className="list">{members.map((member) => (
-                    <li key={member.id}>
-                      {member.full_name}
-                      <span className="muted"> — {member.sport_type || "رشته ثبت نشده"}</span>
-                    </li>
-                  ))}</ul>}
-            </section>
+            {canManage && (
+              <section className="panel">
+                <div className="section-heading-row">
+                  <h2 className="section-title">فهرست اعضا</h2>
+                  <span className="muted">{filteredMembers.length.toLocaleString("fa-IR")} مورد</span>
+                </div>
+                <div className="filter-row">
+                  <input aria-label="جستجوی اعضا" className="filter-input" placeholder="جستجو بر اساس نام یا شماره تماس..." value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} />
+                  <select aria-label="فیلتر رشته ورزشی" className="filter-select" value={memberSportFilter} onChange={(event) => setMemberSportFilter(event.target.value)}>
+                    <option value="all">همه رشته‌ها</option>
+                    {availableSports.map((sport) => <option key={sport} value={sport}>{sport}</option>)}
+                  </select>
+                </div>
+                {filteredMembers.length === 0
+                  ? <p className="muted">{members.length === 0 ? "عضوی ثبت نشده است." : "موردی با این جستجو پیدا نشد."}</p>
+                  : <ul className="list">{filteredMembers.map((member) => (
+                      <li key={member.id}>
+                        {member.full_name}
+                        <span className="muted"> — {member.sport_type || "رشته ثبت نشده"}</span>
+                      </li>
+                    ))}</ul>}
+              </section>
+            )}
 
-            <section className="panel">
-              <h2 className="section-title">رویدادها</h2>
-              {events.length === 0
-                ? <p className="muted">رویدادی ثبت نشده است.</p>
-                : <ul className="list">{events.map((item) => (
-                    <li key={item.id}>
-                      {item.title}
-                      <span className="muted"> — {new Date(item.event_date).toLocaleDateString("fa-IR")}</span>
-                      {item.location && <span className="muted"> — {item.location}</span>}
-                    </li>
-                  ))}</ul>}
-            </section>
+            {canManage && (
+              <section className="panel">
+                <div className="section-heading-row">
+                  <h2 className="section-title">رویدادها</h2>
+                  <span className="muted">{filteredEvents.length.toLocaleString("fa-IR")} مورد</span>
+                </div>
+                <div className="filter-row">
+                  <input aria-label="جستجوی رویدادها" className="filter-input" placeholder="جستجو بر اساس عنوان یا محل..." value={eventSearch} onChange={(event) => setEventSearch(event.target.value)} />
+                  <select aria-label="فیلتر وضعیت رویداد" className="filter-select" value={eventStatusFilter} onChange={(event) => setEventStatusFilter(event.target.value)}>
+                    <option value="all">همه وضعیت‌ها</option>
+                    <option value="scheduled">برنامه‌ریزی‌شده</option>
+                    <option value="ongoing">در حال برگزاری</option>
+                    <option value="completed">پایان‌یافته</option>
+                    <option value="cancelled">لغوشده</option>
+                  </select>
+                </div>
+                {filteredEvents.length === 0
+                  ? <p className="muted">{events.length === 0 ? "رویدادی ثبت نشده است." : "موردی با این جستجو پیدا نشد."}</p>
+                  : <ul className="list">{filteredEvents.map((item) => (
+                      <li key={item.id}>
+                        {item.title}
+                        <span className="muted"> — {new Date(item.event_date).toLocaleDateString("fa-IR")}</span>
+                        {item.location && <span className="muted"> — {item.location}</span>}
+                      </li>
+                    ))}</ul>}
+              </section>
+            )}
 
-            <section className="panel">
+            {canManage && (
+              <section className="panel">
               <h2 className="section-title">نتایج ثبت‌شده</h2>
               {results.length === 0
                 ? <p className="muted">هنوز نتیجه‌ای ثبت نشده است.</p>
@@ -567,7 +665,8 @@ export default function DashboardPage() {
                       ))}</tbody>
                     </table>
                   </div>}
-            </section>
+              </section>
+            )}
           </>
         )}
       </main>
