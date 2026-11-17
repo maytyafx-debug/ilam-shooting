@@ -305,5 +305,32 @@ DROP TRIGGER IF EXISTS sports_audit_tenant_immutable ON sports_core.sports_audit
 CREATE TRIGGER sports_audit_tenant_immutable BEFORE UPDATE ON sports_core.sports_audit_logs
 FOR EACH ROW EXECUTE FUNCTION sports_core.sports_prevent_tenant_move();
 
+
+-- Referees may read clubs and recorded results only inside their active tenant.
+CREATE POLICY sports_clubs_referee_read ON sports_core.sports_clubs
+FOR SELECT TO authenticated
+USING (sports_core.sports_has_tenant_role(tenant_id,ARRAY['tenant_admin','referee']));
+CREATE POLICY sports_results_referee_read ON sports_core.sports_results
+FOR SELECT TO authenticated
+USING (sports_core.sports_has_tenant_role(tenant_id,ARRAY['tenant_admin','referee']));
+
+-- The original audit trigger must carry tenant_id after it becomes mandatory.
+CREATE OR REPLACE FUNCTION sports_core.sports_write_audit_log()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+AS $
+DECLARE rid uuid;
+BEGIN
+  rid := (to_jsonb(NEW)->>'id')::uuid;
+  INSERT INTO sports_core.sports_audit_logs(
+    tenant_id,user_id,action,table_name,record_id,details
+  ) VALUES (
+    NEW.tenant_id,auth.uid(),lower(TG_OP),
+    TG_TABLE_SCHEMA||'.'||TG_TABLE_NAME,rid,
+    jsonb_build_object('source','database_trigger')
+  );
+  RETURN NEW;
+END;
+$;
+
 -- Tenant membership provisioning must be performed by a trusted owner-controlled
 -- backend workflow. Do not grant authenticated clients membership write privileges.
