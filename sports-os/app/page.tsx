@@ -96,21 +96,24 @@ export default function DashboardPage() {
     .map((item) => ({ ...item, resultCount: results.filter((result) => result.event_id === item.id).length }));
   const chartMax = Math.max(1, ...chartEvents.map((item) => item.resultCount));
 
-  async function loadData(activeTenantId: string) {
+  async function loadData(activeTenantId: string, roleOverride?: CoreRole) {
     if (!activeTenantId) throw new Error("سازمان فعال هنوز انتخاب نشده است.");
 
+    const roleForLoad = roleOverride ?? activeRole;
     const requestId = ++tenantLoadSequence.current;
     const headers = { "x-tenant-id": activeTenantId };
     let memberResponse: Response;
     let eventResponse: Response;
-    let resultResponse: Response;
+    let resultResponse: Response | null = null;
 
     try {
-      [memberResponse, eventResponse, resultResponse] = await Promise.all([
+      [memberResponse, eventResponse] = await Promise.all([
         fetch("/api/core-sports/members", { cache: "no-store", headers }),
         fetch("/api/core-sports/events", { cache: "no-store", headers }),
-        fetch("/api/core-sports/results", { cache: "no-store", headers }),
       ]);
+      if (roleForLoad === "admin") {
+        resultResponse = await fetch("/api/core-sports/results", { cache: "no-store", headers });
+      }
     } catch (error) {
       if (requestId !== tenantLoadSequence.current) return;
       throw error;
@@ -118,20 +121,23 @@ export default function DashboardPage() {
 
     if (requestId !== tenantLoadSequence.current) return;
 
-    if ([memberResponse, eventResponse, resultResponse].some((response) => response.status === 401)) {
+    const responses = [memberResponse, eventResponse, resultResponse].filter(
+      (response): response is Response => response !== null,
+    );
+    if (responses.some((response) => response.status === 401)) {
       router.replace("/login");
       return;
     }
 
     let memberPayload: any;
     let eventPayload: any;
-    let resultPayload: any;
+    let resultPayload: any = { results: [] };
     try {
-      [memberPayload, eventPayload, resultPayload] = await Promise.all([
+      [memberPayload, eventPayload] = await Promise.all([
         memberResponse.json(),
         eventResponse.json(),
-        resultResponse.json(),
       ]);
+      if (resultResponse) resultPayload = await resultResponse.json();
     } catch (error) {
       if (requestId !== tenantLoadSequence.current) return;
       throw error;
@@ -139,7 +145,7 @@ export default function DashboardPage() {
 
     if (requestId !== tenantLoadSequence.current) return;
 
-    if (!memberResponse.ok || !eventResponse.ok || !resultResponse.ok) {
+    if (!memberResponse.ok || !eventResponse.ok || (resultResponse !== null && !resultResponse.ok)) {
       const error = new Error(
         (memberPayload as ApiError).error ||
         (eventPayload as ApiError).error ||
@@ -157,7 +163,7 @@ export default function DashboardPage() {
 
     setMembers(memberPayload.members ?? []);
     setEvents(eventPayload.events ?? []);
-    setResults(resultPayload.results ?? []);
+    setResults(roleForLoad === "admin" ? resultPayload.results ?? [] : []);
   }
 
   useEffect(() => {
