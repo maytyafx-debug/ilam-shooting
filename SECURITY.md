@@ -74,24 +74,27 @@ Migrations `007_public_sports_rbac_hardening.sql` and `008_public_sports_rbac_po
 
 ## 4. Multi-tenancy and organization isolation
 
-**IMPLEMENTED IN SOURCE / NOT LIVE-VERIFIED.** Migration `006_sports_os_tenant_isolation.sql` adds a tenant registry and tenant-membership relation to the operational `sports_core` schema.
+**LIVE IMPLEMENTED IN THE CURRENT PILOT:** the connected Next.js application uses the five `public.sports_*` tables described in Section 3. The tenant API returns only active tenant memberships for the authenticated user. When more than one active membership exists, the dashboard now presents a tenant selector. Every operational API request independently checks the selected tenant ID against the authenticated user's active membership and role; the browser-supplied header is only a selection hint, never authorization.
 
-- Existing pilot records are mapped to one explicit `ilam-shooting-pilot` tenant. This is a proposed single-pilot backfill, not a verified mapping for any already multi-organization database.
-- Operational clubs, members, events, results and audit logs receive a non-null `tenant_id`.
-- Composite foreign keys bind club, member, event and result references to the same tenant.
-- Tenant memberships carry tenant-scoped roles: `tenant_admin`, `referee`, and `athlete`. Existing profile roles are mapped for the first pilot only.
-- RLS checks active membership and tenant-scoped role. Suspended tenants and disabled/invited memberships do not resolve as an active tenant.
-- The `x-tenant-id` request header selects a tenant context, but the database independently validates membership. The header is never treated as authorization.
-- API handlers require a valid `x-tenant-id`, check active membership and tenant-scoped role, and pass the context to the Supabase server client.
-- Operational write services obtain the authorized tenant ID from the database helper; they do not trust a tenant ID from the JSON body.
-- Tenant ownership is immutable and composite foreign keys prevent cross-tenant references.
-- Tenant membership provisioning remains owner-controlled; authenticated clients have read-only access to membership rows.
+- Tenant resolution is performed from `sports_tenant_memberships` joined to active `sports_tenants`.
+- Admin/owner may manage operational records only within their active tenant.
+- Referee may read operational records and insert results only within their active tenant.
+- Member/coach/staff have no operational-row access until a verified member-account link and dedicated self-service policies are implemented.
+- Tenant membership provisioning remains owner-controlled; authenticated clients cannot create or change memberships.
+- The database has immutable `tenant_id` guards on operational members, events and results.
+- The UI clears prior tenant data before loading a newly selected tenant and does not treat a role label as an authorization check.
 
-**Integration limitation:** the browser UI still needs a tenant selector/context and must send `x-tenant-id` on operational API calls. Until that UI flow and its UX are implemented, the APIs intentionally reject requests without a tenant header.
+**Live evidence (2026-11-17):**
+- Two active tenant records exist: the original pilot tenant `e1f77f6f-da48-493f-94fb-db0c3398188d` and a QA-only second tenant `7c82debc-10f0-4c31-9c43-2135b083db50`.
+- The currently provisioned identity has an active membership only in the original tenant. A simulated authenticated read returned the original tenant and did not expose the QA tenant.
+- The existing operational row counts were unchanged by the security hardening and tenant QA setup.
+- No real referee, athlete/member, or second-tenant Auth test user has yet been provisioned. Therefore, the full two-user/two-tenant cross-access matrix is still pending.
 
-**Migration safety:** migration 006 has been committed as source only. It has NOT been run against Supabase. Before applying it, inspect the target database for existing tenant boundaries and confirm that mapping all current pilot records to one tenant is correct. If the database contains more than one real organization, stop and prepare an explicit row-by-row mapping and backup/restore plan instead of applying the default backfill.
+**Important migration distinction:** repository migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_isolation.sql` define an older design in schema `sports_core`. They are not part of the active public-schema runtime and are not recorded as applied in the connected project's migration history. Do not apply them to the connected project. Any future move to a dedicated Sports OS schema/project requires a separately reviewed, reversible migration plan and verified backup.
 
-**Remaining verification:** run two-tenant integration tests proving tenant A cannot read, insert, update, delete, reference or infer tenant B records; test suspended tenants, disabled memberships, role changes, audit triggers and service-role boundaries. Until these tests pass against an isolated Supabase test project, multi-tenant production readiness is NOT VERIFIED.
+**IMPLEMENTED IN SOURCE / NOT LIVE-VERIFIED:** finer organizational-unit scoping (federation, board, county committee, club and center), time-bound role grants, guardian links, and scoped professional assignments remain architecture requirements, not implemented access controls.
+
+**Remaining verification:** provision distinct test identities through Supabase Auth and link them through the trusted membership process. Then test positive and negative access for admin, referee, member and tenant-2 user, including read/write denial, suspended tenant, suspended membership, and cross-tenant foreign-key attempts. This is not production security certification.
 
 ## 5. Secrets, environment and data handling
 
@@ -104,18 +107,19 @@ Migrations `007_public_sports_rbac_hardening.sql` and `008_public_sports_rbac_po
 
 | Check | Result |
 |---|---|
-| Previous Next.js production build (commit `00620b96a756dccc4696f4e89463f7a84eb6c9ef`) | SUCCESS |
-| Previous TypeScript validation | SUCCESS |
-| Previous demo/legacy validation | SUCCESS |
-| Auth/RBAC source hardening | IMPLEMENTED; static CI checks passed |
-| Tenant schema, membership model and tenant-scoped RLS source | IMPLEMENTED IN MIGRATION 006; NOT LIVE-VERIFIED |
-| Tenant-aware API guards and tenant-scoped writes | IMPLEMENTED IN SOURCE; static CI checks passed |
-| Static security regression checks | SUCCESS in GitHub Actions |
-| Live Supabase Auth/RLS integration tests | NOT RUN |
-| Two-tenant isolation integration tests | NOT RUN — requires isolated Supabase test project and seeded tenants |
-| Browser tenant selector/context | NOT IMPLEMENTED |
-| Production security approval | NOT GRANTED |
-| Production security approval | NOT GRANTED |
+| Previous Next.js production build (before the current dashboard update) | SUCCESS |
+| Current multi-tenant dashboard build and TypeScript validation | PENDING latest GitHub Actions run |
+| Current static security regression checks | PENDING latest GitHub Actions run |
+| Demo/legacy validation | Previously SUCCESS; re-run in latest workflow |
+| Auth/RBAC source hardening | IMPLEMENTED; earlier static CI checks passed |
+| Live public-schema RLS, FORCE RLS and grants | LIVE READ-BACK VERIFIED |
+| Live tenant resolution for the existing identity | VERIFIED: original tenant visible; QA tenant not visible |
+| Multi-tenant dashboard selector | IMPLEMENTED IN SOURCE; latest CI pending |
+| Separate admin/referee/member/Tenant2 Auth accounts | NOT PROVISIONED |
+| Full two-user/two-tenant integration matrix | NOT RUN |
+| Member self-service / verified account-to-member link | BLOCKED BY DESIGN; NOT IMPLEMENTED |
+| Backup/restore exercise in an isolated environment | NOT EVIDENCED |
+| Independent production security approval | NOT GRANTED |
 
 ## 7. Pre-production acceptance checklist
 
@@ -123,10 +127,11 @@ Migrations `007_public_sports_rbac_hardening.sql` and `008_public_sports_rbac_po
 - [ ] Verify exact Auth redirect URLs, email confirmation policy, session expiry and leaked-password protection.
 - [ ] Test admin/referee/member authorization with separate accounts.
 - [ ] Test RLS with anon, authenticated users of each role, and a service-role boundary review.
-- [ ] Implement browser tenant selection and send `x-tenant-id` on operational API requests.
-- [ ] Apply migration 006 only after reviewing existing data boundaries and approving the single-pilot backfill.
+- [x] Implement browser tenant selection and send `x-tenant-id` on operational API requests; each API request still verifies membership and role server-side.
+- [ ] Provision distinct Auth test users and complete the full two-user/two-tenant authorization matrix.
+- [ ] Keep the old `sports_core` migrations 005/006 unapplied; any future schema move requires a separate reviewed migration and backup plan.
 - [ ] Verify two-tenant isolation tests, including negative cross-tenant reads and writes.
 - [ ] Verify audit logging, backup/restore, retention and incident response.
 - [ ] Run dependency/security scanning and an independent application/database security review.
 
-**Conclusion:** the branch now contains a proposed tenant-aware operational schema, tenant-scoped RLS, API authorization and tenant-scoped write paths. Migration 006 has not been applied, browser tenant selection and live integration tests remain outstanding, and this is not a production security certification.
+**Conclusion:** the current pilot has live public-schema tenant tables, forced RLS, role-aware API guards, and a multi-tenant selector in the Next.js dashboard. One existing identity was verified not to see the second QA tenant. Separate role accounts, full two-tenant negative tests, isolated restore evidence and independent review remain outstanding; this is not a production security certification.
