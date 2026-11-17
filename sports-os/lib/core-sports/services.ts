@@ -50,6 +50,14 @@ export class CoreSportsService {
       .single();
   }
 
+  listResults() {
+    return this.db
+      .from("sports_results")
+      .select("id,tenant_id,event_id,member_id,score,rank,notes,created_at")
+      .eq("tenant_id", this.tenantId)
+      .order("created_at", { ascending: false });
+  }
+
   async createResult(input: CreateResultInput) {
     return this.db.from("sports_results").insert({
       tenant_id: this.tenantId,
