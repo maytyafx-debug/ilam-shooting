@@ -5,8 +5,10 @@
 - مخزن: https://github.com/maytyafx-debug/ilam-shooting
 - شاخه اصلی: main
 - شاخه پشتیبان: backup/2026-11-08
-- فناوری: HTML، CSS، JavaScript و Cloudflare Pages Functions
-- پایگاه داده آمار: Supabase (اختیاری)
+- فناوری پورتال عمومی ریشه: HTML، CSS، JavaScript و Cloudflare Pages Functions
+- فناوری اپلیکیشن مدیریتی METATYA Sports OS در `sports-os/`: Next.js و Supabase Auth
+- پورتال عمومی ریشه و اپلیکیشن Sports OS دو مقصد انتشار مستقل دارند؛ Cloudflare Pages برای پورتال ریشه و Netlify برای اپلیکیشن `sports-os/` است.
+- پایگاه داده آمار پورتال: Supabase (اختیاری)
 
 ## 1. ساختار پروژه
 
@@ -22,8 +24,8 @@
 ## 2. پیش‌نیازها
 
 برای انتشار: حساب GitHub، حساب Cloudflare، ربات تلگرام و مرورگر به‌روز.
-برای پیش‌نمایش محلی: Python 3 یا VS Code Live Server.
-پروژه استاتیک است و به Node.js یا دستور build نیاز ندارد.
+برای پیش‌نمایش پورتال استاتیک ریشه: Python 3 یا VS Code Live Server؛ این بخش به Node.js نیاز ندارد.
+برای اپلیکیشن Next.js در `sports-os/`: Node.js نسخه 20.9 یا جدیدتر و npm لازم است؛ راهنمای مستقل Netlify در بخش 11 آمده است.
 
 ## 3. دریافت کد
 
@@ -132,3 +134,38 @@ git bundle create ../ilam-shooting-all-refs.bundle --all
 - برای تغییرات مهم، ابتدا شاخه پشتیبان جدید بساز.
 
 آخرین به‌روزرسانی: 2026-11-08
+
+
+## 11. انتشار اپلیکیشن METATYA Sports OS روی Netlify
+
+این بخش فقط مربوط به اپلیکیشن Next.js داخل پوشه `sports-os/` است؛ تنظیمات Cloudflare Pages در بخش 5 برای پورتال استاتیک ریشه باقی می‌ماند.
+
+### اتصال مخزن و شاخه انتشار
+
+1. در Netlify گزینه **Add new project → Import an existing project** را انتخاب کن.
+2. GitHub را متصل کن و مخزن `maytyafx-debug/ilam-shooting` را انتخاب کن.
+3. **Production branch** را روی `main` قرار بده.
+4. فایل `netlify.toml` در ریشه مخزن، پوشه پایه را روی `sports-os`، دستور build را روی `npm run build`، پوشه خروجی را روی `.next` و Node.js را روی نسخه 22 تنظیم می‌کند.
+5. Next.js Runtime در Netlify به‌صورت خودکار شناسایی و نصب می‌شود؛ نیازی به نصب دستی `@netlify/plugin-nextjs` نیست.
+6. هیچ rewrite عمومی از نوع `/* → /index.html` اضافه نکن؛ اپلیکیشن از SSR، App Router و API Route استفاده می‌کند.
+
+### متغیرهای محیطی
+
+در **Project configuration → Environment variables** دو مقدار زیر را برای محیط‌های **Production** و **Deploy Previews** ثبت کن. Scope هر دو باید شامل **Builds** و **Functions** باشد (گزینه All scopes نیز مناسب است):
+
+- `NEXT_PUBLIC_SUPABASE_URL`: آدرس پروژه Supabase، مانند `https://PROJECT_REF.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: کلید عمومی `anon` یا `publishable` همان پروژه
+
+این دو مقدار عمداً در کلاینت مرورگر قابل مشاهده‌اند؛ آن‌ها را Secret تلقی نکن. **هرگز** `service_role`، Secret API Key، رمز دیتابیس یا JWT secret را در متغیرهای `NEXT_PUBLIC_*` وارد نکن. هیچ مقدار واقعی را در Git commit نکن.
+
+Node.js از طریق `netlify.toml` روی نسخه 22 تنظیم شده و نیازی به ثبت جداگانه آن در پنل نیست.
+
+### پس از اولین Deploy
+
+1. دامنه ایجادشده Netlify را باز کن و Build Logs را بررسی کن.
+2. در Supabase → Authentication → URL Configuration، Site URL را به دامنه نهایی اختصاص بده.
+3. اگر از callback ایمیل/OAuth استفاده می‌کنی، مسیر دقیق `https://YOUR-NETLIFY-DOMAIN/auth/callback` را به Redirect URLs مجاز اضافه کن؛ برای تست محلی نیز `http://localhost:3000/auth/callback` را ثبت کن.
+4. ورود با حساب آزمایشی مجاز، Refresh داشبورد و APIهای اعضا/رویدادها/نتایج را با داده آزمایشی بررسی کن.
+5. تا تکمیل آزمون‌های امنیتی باقی‌مانده، سایت را در حالت خصوصی/محدود نگه دار و داده واقعی ورزشکاران یا افراد زیر سن قانونی وارد نکن.
+
+**این Deploy فقط کد برنامه را Build می‌کند. هیچ migration یا SQL روی Supabase اجرا نمی‌شود.** فایل‌های SQL موجود در مخزن را به‌عنوان دستور اجرای خودکار Netlify در نظر نگیر.

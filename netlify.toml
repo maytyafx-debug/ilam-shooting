@@ -1,0 +1,9 @@
+"$schema" = "https://open-api.netlify.com/netlify.schema.json"
+
+[build]
+  base = "sports-os"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

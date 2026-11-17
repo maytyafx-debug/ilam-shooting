@@ -1,0 +1,62 @@
+name: Sports OS dependency install and validation
+
+on:
+  pull_request:
+    paths:
+      - "sports-os/**"
+      - "netlify.toml"
+      - ".github/workflows/sports-os-validation.yml"
+  push:
+    branches:
+      - "main"
+      - "feat/metatya-sports-os-foundation-v1"
+      - "feat/sports-os-shooting-integrated-v1"
+    paths:
+      - "sports-os/**"
+      - "netlify.toml"
+      - ".github/workflows/sports-os-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sports-os-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install-and-validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sports-os
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: sports-os/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: TypeScript validation
+        run: npm run typecheck
+
+      - name: Next.js production build
+        run: npm run build
+
+      - name: Static security regression checks
+        working-directory: .
+        run: node sports-os/tests/security-static.mjs
+
+      - name: Check legacy JavaScript syntax
+        working-directory: .
+        run: node --check sports-os/app.js
+
+      - name: Validate product demo and legacy routes
+        working-directory: .
+        run: node sports-os/tests/validate-demo.mjs

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "product": "METATYA Sports OS",
+  "scope": "shooting-sports-only",
+  "status": "catalogue-definition-only",
+  "ruleAuthorityPolicy": "Each discipline and event must reference the currently applicable official rule set and its effective date. This catalogue does not define technical procedures, eligibility, or scoring rules.",
+  "disciplines": [
+    {
+      "id": "air-rifle",
+      "labelFa": "تفنگ بادی",
+      "labelEn": "Air Rifle",
+      "family": "air",
+      "targetType": "fixed",
+      "ruleSetRequired": true
+    },
+    {
+      "id": "air-pistol",
+      "labelFa": "تپانچه بادی",
+      "labelEn": "Air Pistol",
+      "family": "air",
+      "targetType": "fixed",
+      "ruleSetRequired": true
+    },
+    {
+      "id": "fixed-target",
+      "labelFa": "اهداف ثابت",
+      "labelEn": "Fixed Target",
+      "family": "target",
+      "targetType": "fixed",
+      "ruleSetRequired": true
+    },
+    {
+      "id": "moving-target",
+      "labelFa": "اهداف متحرک",
+      "labelEn": "Moving Target",
+      "family": "target",
+      "targetType": "moving",
+      "ruleSetRequired": true
+    },
+    {
+      "id": "flying-target-skeet",
+      "labelFa": "اهداف پروازی – اسکیت",
+      "labelEn": "Flying Target – Skeet",
+      "family": "clay-target",
+      "targetType": "flying",
+      "ruleSetRequired": true
+    },
+    {
+      "id": "sport-bullet-shooting",
+      "labelFa": "گلوله‌زنی ورزشی",
+      "labelEn": "Sport Bullet Shooting",
+      "family": "sport-shooting",
+      "targetType": "rule-defined",
+      "ruleSetRequired": true
+    }
+  ]
+}
