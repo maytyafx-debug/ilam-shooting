@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { CoreEvent, CoreMember } from "@/lib/core-sports/types";
+import type { CoreEvent, CoreMember, CoreResult } from "@/lib/core-sports/types";
 
 type ApiError = { error?: string };
 type TenantPayload = { tenant?: { id: string; name: string }; error?: string };
@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [tenantName, setTenantName] = useState("");
   const [members, setMembers] = useState<CoreMember[]>([]);
   const [events, setEvents] = useState<CoreEvent[]>([]);
+  const [results, setResults] = useState<CoreResult[]>([]);
   const [memberId, setMemberId] = useState("");
   const [eventId, setEventId] = useState("");
   const [score, setScore] = useState("");
@@ -29,33 +30,38 @@ export default function DashboardPage() {
 
   async function loadData(activeTenantId: string) {
     const headers = { "x-tenant-id": activeTenantId };
-    const [memberResponse, eventResponse] = await Promise.all([
+    const [memberResponse, eventResponse, resultResponse] = await Promise.all([
       fetch("/api/core-sports/members", { cache: "no-store", headers }),
       fetch("/api/core-sports/events", { cache: "no-store", headers }),
+      fetch("/api/core-sports/results", { cache: "no-store", headers }),
     ]);
 
-    if (memberResponse.status === 401 || eventResponse.status === 401) {
+    if (memberResponse.status === 401 || eventResponse.status === 401 || resultResponse.status === 401) {
       router.replace("/login");
       return;
     }
 
     const memberPayload = await memberResponse.json();
     const eventPayload = await eventResponse.json();
-    if (!memberResponse.ok || !eventResponse.ok) {
+    const resultPayload = await resultResponse.json();
+    if (!memberResponse.ok || !eventResponse.ok || !resultResponse.ok) {
       const error = new Error(
         (memberPayload as ApiError).error ||
         (eventPayload as ApiError).error ||
+        (resultPayload as ApiError).error ||
         "دریافت اطلاعات ناموفق بود.",
       );
       console.error("[Sports OS] dashboard data load failed:", error, {
         members: memberPayload,
         events: eventPayload,
+        results: resultPayload,
       });
       throw error;
     }
 
     setMembers(memberPayload.members ?? []);
     setEvents(eventPayload.events ?? []);
+    setResults(resultPayload.results ?? []);
   }
 
   useEffect(() => {
@@ -172,6 +178,7 @@ export default function DashboardPage() {
         rank: rank === "" ? null : Number(rank),
         notes: notes || null,
       });
+      await loadData(tenantId);
       setMessage("نتیجه با موفقیت ثبت شد.");
       setScore("");
       setRank("");
@@ -253,6 +260,10 @@ export default function DashboardPage() {
         <section className="panel">
           <h2 className="section-title">رویدادها</h2>
           {events.length === 0 ? <p className="muted">رویدادی ثبت نشده است.</p> : <ul className="list">{events.map(item => <li key={item.id}>{item.title} — {new Date(item.event_date).toLocaleDateString("fa-IR")}</li>)}</ul>}
+        </section>
+        <section className="panel">
+          <h2 className="section-title">نتایج ثبت‌شده</h2>
+          {results.length === 0 ? <p className="muted">هنوز نتیجه‌ای ثبت نشده است.</p> : <div className="table-wrap"><table className="results-table"><thead><tr><th>ورزشکار</th><th>رویداد</th><th>امتیاز</th><th>رتبه</th><th>توضیحات</th><th>تاریخ ثبت</th></tr></thead><tbody>{results.map(result => <tr key={result.id}><td>{members.find(member => member.id === result.member_id)?.full_name ?? "عضو نامشخص"}</td><td>{events.find(item => item.id === result.event_id)?.title ?? "رویداد نامشخص"}</td><td>{result.score ?? "—"}</td><td>{result.rank ?? "—"}</td><td>{result.notes || "—"}</td><td>{new Date(result.created_at).toLocaleDateString("fa-IR")}</td></tr>)}</tbody></table></div>}
         </section>
       </main>
     </>
