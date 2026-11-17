@@ -10,6 +10,12 @@ export async function GET(request: Request) {
   const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
     ? requestedNext
     : "/";
+  const redirectUrl = new URL(next, requestUrl.origin);
+
+  // Also reject backslash-based URL normalization and any cross-origin target.
+  if (redirectUrl.origin !== requestUrl.origin) {
+    return NextResponse.redirect(new URL("/login?error=auth_callback_failed", requestUrl.origin));
+  }
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=auth_callback_failed", requestUrl.origin));
@@ -22,5 +28,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=auth_callback_failed", requestUrl.origin));
   }
 
-  return NextResponse.redirect(new URL(next, requestUrl.origin));
+  return NextResponse.redirect(redirectUrl);
 }
