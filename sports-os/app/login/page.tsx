@@ -15,17 +15,30 @@ export default function LoginPage() {
     event.preventDefault();
     setBusy(true);
     setMessage("");
+
     try {
       const supabase = createSupabaseBrowserClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
+
       if (error) {
-        setMessage("ورود انجام نشد. اطلاعات ورود یا وضعیت حساب را بررسی کنید.");
+        // Development diagnostics: preserve the original Supabase error in the browser console.
+        console.error("[METATYA AUTH] signInWithPassword failed:", {
+          message: error.message,
+          name: error.name,
+          status: error.status,
+          code: error.code,
+          error,
+        });
+        setMessage("ورود انجام نشد. جزئیات خطا در کنسول مرورگر ثبت شده است.");
         return;
       }
+
       router.replace("/");
       router.refresh();
-    } catch {
-      setMessage("سرویس ورود در دسترس نیست. تنظیمات اتصال را بررسی کنید.");
+    } catch (caughtError) {
+      // Also expose client initialization, configuration, and unexpected runtime errors.
+      console.error("[METATYA AUTH] Login flow threw an exception:", caughtError);
+      setMessage("فرایند ورود با خطا متوقف شد. جزئیات در کنسول مرورگر ثبت شده است.");
     } finally {
       setBusy(false);
     }
