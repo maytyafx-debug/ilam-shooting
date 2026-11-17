@@ -97,6 +97,20 @@ ALTER TABLE sports_core.sports_results
   FOREIGN KEY (event_id,tenant_id)
   REFERENCES sports_core.sports_events(id,tenant_id);
 
+
+-- Identifiers are tenant-scoped: different organizations may reuse the same
+-- membership number, and one Auth user may have a member record per tenant.
+ALTER TABLE sports_core.sports_members
+  DROP CONSTRAINT IF EXISTS sports_members_profile_id_key;
+ALTER TABLE sports_core.sports_members
+  DROP CONSTRAINT IF EXISTS sports_members_membership_number_key;
+CREATE UNIQUE INDEX IF NOT EXISTS sports_members_profile_tenant_uq
+  ON sports_core.sports_members(profile_id,tenant_id)
+  WHERE profile_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS sports_members_number_tenant_uq
+  ON sports_core.sports_members(tenant_id,membership_number)
+  WHERE membership_number IS NOT NULL;
+
 CREATE INDEX IF NOT EXISTS sports_members_tenant_idx
   ON sports_core.sports_members(tenant_id,created_at DESC);
 CREATE INDEX IF NOT EXISTS sports_events_tenant_date_idx
