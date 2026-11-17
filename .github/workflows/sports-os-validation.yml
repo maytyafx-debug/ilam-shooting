@@ -72,6 +72,10 @@ jobs:
       - name: Next.js production build
         run: npm run build
 
+      - name: Static security regression checks
+        working-directory: .
+        run: node sports-os/tests/security-static.mjs
+
       - name: Check legacy JavaScript syntax
         working-directory: .
         run: node --check sports-os/app.js
