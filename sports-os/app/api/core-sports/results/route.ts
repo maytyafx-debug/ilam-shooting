@@ -5,6 +5,7 @@ import { CoreSportsService } from "@/lib/core-sports/services";
 import type { CreateResultInput } from "@/lib/core-sports/types";
 
 export const runtime = "nodejs";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function GET(request: NextRequest) {
   const tenantId = request.headers.get("x-tenant-id");
@@ -17,7 +18,9 @@ export async function GET(request: NextRequest) {
     console.error("[Sports OS] list results failed:", error);
     return NextResponse.json({ error: "Unable to list results." }, { status: 400 });
   }
-  return NextResponse.json({ results: data ?? [] }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ results: data ?? [] }, {
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -33,11 +36,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid result data" }, { status: 400 });
+  }
+
   const score = body.score == null ? null : Number(body.score);
   const rank = body.rank == null ? null : Number(body.rank);
   if (
-    typeof body.event_id !== "string" || typeof body.member_id !== "string" ||
-    (score !== null && !Number.isFinite(score)) ||
+    typeof body.event_id !== "string" || !UUID_RE.test(body.event_id) ||
+    typeof body.member_id !== "string" || !UUID_RE.test(body.member_id) ||
+    (score !== null && (!Number.isFinite(score) || score < 0)) ||
     (rank !== null && (!Number.isInteger(rank) || rank < 1)) ||
     (body.notes != null && (typeof body.notes !== "string" || body.notes.length > 2000))
   ) {
