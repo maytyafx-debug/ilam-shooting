@@ -75,10 +75,43 @@ export async function listUserActiveTenants(
 export async function requireCoreRole(
   db: SupabaseClient<any, any, any, any, any>,
   allowed: readonly CoreRole[],
-  tenantId: string | null,
+  requestedTenantId: string | null,
 ) {
+  const {
+    data: { user },
+    error: userError,
+  } = await db.auth.getUser();
+
+  if (userError || !user) {
+    return { ok: false as const, status: 401, error: "Unauthenticated" };
+  }
+
+  // Resolve the organization from verified active memberships on the server.
+  // A missing header is safe to infer only when exactly one active tenant exists.
+  const activeTenants = await listUserActiveTenants(db, user.id);
+  if (!activeTenants.ok) return activeTenants;
+
+  if (activeTenants.tenants.length === 0) {
+    return {
+      ok: false as const,
+      status: 403,
+      error: "No active membership in this organization.",
+    };
+  }
+
+  let tenantId = requestedTenantId;
+  if (!tenantId) {
+    if (activeTenants.tenants.length !== 1) {
+      return {
+        ok: false as const,
+        status: 400,
+        error: "A valid x-tenant-id header is required when multiple organizations are available.",
+      };
+    }
+    tenantId = activeTenants.tenants[0].id;
+  }
+
   if (
-    !tenantId ||
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       tenantId,
     )
@@ -89,18 +122,6 @@ export async function requireCoreRole(
       error: "A valid x-tenant-id header is required.",
     };
   }
-
-  const {
-    data: { user },
-    error: userError,
-  } = await db.auth.getUser();
-
-  if (userError || !user) {
-    return { ok: false as const, status: 401, error: "Unauthenticated" };
-  }
-
-  const activeTenants = await listUserActiveTenants(db, user.id);
-  if (!activeTenants.ok) return activeTenants;
 
   const tenant = activeTenants.tenants.find((item) => item.id === tenantId);
   if (!tenant) {
