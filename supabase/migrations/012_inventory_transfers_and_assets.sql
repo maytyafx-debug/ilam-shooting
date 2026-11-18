@@ -364,6 +364,59 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.sports_inventory_update_asset_status(
+  p_tenant_id uuid,
+  p_asset_id uuid,
+  p_new_status text,
+  p_notes text
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $
+DECLARE
+  v_actor uuid := auth.uid();
+  v_old_status text;
+  v_event_type text;
+  v_event_id uuid;
+BEGIN
+  IF v_actor IS NULL OR NOT EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships m
+    WHERE m.tenant_id=p_tenant_id AND m.user_id=v_actor
+      AND m.status='active' AND m.role IN ('owner','admin')
+  ) THEN
+    RAISE EXCEPTION 'Inventory administrator role required' USING ERRCODE='42501';
+  END IF;
+  IF p_new_status NOT IN ('available','issued','maintenance','retired','lost')
+     OR p_notes IS NULL OR length(trim(p_notes)) NOT BETWEEN 2 AND 500 THEN
+    RAISE EXCEPTION 'Invalid asset status change' USING ERRCODE='22023';
+  END IF;
+  SELECT lifecycle_status INTO v_old_status
+  FROM public.sports_inventory_assets
+  WHERE id=p_asset_id AND tenant_id=p_tenant_id
+  FOR UPDATE;
+  IF v_old_status IS NULL OR v_old_status IN ('retired','lost') OR v_old_status=p_new_status THEN
+    RAISE EXCEPTION 'Asset status transition is not allowed' USING ERRCODE='22023';
+  END IF;
+  v_event_type := CASE p_new_status
+    WHEN 'issued' THEN 'issue'
+    WHEN 'available' THEN 'return'
+    WHEN 'maintenance' THEN 'maintenance'
+    WHEN 'retired' THEN 'retire'
+    WHEN 'lost' THEN 'mark_lost'
+  END;
+  UPDATE public.sports_inventory_assets
+  SET lifecycle_status=p_new_status,updated_at=now()
+  WHERE id=p_asset_id AND tenant_id=p_tenant_id;
+  INSERT INTO public.sports_inventory_asset_movements(
+    tenant_id,asset_id,event_type,notes,recorded_by
+  ) VALUES (p_tenant_id,p_asset_id,v_event_type,trim(p_notes),v_actor)
+  RETURNING id INTO v_event_id;
+  RETURN v_event_id;
+END;
+$;
+
 CREATE OR REPLACE FUNCTION public.sports_inventory_prevent_asset_movement_mutation()
 RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog,public
 AS $$
@@ -385,9 +438,11 @@ FOR EACH ROW EXECUTE FUNCTION public.sports_inventory_prevent_asset_movement_mut
 REVOKE ALL ON FUNCTION public.sports_inventory_transfer_stock(uuid,uuid,uuid,uuid,numeric,text,text) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.sports_inventory_register_asset(uuid,uuid,uuid,text,text,text,date,text) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.sports_inventory_transfer_asset(uuid,uuid,uuid,text,text) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.sports_inventory_update_asset_status(uuid,uuid,text,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.sports_inventory_transfer_stock(uuid,uuid,uuid,uuid,numeric,text,text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.sports_inventory_register_asset(uuid,uuid,uuid,text,text,text,date,text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.sports_inventory_transfer_asset(uuid,uuid,uuid,text,text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sports_inventory_update_asset_status(uuid,uuid,text,text) TO authenticated;
 
 ALTER TABLE public.sports_inventory_transfers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sports_inventory_assets ENABLE ROW LEVEL SECURITY;
