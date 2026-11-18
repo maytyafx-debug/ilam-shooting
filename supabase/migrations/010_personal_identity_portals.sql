@@ -202,4 +202,125 @@ with check (
 grant select on public.sports_staff_profiles, public.sports_official_assignments to authenticated;
 grant insert, update, delete on public.sports_staff_profiles, public.sports_official_assignments to authenticated;
 
+
+-- Admin-controlled account linking. Email is resolved server-side to an existing
+-- confirmed Auth account; users cannot self-link by changing a browser-supplied ID.
+create or replace function public.sports_admin_link_person(
+  p_tenant_id uuid,
+  p_email text,
+  p_person_type text,
+  p_member_id uuid default null
+)
+returns table(linked_user_id uuid, personal_code text, display_name text)
+language plpgsql
+security definer
+set search_path = pg_catalog, public, auth
+as $
+declare
+  v_actor uuid;
+  v_target uuid;
+  v_role text;
+  v_member_id uuid;
+  v_code text;
+  v_name text;
+begin
+  v_actor := auth.uid();
+  if v_actor is null then
+    raise exception 'Authenticated actor required';
+  end if;
+  if p_person_type not in ('athlete','coach','referee') then
+    raise exception 'Unsupported person type';
+  end if;
+  if p_email is null or length(trim(p_email)) < 5 or length(trim(p_email)) > 254 then
+    raise exception 'Valid account email required';
+  end if;
+  if not exists (
+    select 1 from public.sports_tenant_memberships tm
+    where tm.tenant_id = p_tenant_id
+      and tm.user_id = v_actor
+      and tm.status = 'active'
+      and tm.role in ('owner','admin')
+  ) then
+    raise exception 'Organization administrator permission required';
+  end if;
+
+  select u.id, coalesce(nullif(trim(u.raw_user_meta_data->>'full_name'),''), u.email)
+    into v_target, v_name
+  from auth.users u
+  where lower(u.email) = lower(trim(p_email))
+    and u.email_confirmed_at is not null
+  limit 1;
+
+  if v_target is null then
+    raise exception 'No confirmed account found for this email';
+  end if;
+
+  select tm.role into v_role
+  from public.sports_tenant_memberships tm
+  where tm.tenant_id = p_tenant_id and tm.user_id = v_target
+  for update;
+
+  if p_person_type = 'athlete' then
+    if p_member_id is null then
+      raise exception 'Athlete member record is required';
+    end if;
+    if v_role is not null and v_role <> 'member' then
+      raise exception 'The account already has a different organization role';
+    end if;
+
+    update public.sports_members sm
+    set user_id = v_target
+    where sm.id = p_member_id
+      and sm.tenant_id = p_tenant_id
+      and (sm.user_id is null or sm.user_id = v_target)
+    returning sm.id into v_member_id;
+
+    if v_member_id is null then
+      raise exception 'Member record not found or already linked to another account';
+    end if;
+
+    insert into public.sports_tenant_memberships(tenant_id,user_id,role,status)
+    values (p_tenant_id,v_target,'member','active')
+    on conflict (tenant_id,user_id) do update
+      set status = 'active'
+      where public.sports_tenant_memberships.role = 'member';
+
+    insert into public.sports_athlete_profiles(tenant_id,member_id)
+    values (p_tenant_id,v_member_id)
+    on conflict (member_id,tenant_id) do nothing;
+
+    select ap.personal_code into v_code
+    from public.sports_athlete_profiles ap
+    where ap.tenant_id = p_tenant_id and ap.member_id = v_member_id;
+  else
+    if p_member_id is not null then
+      raise exception 'Member record must not be supplied for staff profiles';
+    end if;
+    if v_role is not null and v_role not in ('member','staff',p_person_type) then
+      raise exception 'The account already has a different organization role';
+    end if;
+
+    insert into public.sports_tenant_memberships(tenant_id,user_id,role,status)
+    values (p_tenant_id,v_target,p_person_type,'active')
+    on conflict (tenant_id,user_id) do update
+      set role = excluded.role, status = 'active';
+
+    insert into public.sports_staff_profiles(tenant_id,user_id,staff_type,display_name)
+    values (p_tenant_id,v_target,p_person_type,v_name)
+    on conflict (tenant_id,user_id) do update
+      set staff_type = excluded.staff_type,
+          display_name = coalesce(public.sports_staff_profiles.display_name, excluded.display_name);
+
+    select sp.personal_code into v_code
+    from public.sports_staff_profiles sp
+    where sp.tenant_id = p_tenant_id and sp.user_id = v_target;
+  end if;
+
+  return query select v_target, v_code, v_name;
+end;
+$;
+
+revoke all on function public.sports_admin_link_person(uuid,text,text,uuid) from public, anon;
+grant execute on function public.sports_admin_link_person(uuid,text,text,uuid) to authenticated;
+
 commit;
