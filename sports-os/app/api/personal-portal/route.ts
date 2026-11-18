@@ -32,7 +32,7 @@ export async function GET() {
   ]);
 
   const missingMigration = [memberResult.error, staffResult.error].some((error) =>
-    error?.code === "42P01" || error?.code === "PGRST205"
+    error?.code === "42P01" || error?.code === "PGRST205" || error?.code === "42703"
   );
   if (missingMigration) {
     return fail("راه‌اندازی پایگاه داده پنل شخصی هنوز تکمیل نشده است. مهاجرت‌های تأییدشده باید ابتدا اجرا شوند.", 503);
