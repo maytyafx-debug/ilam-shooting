@@ -1,7 +1,23 @@
 -- Integration tests for Migration 012; run only on the disposable CI database after 011.
 BEGIN;
+INSERT INTO auth.users(id) VALUES ('aaaaaaaa-1111-4111-8111-111111111111') ON CONFLICT DO NOTHING;
+INSERT INTO public.sports_tenants(id,name,status)
+VALUES ('11111111-1111-4111-8111-111111111111','Tenant A','active') ON CONFLICT DO NOTHING;
+INSERT INTO public.sports_tenant_memberships(tenant_id,user_id,role,status)
+VALUES ('11111111-1111-4111-8111-111111111111','aaaaaaaa-1111-4111-8111-111111111111','owner','active')
+ON CONFLICT DO NOTHING;
+INSERT INTO public.sports_inventory_warehouses(id,tenant_id,code,name,created_by)
+VALUES ('33333333-3333-4333-8333-333333333331','11111111-1111-4111-8111-111111111111','WH-A','Main A','aaaaaaaa-1111-4111-8111-111111111111')
+ON CONFLICT DO NOTHING;
+INSERT INTO public.sports_inventory_items(id,tenant_id,sku,name,unit,minimum_quantity,created_by)
+VALUES ('44444444-4444-4444-8444-444444444441','11111111-1111-4111-8111-111111111111','ITEM-A','Shared sports equipment','عدد',2,'aaaaaaaa-1111-4111-8111-111111111111')
+ON CONFLICT DO NOTHING;
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','aaaaaaaa-1111-4111-8111-111111111111',true);
+SELECT public.sports_inventory_record_movement(
+ '11111111-1111-4111-8111-111111111111','44444444-4444-4444-8444-444444444441',
+ '33333333-3333-4333-8333-333333333331','receipt',10,'Seed stock for transfer tests','SEED-012'
+);
 
 INSERT INTO public.sports_inventory_warehouses(id,tenant_id,code,name,created_by)
 VALUES ('33333333-3333-4333-8333-333333333332','11111111-1111-4111-8111-111111111111','WH-B','Main B','aaaaaaaa-1111-4111-8111-111111111111')
