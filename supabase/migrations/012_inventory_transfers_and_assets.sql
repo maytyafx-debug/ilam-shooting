@@ -374,7 +374,7 @@ RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 DECLARE
   v_actor uuid := auth.uid();
   v_old_status text;
@@ -415,7 +415,7 @@ BEGIN
   RETURNING id INTO v_event_id;
   RETURN v_event_id;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.sports_inventory_prevent_asset_movement_mutation()
 RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog,public
