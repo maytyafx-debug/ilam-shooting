@@ -249,4 +249,35 @@ assert.ok(databaseIntegration.includes("Cross-tenant admin unexpectedly changed 
 assert.ok(databaseIntegration.includes("Service role without auth.uid() unexpectedly verified a result"));
 assert.ok(databaseIntegration.includes("ROLLBACK;"));
 
+
+const inventoryMigration = await read("../../supabase/migrations/011_universal_sports_inventory.sql");
+const inventoryApi = await read("../app/api/core-sports/inventory/route.ts");
+const inventoryPage = await read("../app/inventory/page.tsx");
+assert.ok(inventoryMigration.includes("sports_inventory_warehouses"));
+assert.ok(inventoryMigration.includes("sports_inventory_categories"));
+assert.ok(inventoryMigration.includes("sports_inventory_items"));
+assert.ok(inventoryMigration.includes("sports_inventory_stock"));
+assert.ok(inventoryMigration.includes("sports_inventory_movements"));
+assert.ok(inventoryMigration.includes("sports_inventory_record_movement"));
+assert.ok(inventoryMigration.includes("FOR UPDATE"));
+assert.ok(inventoryMigration.includes("Insufficient stock for this movement"));
+assert.ok(inventoryMigration.includes("Inventory movement history is append-only"));
+assert.ok(inventoryMigration.includes("ENABLE ROW LEVEL SECURITY"));
+assert.ok(inventoryMigration.includes("m.role IN ('owner','admin')"));
+assert.ok(inventoryMigration.includes("REVOKE ALL PRIVILEGES"));
+assert.ok(inventoryApi.includes('requireCoreRole(db, ["admin"]'));
+assert.ok(inventoryApi.includes('request.headers.get("x-tenant-id")'));
+assert.ok(inventoryApi.includes('eq("tenant_id", tenantId)'));
+assert.ok(inventoryApi.includes('rpc("sports_inventory_record_movement"'));
+assert.ok(inventoryApi.includes('Cache-Control": "private, no-store"'));
+assert.ok(inventoryApi.includes("export async function PATCH"));
+assert.ok(inventoryPage.includes("/api/core-sports/inventory"));
+assert.ok(inventoryPage.includes("metatya-sports-os-active-tenant"));
+assert.ok(inventoryPage.includes("وزنه‌برداری، فوتبال، تیراندازی"));
+assert.ok(inventoryPage.includes("غیرفعال‌سازی"));
+assert.ok(inventoryPage.includes("گردش موجودی"));
+assert.ok(inventoryPage.includes('href="/"'));
+assert.ok(dashboard.includes('href="/inventory">مدیریت انبار'));
+assert.ok(!dashboard.includes('useState("تیراندازی ورزشی")'));
+
 console.log("METATYA Sports OS static security checks passed.");
