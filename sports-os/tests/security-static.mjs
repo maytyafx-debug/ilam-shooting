@@ -21,6 +21,9 @@ const [
   resultsApi,
   tenantApi,
   dashboard,
+  memberManagementApi,
+  memberHistoryApi,
+  memberManagementPage,
 ] = await Promise.all([
   read("../app/login/page.tsx"),
   read("../app/auth/callback/route.ts"),
@@ -40,6 +43,9 @@ const [
   read("../app/api/core-sports/results/route.ts"),
   read("../app/api/core-sports/tenant/route.ts"),
   read("../app/page.tsx"),
+  read("../app/api/core-sports/member-management/route.ts"),
+  read("../app/api/core-sports/member-management/history/route.ts"),
+  read("../app/members/page.tsx"),
 ]);
 
 assert.ok(login.includes("signInWithPassword"));
@@ -138,5 +144,21 @@ assert.ok(membersApi.includes("Invalid member data"));
 assert.ok(eventsApi.includes("Invalid event data"));
 assert.ok(resultsApi.includes("UUID_RE.test(body.event_id)"));
 assert.ok(resultsApi.includes("score < 0"));
+
+for (const route of [memberManagementApi, memberHistoryApi]) {
+  assert.ok(route.includes('requireCoreRole(db, ["admin"]'));
+  assert.ok(route.includes('request.headers.get("x-tenant-id")'));
+  assert.ok(route.includes('eq("tenant_id", auth.tenantId)'));
+}
+assert.ok(memberManagementApi.includes("export async function PATCH"));
+assert.ok(memberManagementApi.includes("export async function DELETE"));
+assert.ok(memberManagementApi.includes('update({ status: "inactive" })'));
+assert.ok(memberManagementApi.includes('writeHistory'));
+assert.ok(memberHistoryApi.includes('from("sports_member_history")'));
+assert.ok(memberManagementPage.includes('selected.role !== "owner" && selected.role !== "admin"'));
+assert.ok(memberManagementPage.includes("جستجو بر اساس نام، شماره عضویت یا تماس"));
+assert.ok(memberManagementPage.includes("سوابق"));
+assert.ok(memberManagementPage.includes("غیرفعال‌سازی"));
+assert.ok(!memberManagementPage.includes("national_id"));
 
 console.log("METATYA Sports OS static security checks passed.");
