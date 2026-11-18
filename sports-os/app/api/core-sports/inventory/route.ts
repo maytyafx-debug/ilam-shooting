@@ -122,9 +122,8 @@ export async function POST(request: NextRequest) {
     const model = optionalText(data.model, 100);
     const description = optionalText(data.description, 1000);
     const unit = text(data.unit ?? "عدد", 1, 24);
-    const trackingModeValue = data.tracking_mode ?? "quantity";
-    if (trackingModeValue !== "quantity" && trackingModeValue !== "individual") return fail("روش ردیابی کالا معتبر نیست.");
-    const tracking_mode: "quantity" | "individual" = trackingModeValue;
+    const tracking_mode = "quantity";
+    if (data.tracking_mode !== undefined && data.tracking_mode !== "quantity") return fail("ردیابی اموال با شناسه مستقل در مرحله بعدی فعال می‌شود.");
     const minimum_quantity = Number(data.minimum_quantity ?? 0);
     const category_id = data.category_id == null || data.category_id === "" ? null : data.category_id;
     if (!sku || !name || sport_name === undefined || brand === undefined || model === undefined ||
