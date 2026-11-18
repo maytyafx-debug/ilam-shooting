@@ -79,6 +79,21 @@ export default function PublicHomePage() {
           </div>
         </section>
 
+        <section className="public-container public-structure" aria-label="ساختار و مراکز ورزشی">
+          <div className="public-structure-card" id="committees">
+            <span className="public-kicker">ORGANIZATION</span>
+            <h2>ساختار و کمیته‌های تخصصی</h2>
+            <p>معرفی مسئولیت‌ها، حوزه فعالیت و راه‌های ارتباط با بخش‌های مختلف هیئت؛ اطلاعات مسئولان پس از تأیید رسمی منتشر می‌شود.</p>
+            <span className="public-coming">اطلاعات در حال آماده‌سازی</span>
+          </div>
+          <div className="public-structure-card" id="clubs">
+            <span className="public-kicker">CLUBS & CENTERS</span>
+            <h2>باشگاه‌ها و مراکز ورزشی</h2>
+            <p>فهرست مراکز و باشگاه‌های دارای مجوز، اطلاعات معرفی و مسیرهای ارتباطی پس از تأیید و ثبت رسمی در این قسمت نمایش داده می‌شود.</p>
+            <span className="public-coming">فهرست رسمی هنوز منتشر نشده است</span>
+          </div>
+        </section>
+
         <section className="public-band" id="events">
           <div className="public-container public-band-inner">
             <div><span className="public-kicker">EVENTS & CALENDAR</span><h2>مسابقات و رویدادها</h2><p>فراخوان‌ها، برنامه‌ها و نتایج رسمی پس از تأیید و مجوز انتشار در این قسمت قرار می‌گیرند.</p></div>
