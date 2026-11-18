@@ -24,6 +24,7 @@ const [
   memberManagementApi,
   memberHistoryApi,
   memberManagementPage,
+  integratedMigration,
 ] = await Promise.all([
   read("../app/login/page.tsx"),
   read("../app/auth/callback/route.ts"),
@@ -46,6 +47,7 @@ const [
   read("../app/api/core-sports/member-management/route.ts"),
   read("../app/api/core-sports/member-management/history/route.ts"),
   read("../app/members/page.tsx"),
+  read("../../supabase/migrations/009_integrated_sports_management.sql"),
 ]);
 
 assert.ok(login.includes("signInWithPassword"));
@@ -160,5 +162,12 @@ assert.ok(memberManagementPage.includes("جستجو بر اساس نام، شم�
 assert.ok(memberManagementPage.includes("سوابق"));
 assert.ok(memberManagementPage.includes("غیرفعال‌سازی"));
 assert.ok(!memberManagementPage.includes("national_id"));
+assert.ok(integratedMigration.includes("ADD COLUMN IF NOT EXISTS membership_number"));
+assert.ok(integratedMigration.includes("ADD COLUMN IF NOT EXISTS birth_date"));
+assert.ok(integratedMigration.includes("CREATE TABLE IF NOT EXISTS public.sports_member_history"));
+assert.ok(integratedMigration.includes("FORCE ROW LEVEL SECURITY"));
+assert.ok(integratedMigration.includes("sports_member_history_admin_insert"));
+assert.ok(integratedMigration.includes("ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED"));
+assert.ok(integratedMigration.includes("sports_financial_reversal_same_tenant_fk"));
 
 console.log("METATYA Sports OS static security checks passed.");
