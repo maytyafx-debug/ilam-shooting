@@ -122,11 +122,11 @@ export async function POST(request: NextRequest) {
     const model = optionalText(data.model, 100);
     const description = optionalText(data.description, 1000);
     const unit = text(data.unit ?? "عدد", 1, 24);
-    const tracking_mode = data.tracking_mode ?? "quantity";
+    const trackingModeValue = data.tracking_mode ?? "quantity";\n    if (trackingModeValue !== "quantity" && trackingModeValue !== "individual") return fail("روش ردیابی کالا معتبر نیست.");\n    const tracking_mode: "quantity" | "individual" = trackingModeValue;
     const minimum_quantity = Number(data.minimum_quantity ?? 0);
     const category_id = data.category_id == null || data.category_id === "" ? null : data.category_id;
     if (!sku || !name || sport_name === undefined || brand === undefined || model === undefined ||
-        description === undefined || !unit || !["quantity", "individual"].includes(String(tracking_mode)) ||
+        description === undefined || !unit ||
         !Number.isFinite(minimum_quantity) || minimum_quantity < 0 || minimum_quantity > 1000000000 ||
         (category_id !== null && !isUuid(category_id))) return fail("مشخصات کالا معتبر نیست.");
     const { data: saved, error } = await db.from("sports_inventory_items")
@@ -147,17 +147,17 @@ export async function POST(request: NextRequest) {
   if (body.module === "movement") {
     const item_id = data.item_id;
     const warehouse_id = data.warehouse_id;
-    const movement_type = data.movement_type;
+    const movementType = data.movement_type;
     const reason = text(data.reason, 2, 500);
     const reference_code = optionalText(data.reference_code, 100);
     const quantity = Number(data.quantity);
     if (!isUuid(item_id) || !isUuid(warehouse_id) ||
-        !MOVEMENT_TYPES.includes(movement_type as typeof MOVEMENT_TYPES[number]) ||
+        typeof movementType !== "string" || !MOVEMENT_TYPES.includes(movementType as typeof MOVEMENT_TYPES[number]) ||
         !Number.isFinite(quantity) || quantity <= 0 || quantity > 1000000000 ||
         !reason || reference_code === undefined) return fail("اطلاعات گردش موجودی معتبر نیست.");
     const direction = data.direction ?? "increase";
     if (!["increase", "decrease"].includes(String(direction))) return fail("جهت اصلاح موجودی معتبر نیست.");
-    if (["adjustment", "correction"].includes(String(movement_type))) {
+    if (["adjustment", "correction"].includes(movementType)) {
       // Adjustments may increase or decrease the counted balance.
     } else if (direction !== "increase") {
       return fail("جهت این نوع گردش از نوع عملیات مشخص می‌شود.");
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
       p_tenant_id: tenant_id,
       p_item_id: item_id,
       p_warehouse_id: warehouse_id,
-      p_movement_type: movement_type,
+      p_movement_type: movementType,
       p_quantity_delta: quantity_delta,
       p_reason: reason,
       p_reference_code: reference_code ?? null,
