@@ -31,8 +31,12 @@ ON CONFLICT DO NOTHING;
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','aaaaaaaa-0000-4000-8000-000000000011',true);
+-- Migration 010 intentionally resets every inserted result to pending; verify these
+-- seeded podium rows through the same owner/admin transition used in production.
+UPDATE public.sports_results SET verification_status='verified'
+WHERE id IN ('44444444-4444-4444-8444-444444444441','44444444-4444-4444-8444-444444444443');
 
-DO $$
+DO $
 DECLARE v_token uuid; v_card jsonb; v_youth_token uuid;
 BEGIN
  -- Adult card can be issued without guardian media consent.
