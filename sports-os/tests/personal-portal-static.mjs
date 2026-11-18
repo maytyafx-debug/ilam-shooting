@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 const api = await readFile(new URL("../app/api/personal-portal/route.ts", import.meta.url), "utf8");
 const page = await readFile(new URL("../app/portal/page.tsx", import.meta.url), "utf8");
 const migration = await readFile(new URL("../../supabase/migrations/010_personal_identity_portals.sql", import.meta.url), "utf8");
+const linkingApi = await readFile(new URL("../app/api/core-sports/person-links/route.ts", import.meta.url), "utf8");
 
 assert.ok(api.includes("db.auth.getUser()"));
 assert.ok(api.includes('.eq("user_id", user.id)'));
@@ -20,4 +21,10 @@ assert.ok(migration.includes("sports_members_select_linked_self"));
 assert.ok(migration.includes("sports_results_select_linked_athlete"));
 assert.ok(migration.includes("sports_staff_profiles_self_or_admin_read"));
 assert.ok(migration.includes("sports_official_assignments_self_or_admin_read"));
+assert.ok(migration.includes("sports_admin_link_person"));
+assert.ok(migration.includes("email_confirmed_at is not null"));
+assert.ok(linkingApi.includes("requireCoreRole(db, [\"admin\"]"));
+assert.ok(linkingApi.includes("sports_admin_link_person"));
+assert.ok(linkingApi.includes("p_tenant_id: auth.tenantId"));
+assert.ok(!linkingApi.includes("service_role"));
 console.log("Personal portal static security checks passed.");
