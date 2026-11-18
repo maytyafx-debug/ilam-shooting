@@ -280,4 +280,25 @@ assert.ok(inventoryPage.includes('href="/"'));
 assert.ok(dashboard.includes('href="/inventory">مدیریت انبار'));
 assert.ok(!dashboard.includes('useState("تیراندازی ورزشی")'));
 
+const inventoryAdvancedMigration = await read("../../supabase/migrations/012_inventory_transfers_and_assets.sql");
+assert.ok(inventoryAdvancedMigration.includes("sports_inventory_transfer_stock"));
+assert.ok(inventoryAdvancedMigration.includes("FOR UPDATE"));
+assert.ok(inventoryAdvancedMigration.includes("sports_inventory_register_asset"));
+assert.ok(inventoryAdvancedMigration.includes("sports_inventory_transfer_asset"));
+assert.ok(inventoryAdvancedMigration.includes("barcode_value"));
+assert.ok(inventoryAdvancedMigration.includes("sports_inventory_asset_movements"));
+assert.ok(inventoryAdvancedMigration.includes("Inventory asset movement history is append-only"));
+assert.ok(inventoryAdvancedMigration.includes("i.tracking_mode='quantity'"));
+assert.ok(inventoryApi.includes('rpc("sports_inventory_transfer_stock"'));
+assert.ok(inventoryApi.includes('rpc("sports_inventory_register_asset"'));
+assert.ok(inventoryApi.includes('rpc("sports_inventory_transfer_asset"'));
+assert.ok(inventoryApi.includes('from("sports_inventory_assets")'));
+assert.ok(inventoryApi.includes('from("sports_inventory_transfers")'));
+assert.ok(inventoryPage.includes("QRCodeSVG"));
+assert.ok(inventoryPage.includes("چاپ برچسب‌ها"));
+assert.ok(inventoryPage.includes("انتقال اموال شناسه‌دار"));
+assert.ok(inventoryPage.includes("گزارش‌های مدیریتی"));
+assert.ok(inventoryPage.includes("روش ردیابی"));
+assert.ok(inventoryPage.includes("inventory-labels"));
+
 console.log("METATYA Sports OS static security checks passed.");
