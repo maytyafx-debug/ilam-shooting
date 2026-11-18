@@ -79,25 +79,6 @@ function validateMemberInput(body: MemberInput, partial: boolean) {
   return { patch };
 }
 
-async function writeHistory(
-  db: Awaited<ReturnType<typeof createSupabaseServerClient>>,
-  tenantId: string,
-  memberId: string,
-  actorId: string,
-  action: "created" | "updated" | "archived",
-  changedFields: Record<string, unknown>,
-) {
-  const { error } = await db.from("sports_member_history").insert({
-    tenant_id: tenantId,
-    member_id: memberId,
-    actor_id: actorId,
-    action,
-    changed_fields: changedFields,
-  });
-  if (error) console.error("[Sports OS] member history write failed:", error);
-  return !error;
-}
-
 export async function GET(request: NextRequest) {
   const db = await createSupabaseServerClient();
   const auth = await requireCoreRole(db, ["admin"], request.headers.get("x-tenant-id"));
@@ -152,11 +133,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const historyRecorded = await writeHistory(
-    db, auth.tenantId, data.id, auth.user.id, "created",
-    Object.fromEntries(Object.entries(validated.patch).map(([key, value]) => [key, { after: value }])),
-  );
-  return NextResponse.json({ member: data, historyRecorded }, { status: 201 });
+  return NextResponse.json({ member: data }, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -205,16 +182,7 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  const changedFields = Object.fromEntries(
-    Object.entries(validated.patch)
-      .filter(([key, value]) => before[key] !== value)
-      .map(([key, value]) => [key, { before: before[key], after: value }]),
-  );
-  const historyRecorded = Object.keys(changedFields).length === 0
-    ? true
-    : await writeHistory(db, auth.tenantId, data.id, auth.user.id, "updated", changedFields);
-
-  return NextResponse.json({ member: data, historyRecorded }, {
+  return NextResponse.json({ member: data }, {
     headers: { "Cache-Control": "private, no-store" },
   });
 }
@@ -251,9 +219,5 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "غیرفعال‌سازی پرونده ناموفق بود." }, { status: 400 });
   }
 
-  const historyRecorded = await writeHistory(
-    db, auth.tenantId, memberId, auth.user.id, "archived",
-    { status: { before: before.status, after: "inactive" } },
-  );
-  return NextResponse.json({ success: true, member: data, historyRecorded });
+  return NextResponse.json({ success: true, member: data });
 }
