@@ -32,11 +32,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "اطلاعات اتصال حساب معتبر نیست." }, { status: 400 });
   }
 
+  const validatedPersonType = personType as "athlete" | "coach" | "referee";
+  const validatedMemberId = typeof memberId === "string" ? memberId : null;
   const { data, error } = await db.rpc("sports_admin_link_person", {
     p_tenant_id: auth.tenantId,
     p_email: email,
-    p_person_type: personType,
-    p_member_id: personType === "athlete" ? memberId : null,
+    p_person_type: validatedPersonType,
+    p_member_id: validatedPersonType === "athlete" ? validatedMemberId : null,
   });
 
   if (error || !data?.length) {
@@ -53,7 +55,7 @@ export async function POST(request: NextRequest) {
     linked: true,
     personal_code: data[0].personal_code,
     display_name: data[0].display_name,
-    person_type: personType,
+    person_type: validatedPersonType,
   }, {
     status: 201,
     headers: { "Cache-Control": "private, no-store" },
