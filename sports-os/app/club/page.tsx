@@ -160,7 +160,8 @@ export default function ClubManagementPage() {
     setBusy(true);
     setMessage("");
     setErrorMessage("");
-    const raw = Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>;
+    const formElement = event.currentTarget;
+    const raw = Object.fromEntries(new FormData(formElement).entries()) as Record<string, string>;
     const payload: Record<string, unknown> = { ...raw };
     if (activeTab === "memberships") {
       payload.fee_amount = raw.fee_amount ? Number(raw.fee_amount) : null;
@@ -179,7 +180,7 @@ export default function ClubManagementPage() {
       if (response.status === 401) { router.replace("/login"); return; }
       if (!response.ok) throw new Error(result.error || "ثبت اطلاعات ناموفق بود.");
       await load(tenantId);
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage("اطلاعات با موفقیت ثبت شد.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "ثبت اطلاعات ناموفق بود.");
