@@ -185,7 +185,7 @@ export default function InventoryPage() {
   const lowStock = activeItems.filter((item) => {
     const total = data.stock.filter((row) => row.item_id === item.id)
       .reduce((sum, row) => sum + Number(row.quantity_on_hand), 0);
-    return total <= Number(item.minimum_quantity);
+    return Number(item.minimum_quantity) > 0 && total <= Number(item.minimum_quantity);
   });
 
   return (
@@ -259,7 +259,7 @@ export default function InventoryPage() {
               {tab === "movements" && <div className="grid gap-3 sm:grid-cols-2">
                 <div><label className="mb-1 block text-sm text-slate-300">کالا</label><select name="item_id" required className={inputClass}><option value="">انتخاب کالا</option>{activeItems.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.sku}</option>)}</select></div>
                 <div><label className="mb-1 block text-sm text-slate-300">انبار</label><select name="warehouse_id" required className={inputClass}><option value="">انتخاب انبار</option>{activeWarehouses.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
-                <div><label className="mb-1 block text-sm text-slate-300">نوع گردش</label><select name="movement_type" className={inputClass}><option value="receipt">ورود / خرید</option><option value="return">عودت به انبار</option><option value="issue">تحویل / خروج</option><option value="consumption">مصرف</option><option value="adjustment">اصلاح موجودی</option><option value="correction">تصحیح</option></select></div>
+                <div><label className="mb-1 block text-sm text-slate-300">نوع گردش</label><select name="movement_type" className={inputClass}><option value="receipt">ورود / خرید</option><option value="return">عودت به انبار</option><option value="issue">تحویل / خروج</option><option value="consumption">مصرف</option><option value="adjustment">اصلاح موجودی</option><option value="correction">تصحیح</option></select></div>\n                <div><label className="mb-1 block text-sm text-slate-300">جهت اصلاح (برای اصلاح / تصحیح)</label><select name="direction" className={inputClass}><option value="increase">افزایش موجودی</option><option value="decrease">کاهش موجودی</option></select></div>
                 <Field name="quantity" label="مقدار" type="number" required min="0.001" step="0.001" />
                 <div className="sm:col-span-2"><Field name="reason" label="علت / توضیح گردش" required placeholder="خرید، تحویل به واحد، شمارش دوره‌ای..." /></div>
                 <Field name="reference_code" label="شماره سند (اختیاری)" />
