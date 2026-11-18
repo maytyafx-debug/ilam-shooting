@@ -172,6 +172,8 @@ assert.ok(integratedMigration.includes("CREATE OR REPLACE FUNCTION public.sports
 assert.ok(integratedMigration.includes("SECURITY DEFINER"));
 assert.ok(integratedMigration.includes("Authenticated actor required for member audit"));
 assert.ok(integratedMigration.includes("sports_members_no_hard_delete"));
+assert.ok(integratedMigration.includes("sports_athlete_profiles_no_hard_delete"));
+assert.ok(integratedMigration.includes("REVOKE DELETE ON TABLE public.sports_athlete_profiles FROM authenticated"));
 assert.ok(integratedMigration.includes("DROP COLUMN IF EXISTS birth_date"));
 assert.ok(integratedMigration.includes("sports_athlete_profiles_tenant_membership_number_uq"));
 assert.ok(!integratedMigration.includes("'before', OLD.full_name"));

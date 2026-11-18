@@ -611,6 +611,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
   public.sports_event_entries,
   public.sports_development_plans
 TO authenticated;
+REVOKE DELETE ON TABLE public.sports_athlete_profiles FROM authenticated;
 
 GRANT INSERT ON TABLE public.sports_financial_transactions TO authenticated;
 GRANT SELECT ON TABLE public.sports_member_history TO authenticated;
@@ -892,6 +893,19 @@ REVOKE ALL ON FUNCTION public.sports_prevent_member_delete() FROM PUBLIC, anon, 
 DROP TRIGGER IF EXISTS sports_members_no_hard_delete ON public.sports_members;
 CREATE TRIGGER sports_members_no_hard_delete BEFORE DELETE ON public.sports_members
 FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_member_delete();
+
+CREATE OR REPLACE FUNCTION public.sports_prevent_athlete_profile_delete()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog
+AS $profile_delete$
+BEGIN
+  RAISE EXCEPTION 'Athlete profiles cannot be deleted; clear approved fields through member management'
+    USING ERRCODE = '42501';
+END;
+$profile_delete$;
+REVOKE ALL ON FUNCTION public.sports_prevent_athlete_profile_delete() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS sports_athlete_profiles_no_hard_delete ON public.sports_athlete_profiles;
+CREATE TRIGGER sports_athlete_profiles_no_hard_delete BEFORE DELETE ON public.sports_athlete_profiles
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_athlete_profile_delete();
 
 -- Audit stores changed field names only, never personal values.
 CREATE OR REPLACE FUNCTION public.sports_audit_member_change()
