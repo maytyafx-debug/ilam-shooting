@@ -4,8 +4,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type AnyRow = Record<string, unknown>;
-
 function fail(message: string, status = 500) {
   return NextResponse.json({ error: message }, {
     status,
@@ -50,11 +48,6 @@ export async function GET() {
 
   const members = memberResult.data ?? [];
   const memberIds = members.map((item) => item.id);
-  const tenantIds = [...new Set([
-    ...members.map((item) => item.tenant_id),
-    ...(staffResult.data ?? []).map((item) => item.tenant_id),
-  ])];
-
   const [profilesResult, resultsResult, clubResult, insuranceResult, entriesResult, plansResult, assignmentsResult] = await Promise.all([
     memberIds.length
       ? db.from("sports_athlete_profiles")
