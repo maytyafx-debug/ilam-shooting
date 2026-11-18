@@ -32,7 +32,12 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/");
+      const tenantResponse = await fetch("/api/core-sports/tenant", { cache: "no-store" });
+      const tenantPayload = await tenantResponse.json() as { tenants?: { role: string }[] };
+      const hasManagementRole = tenantResponse.ok && (tenantPayload.tenants ?? []).some(
+        (tenant) => tenant.role === "owner" || tenant.role === "admin",
+      );
+      router.replace(hasManagementRole ? "/admin" : "/portal");
       router.refresh();
     } catch (caughtError) {
       console.error("[METATYA AUTH] Login flow threw an exception:", caughtError);

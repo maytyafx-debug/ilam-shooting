@@ -1,0 +1,38 @@
+name: Sports OS verification
+
+on:
+  pull_request:
+    paths:
+      - "sports-os/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/sports-os-ci.yml"
+  push:
+    branches:
+      - "feat/sports-personal-portals-v1"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sports-os
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: sports-os/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Security and portal tests
+        run: npm test
+      - name: Production build
+        run: npm run build
