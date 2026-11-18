@@ -82,6 +82,6 @@ BEGIN
  IF public.sports_get_public_athlete_card(v_token) IS NOT NULL THEN
   RAISE EXCEPTION 'Revoked QR token still resolves';
  END IF;
-END $$;
+END $champion_test$;
 RESET ROLE;
 ROLLBACK;
