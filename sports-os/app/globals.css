@@ -108,6 +108,7 @@ main { padding: 32px 0 56px; }
 @media (max-width: 680px) { .portal-columns { grid-template-columns: 1fr; } .personal-code { width: 100%; } }
 
 /* Public federation website */
+.public-main { padding: 0; }
 .public-site { --pub-ink:#172c29; --pub-green:#174c40; --pub-gold:#c69a50; --pub-muted:#697873; background:#f7f8f5; color:var(--pub-ink); overflow:hidden; }
 .public-container { width:min(1160px,calc(100% - 40px)); margin-inline:auto; }
 .public-topline { background:#102a26; color:#d7e3dd; font-size:12px; }
