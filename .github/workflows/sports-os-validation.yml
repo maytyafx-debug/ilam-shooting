@@ -1,0 +1,46 @@
+name: Sports OS static validation
+
+on:
+  pull_request:
+    paths:
+      - "sports-os/**"
+      - ".github/workflows/sports-os-validation.yml"
+      - "register-athlete.html"
+      - "register-competition.html"
+      - "register-member.html"
+      - "calendar.html"
+      - "functions/api/submit.js"
+      - "supabase/migrations/**"
+  push:
+    branches:
+      - "feat/metatya-sports-os-foundation-v1"
+    paths:
+      - "sports-os/**"
+      - "register-athlete.html"
+      - "register-competition.html"
+      - "register-member.html"
+      - "calendar.html"
+      - "functions/api/submit.js"
+      - "supabase/migrations/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sports-os-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: node --check sports-os/app.js
+      - name: Validate product demo and legacy routes
+        run: node sports-os/tests/validate-demo.mjs
