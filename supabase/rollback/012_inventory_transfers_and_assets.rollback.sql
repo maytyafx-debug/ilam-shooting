@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION public.sports_inventory_record_movement(
 )
 RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 DECLARE
   v_actor uuid := auth.uid();
   v_balance numeric(14,3);
@@ -95,7 +95,7 @@ BEGIN
   RETURNING id INTO v_movement_id;
   RETURN v_movement_id;
 END;
-$;
+$$;
 REVOKE ALL ON FUNCTION public.sports_inventory_record_movement(uuid,uuid,uuid,text,numeric,text,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.sports_inventory_record_movement(uuid,uuid,uuid,text,numeric,text,text) TO authenticated;
 
