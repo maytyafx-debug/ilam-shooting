@@ -14,7 +14,7 @@ type Member = {
 };
 type HistoryItem = {
   id: string; actor_id: string | null; action: "created" | "updated" | "archived";
-  changed_fields: Record<string, { before?: unknown; after?: unknown }>; created_at: string;
+  changed_fields: Record<string, boolean>; created_at: string;
 };
 type FormState = {
   full_name: string; phone: string; sport_type: string; membership_number: string;

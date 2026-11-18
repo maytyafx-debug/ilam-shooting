@@ -20,6 +20,8 @@ create table if not exists public.sports_athlete_profiles (
   tenant_id uuid not null references public.sports_tenants(id) on delete cascade,
   member_id uuid not null,
   birth_date date,
+  membership_number text,
+  athlete_category text,
   gender text check (gender is null or gender in ('female','male','unspecified')),
   athlete_code text,
   development_category text,
@@ -489,23 +491,49 @@ grant select, insert on public.sports_financial_transactions to authenticated;
 -- National identifiers are intentionally excluded from this general profile.
 -- ---------------------------------------------------------------------------
 
-ALTER TABLE public.sports_members
+-- Keep private athlete attributes out of sports_members: that table is readable
+-- by referees for operational scoring. Migrate values from an earlier draft first.
+ALTER TABLE public.sports_athlete_profiles
   ADD COLUMN IF NOT EXISTS membership_number text,
-  ADD COLUMN IF NOT EXISTS birth_date date,
-  ADD COLUMN IF NOT EXISTS athlete_category text,
+  ADD COLUMN IF NOT EXISTS athlete_category text;
+
+INSERT INTO public.sports_athlete_profiles
+  (tenant_id, member_id, birth_date, membership_number, athlete_category)
+SELECT sm.tenant_id, sm.id,
+  NULLIF(to_jsonb(sm)->>'birth_date', '')::date,
+  NULLIF(btrim(to_jsonb(sm)->>'membership_number'), ''),
+  NULLIF(btrim(to_jsonb(sm)->>'athlete_category'), '')
+FROM public.sports_members sm
+WHERE NULLIF(to_jsonb(sm)->>'birth_date', '') IS NOT NULL
+   OR NULLIF(btrim(to_jsonb(sm)->>'membership_number'), '') IS NOT NULL
+   OR NULLIF(btrim(to_jsonb(sm)->>'athlete_category'), '') IS NOT NULL
+ON CONFLICT (member_id, tenant_id) DO UPDATE SET
+  birth_date = COALESCE(public.sports_athlete_profiles.birth_date, EXCLUDED.birth_date),
+  membership_number = COALESCE(public.sports_athlete_profiles.membership_number, EXCLUDED.membership_number),
+  athlete_category = COALESCE(public.sports_athlete_profiles.athlete_category, EXCLUDED.athlete_category);
+
+ALTER TABLE public.sports_members
   ADD COLUMN IF NOT EXISTS joined_on date NOT NULL DEFAULT current_date,
   ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
-ALTER TABLE public.sports_members
-  DROP CONSTRAINT IF EXISTS sports_members_membership_number_length_check,
-  ADD CONSTRAINT sports_members_membership_number_length_check
+ALTER TABLE public.sports_athlete_profiles
+  DROP CONSTRAINT IF EXISTS sports_athlete_profiles_membership_number_length_check,
+  ADD CONSTRAINT sports_athlete_profiles_membership_number_length_check
     CHECK (membership_number IS NULL OR length(trim(membership_number)) BETWEEN 1 AND 40),
-  DROP CONSTRAINT IF EXISTS sports_members_athlete_category_length_check,
-  ADD CONSTRAINT sports_members_athlete_category_length_check
+  DROP CONSTRAINT IF EXISTS sports_athlete_profiles_athlete_category_length_check,
+  ADD CONSTRAINT sports_athlete_profiles_athlete_category_length_check
     CHECK (athlete_category IS NULL OR length(trim(athlete_category)) BETWEEN 1 AND 80);
 
-CREATE UNIQUE INDEX IF NOT EXISTS sports_members_tenant_membership_number_uq
-  ON public.sports_members(tenant_id, membership_number)
+DROP INDEX IF EXISTS public.sports_members_tenant_membership_number_uq;
+ALTER TABLE public.sports_members
+  DROP CONSTRAINT IF EXISTS sports_members_membership_number_length_check,
+  DROP CONSTRAINT IF EXISTS sports_members_athlete_category_length_check,
+  DROP COLUMN IF EXISTS membership_number,
+  DROP COLUMN IF EXISTS birth_date,
+  DROP COLUMN IF EXISTS athlete_category;
+
+CREATE UNIQUE INDEX IF NOT EXISTS sports_athlete_profiles_tenant_membership_number_uq
+  ON public.sports_athlete_profiles(tenant_id, membership_number)
   WHERE membership_number IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS sports_members_tenant_name_idx
@@ -517,9 +545,9 @@ CREATE INDEX IF NOT EXISTS sports_members_tenant_status_idx
 -- Append-only, administrator-visible member change history.
 CREATE TABLE IF NOT EXISTS public.sports_member_history (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id uuid NOT NULL REFERENCES public.sports_tenants(id) ON DELETE CASCADE,
+  tenant_id uuid NOT NULL REFERENCES public.sports_tenants(id) ON DELETE NO ACTION,
   member_id uuid NOT NULL,
-  actor_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  actor_id uuid,
   action text NOT NULL CHECK (action IN ('created','updated','archived')),
   changed_fields jsonb NOT NULL DEFAULT '{}'::jsonb
     CHECK (jsonb_typeof(changed_fields) = 'object'),
@@ -531,6 +559,13 @@ CREATE TABLE IF NOT EXISTS public.sports_member_history (
 
 CREATE INDEX IF NOT EXISTS sports_member_history_member_idx
   ON public.sports_member_history(tenant_id, member_id, created_at DESC);
+
+ALTER TABLE public.sports_member_history
+  DROP CONSTRAINT IF EXISTS sports_member_history_actor_id_fkey,
+  DROP CONSTRAINT IF EXISTS sports_member_history_tenant_id_fkey;
+ALTER TABLE public.sports_member_history
+  ADD CONSTRAINT sports_member_history_tenant_id_fkey
+  FOREIGN KEY (tenant_id) REFERENCES public.sports_tenants(id) ON DELETE NO ACTION;
 
 -- Updated timestamp for member records.
 DROP TRIGGER IF EXISTS sports_members_updated_at ON public.sports_members;
@@ -577,10 +612,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
   public.sports_development_plans
 TO authenticated;
 
-GRANT SELECT, INSERT ON TABLE
-  public.sports_financial_transactions,
-  public.sports_member_history
-TO authenticated;
+GRANT INSERT ON TABLE public.sports_financial_transactions TO authenticated;
+GRANT SELECT ON TABLE public.sports_member_history TO authenticated;
 
 -- Until verified athlete-account linking and coach-to-athlete assignments exist,
 -- sensitive personal, insurance, consent and development data remain admin-only.
@@ -848,77 +881,126 @@ REVOKE ALL ON FUNCTION public.sports_prevent_finance_mutation() FROM PUBLIC, ano
 -- Member history is written by a SECURITY INVOKER trigger in the same
 -- transaction as each member insert/update. RLS therefore validates the
 -- authenticated administrator and a failed audit write rolls back the change.
-CREATE OR REPLACE FUNCTION public.sports_audit_member_change()
-RETURNS trigger
-LANGUAGE plpgsql
-SET search_path = pg_catalog, public
-AS $member_audit$
-DECLARE
-  actor uuid := auth.uid();
-  changes jsonb := '{}'::jsonb;
-  event_action text;
+CREATE OR REPLACE FUNCTION public.sports_prevent_member_delete()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog
+AS $member_delete$
 BEGIN
-  IF actor IS NULL THEN
-    RETURN NEW;
-  END IF;
+  RAISE EXCEPTION 'Member records cannot be deleted; archive the member instead' USING ERRCODE = '42501';
+END;
+$member_delete$;
+REVOKE ALL ON FUNCTION public.sports_prevent_member_delete() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS sports_members_no_hard_delete ON public.sports_members;
+CREATE TRIGGER sports_members_no_hard_delete BEFORE DELETE ON public.sports_members
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_member_delete();
 
+-- Audit stores changed field names only, never personal values.
+CREATE OR REPLACE FUNCTION public.sports_audit_member_change()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+AS $member_audit$
+DECLARE actor uuid := auth.uid(); changes jsonb := '{}'::jsonb; event_action text;
+BEGIN
+  IF actor IS NULL THEN RAISE EXCEPTION 'Authenticated actor required for member audit' USING ERRCODE = '42501'; END IF;
   IF TG_OP = 'INSERT' THEN
     event_action := 'created';
-    changes := jsonb_build_object(
-      'full_name', jsonb_build_object('after', NEW.full_name),
-      'phone', jsonb_build_object('after', NEW.phone),
-      'sport_type', jsonb_build_object('after', NEW.sport_type),
-      'membership_number', jsonb_build_object('after', NEW.membership_number),
-      'birth_date', jsonb_build_object('after', NEW.birth_date),
-      'athlete_category', jsonb_build_object('after', NEW.athlete_category),
-      'status', jsonb_build_object('after', NEW.status)
-    );
+    changes := jsonb_build_object('full_name',true,'phone',true,'sport_type',true,'status',true,'joined_on',true);
   ELSE
-    IF OLD.full_name IS DISTINCT FROM NEW.full_name THEN
-      changes := changes || jsonb_build_object('full_name', jsonb_build_object('before', OLD.full_name, 'after', NEW.full_name));
-    END IF;
-    IF OLD.phone IS DISTINCT FROM NEW.phone THEN
-      changes := changes || jsonb_build_object('phone', jsonb_build_object('before', OLD.phone, 'after', NEW.phone));
-    END IF;
-    IF OLD.sport_type IS DISTINCT FROM NEW.sport_type THEN
-      changes := changes || jsonb_build_object('sport_type', jsonb_build_object('before', OLD.sport_type, 'after', NEW.sport_type));
-    END IF;
-    IF OLD.membership_number IS DISTINCT FROM NEW.membership_number THEN
-      changes := changes || jsonb_build_object('membership_number', jsonb_build_object('before', OLD.membership_number, 'after', NEW.membership_number));
-    END IF;
-    IF OLD.birth_date IS DISTINCT FROM NEW.birth_date THEN
-      changes := changes || jsonb_build_object('birth_date', jsonb_build_object('before', OLD.birth_date, 'after', NEW.birth_date));
-    END IF;
-    IF OLD.athlete_category IS DISTINCT FROM NEW.athlete_category THEN
-      changes := changes || jsonb_build_object('athlete_category', jsonb_build_object('before', OLD.athlete_category, 'after', NEW.athlete_category));
-    END IF;
-    IF OLD.status IS DISTINCT FROM NEW.status THEN
-      changes := changes || jsonb_build_object('status', jsonb_build_object('before', OLD.status, 'after', NEW.status));
-    END IF;
-
-    IF changes = '{}'::jsonb THEN
-      RETURN NEW;
-    END IF;
-    event_action := CASE
-      WHEN OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'inactive' THEN 'archived'
-      ELSE 'updated'
-    END;
+    IF OLD.full_name IS DISTINCT FROM NEW.full_name THEN changes := changes || jsonb_build_object('full_name',true); END IF;
+    IF OLD.phone IS DISTINCT FROM NEW.phone THEN changes := changes || jsonb_build_object('phone',true); END IF;
+    IF OLD.sport_type IS DISTINCT FROM NEW.sport_type THEN changes := changes || jsonb_build_object('sport_type',true); END IF;
+    IF OLD.status IS DISTINCT FROM NEW.status THEN changes := changes || jsonb_build_object('status',true); END IF;
+    IF OLD.joined_on IS DISTINCT FROM NEW.joined_on THEN changes := changes || jsonb_build_object('joined_on',true); END IF;
+    IF changes = '{}'::jsonb THEN RETURN NEW; END IF;
+    event_action := CASE WHEN OLD.status IS DISTINCT FROM NEW.status AND NEW.status='inactive' THEN 'archived' ELSE 'updated' END;
   END IF;
-
-  INSERT INTO public.sports_member_history(
-    tenant_id, member_id, actor_id, action, changed_fields
-  ) VALUES (
-    NEW.tenant_id, NEW.id, actor, event_action, changes
-  );
-
+  INSERT INTO public.sports_member_history(tenant_id,member_id,actor_id,action,changed_fields)
+  VALUES(NEW.tenant_id,NEW.id,actor,event_action,changes);
   RETURN NEW;
 END;
 $member_audit$;
-
 REVOKE ALL ON FUNCTION public.sports_audit_member_change() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS sports_members_history_audit ON public.sports_members;
-CREATE TRIGGER sports_members_history_audit
-AFTER INSERT OR UPDATE ON public.sports_members
+CREATE TRIGGER sports_members_history_audit AFTER INSERT OR UPDATE ON public.sports_members
 FOR EACH ROW EXECUTE FUNCTION public.sports_audit_member_change();
+
+CREATE OR REPLACE FUNCTION public.sports_audit_athlete_profile_change()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+AS $profile_audit$
+DECLARE actor uuid := auth.uid(); changes jsonb := '{}'::jsonb;
+BEGIN
+  IF actor IS NULL THEN RAISE EXCEPTION 'Authenticated actor required for athlete profile audit' USING ERRCODE = '42501'; END IF;
+  IF TG_OP='INSERT' THEN
+    changes := jsonb_build_object('birth_date',true,'membership_number',true,'athlete_category',true);
+  ELSE
+    IF OLD.birth_date IS DISTINCT FROM NEW.birth_date THEN changes := changes || jsonb_build_object('birth_date',true); END IF;
+    IF OLD.membership_number IS DISTINCT FROM NEW.membership_number THEN changes := changes || jsonb_build_object('membership_number',true); END IF;
+    IF OLD.athlete_category IS DISTINCT FROM NEW.athlete_category THEN changes := changes || jsonb_build_object('athlete_category',true); END IF;
+    IF changes='{}'::jsonb THEN RETURN NEW; END IF;
+  END IF;
+  INSERT INTO public.sports_member_history(tenant_id,member_id,actor_id,action,changed_fields)
+  VALUES(NEW.tenant_id,NEW.member_id,actor,'updated',changes);
+  RETURN NEW;
+END;
+$profile_audit$;
+REVOKE ALL ON FUNCTION public.sports_audit_athlete_profile_change() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS sports_athlete_profiles_history_audit ON public.sports_athlete_profiles;
+CREATE TRIGGER sports_athlete_profiles_history_audit AFTER INSERT OR UPDATE ON public.sports_athlete_profiles
+FOR EACH ROW EXECUTE FUNCTION public.sports_audit_athlete_profile_change();
+
+CREATE OR REPLACE FUNCTION public.sports_save_member(
+  p_tenant_id uuid, p_member_id uuid, p_full_name text, p_phone text, p_sport_type text,
+  p_membership_number text, p_birth_date date, p_athlete_category text, p_status text
+)
+RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path = pg_catalog, public
+AS $save_member$
+DECLARE actor uuid := auth.uid(); v_member public.sports_members%ROWTYPE;
+BEGIN
+  IF actor IS NULL THEN RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501'; END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id=p_tenant_id AND tm.user_id=actor AND tm.status='active' AND tm.role IN ('owner','admin')
+  ) THEN RAISE EXCEPTION 'Active organization administrator required' USING ERRCODE = '42501'; END IF;
+
+  p_full_name := btrim(COALESCE(p_full_name,''));
+  p_phone := NULLIF(btrim(COALESCE(p_phone,'')),'');
+  p_sport_type := NULLIF(btrim(COALESCE(p_sport_type,'')),'');
+  p_membership_number := NULLIF(btrim(COALESCE(p_membership_number,'')),'');
+  p_athlete_category := NULLIF(btrim(COALESCE(p_athlete_category,'')),'');
+  p_status := COALESCE(p_status,'active');
+
+  IF length(p_full_name) NOT BETWEEN 2 AND 150
+    OR (p_phone IS NOT NULL AND length(p_phone)>30)
+    OR (p_sport_type IS NOT NULL AND length(p_sport_type)>120)
+    OR (p_membership_number IS NOT NULL AND length(p_membership_number)>40)
+    OR (p_athlete_category IS NOT NULL AND length(p_athlete_category)>80)
+    OR p_status NOT IN ('active','inactive','suspended')
+    OR (p_birth_date IS NOT NULL AND p_birth_date>current_date)
+  THEN RAISE EXCEPTION 'Invalid member data' USING ERRCODE = '22023'; END IF;
+
+  IF p_member_id IS NULL THEN
+    INSERT INTO public.sports_members(tenant_id,full_name,phone,sport_type,status)
+    VALUES(p_tenant_id,p_full_name,p_phone,p_sport_type,p_status) RETURNING * INTO v_member;
+  ELSE
+    UPDATE public.sports_members SET full_name=p_full_name,phone=p_phone,sport_type=p_sport_type,status=p_status
+    WHERE id=p_member_id AND tenant_id=p_tenant_id RETURNING * INTO v_member;
+    IF NOT FOUND THEN RAISE EXCEPTION 'Member not found in active organization' USING ERRCODE = 'P0002'; END IF;
+  END IF;
+
+  INSERT INTO public.sports_athlete_profiles(tenant_id,member_id,birth_date,membership_number,athlete_category)
+  VALUES(p_tenant_id,v_member.id,p_birth_date,p_membership_number,p_athlete_category)
+  ON CONFLICT(member_id,tenant_id) DO UPDATE SET
+    birth_date=EXCLUDED.birth_date,
+    membership_number=EXCLUDED.membership_number,
+    athlete_category=EXCLUDED.athlete_category;
+
+  RETURN jsonb_build_object(
+    'id',v_member.id,'tenant_id',v_member.tenant_id,'full_name',v_member.full_name,
+    'phone',v_member.phone,'sport_type',v_member.sport_type,'status',v_member.status,
+    'joined_on',v_member.joined_on,'created_at',v_member.created_at,'updated_at',v_member.updated_at,
+    'membership_number',p_membership_number,'birth_date',p_birth_date,'athlete_category',p_athlete_category
+  );
+END;
+$save_member$;
+REVOKE ALL ON FUNCTION public.sports_save_member(uuid,uuid,text,text,text,text,date,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.sports_save_member(uuid,uuid,text,text,text,text,date,text,text) TO authenticated;
 
 commit;
