@@ -12,7 +12,8 @@ set personal_code = 'MTX-ATH-' || upper(substr(replace(gen_random_uuid()::text, 
 where personal_code is null;
 
 alter table public.sports_athlete_profiles
-  alter column personal_code set not null;
+  alter column personal_code set not null,
+  alter column personal_code set default ('MTX-ATH-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)));
 
 create unique index if not exists sports_athlete_profiles_tenant_personal_code_uq
   on public.sports_athlete_profiles(tenant_id, personal_code);
