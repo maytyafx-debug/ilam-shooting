@@ -6,6 +6,9 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoreEvent, CoreMember, CoreResult, CoreRole } from "@/lib/core-sports/types";
 
 type ApiError = { error?: string };
+type MemberPayload = ApiError & { members?: CoreMember[] };
+type EventPayload = ApiError & { events?: CoreEvent[] };
+type ResultPayload = ApiError & { results?: CoreResult[] };
 type TenantOption = { id: string; name: string; slug: string; role: string };
 type TenantPayload = { tenant?: TenantOption | null; tenants?: TenantOption[]; error?: string };
 
@@ -129,9 +132,9 @@ export default function DashboardPage() {
       return;
     }
 
-    let memberPayload: any;
-    let eventPayload: any;
-    let resultPayload: any = { results: [] };
+    let memberPayload: MemberPayload = {};
+    let eventPayload: EventPayload = {};
+    let resultPayload: ResultPayload = { results: [] };
     try {
       [memberPayload, eventPayload] = await Promise.all([
         memberResponse.json(),
