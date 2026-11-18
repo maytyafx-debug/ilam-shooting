@@ -27,7 +27,7 @@ on:
       - "supabase/migrations/**"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: sports-os-validation-${{ github.ref }}
