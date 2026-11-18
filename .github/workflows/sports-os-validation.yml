@@ -27,7 +27,7 @@ on:
       - "supabase/migrations/**"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: sports-os-validation-${{ github.ref }}
@@ -73,19 +73,6 @@ jobs:
       - name: Install project dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Commit generated package lock
-        working-directory: .
-        run: |
-          if [ -f sports-os/package-lock.json ]; then
-            git add sports-os/package-lock.json
-            if ! git diff --cached --quiet -- sports-os/package-lock.json; then
-              git config user.name "github-actions[bot]"
-              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-              git commit -m "chore(sports-os): add npm lockfile"
-              git push origin HEAD:${GITHUB_REF_NAME}
-            fi
-          fi
-
       - name: TypeScript validation
         run: npm run typecheck
 
@@ -115,3 +102,20 @@ jobs:
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010-fixture.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/010_result_verification_guard.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010.integration.sql
+
+      - name: Migration 011 universal inventory database integration tests
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011-fixture.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/011_universal_sports_inventory.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011.integration.sql
+
+      - name: Migration 012 transfers and serialized assets integration tests
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/012_inventory_transfers_and_assets.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-012.integration.sql

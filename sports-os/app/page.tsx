@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoreEvent, CoreMember, CoreResult, CoreRole } from "@/lib/core-sports/types";
 
@@ -60,7 +61,7 @@ export default function DashboardPage() {
   const [notes, setNotes] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
-  const [sportType, setSportType] = useState("تیراندازی ورزشی");
+  const [sportType, setSportType] = useState("");
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventLocation, setEventLocation] = useState("");
@@ -253,7 +254,7 @@ export default function DashboardPage() {
     setNotes("");
     setMemberName("");
     setMemberPhone("");
-    setSportType("تیراندازی ورزشی");
+    setSportType("");
     setEventTitle("");
     setEventDate("");
     setEventLocation("");
@@ -413,7 +414,7 @@ export default function DashboardPage() {
           <div>
             <div className="brand">METATYA Sports OS</div>
             <small>هسته مشترک مدیریت ورزش{tenantName ? " — " + tenantName : ""}</small>
-            <nav className="top-nav"><a href="/members">پرونده اعضا</a><a href="/club">مدیریت باشگاه</a></nav>
+            <nav className="top-nav"><Link href="/members">پرونده اعضا</Link><Link href="/club">مدیریت باشگاه</Link>{canManage && <Link href="/inventory">مدیریت انبار</Link>}</nav>
           </div>
           <div className="topbar-actions">
             {tenantOptions.length > 1 && (
