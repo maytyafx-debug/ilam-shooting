@@ -85,9 +85,15 @@ BEGIN
   '33333333-3333-4333-8333-333333333332','Asset moved for testing','ASSET-TR-01'
  ) INTO v_event;
  SELECT warehouse_id INTO v_warehouse FROM public.sports_inventory_assets WHERE id=v_asset;
+ PERFORM public.sports_inventory_update_asset_status(
+  '11111111-1111-4111-8111-111111111111',v_asset,'issued','Asset issued in test'
+ );
+ PERFORM public.sports_inventory_update_asset_status(
+  '11111111-1111-4111-8111-111111111111',v_asset,'available','Asset returned in test'
+ );
  SELECT count(*) INTO v_count FROM public.sports_inventory_asset_movements WHERE asset_id=v_asset;
- IF v_warehouse<>'33333333-3333-4333-8333-333333333332' OR v_count<>2 THEN
-   RAISE EXCEPTION 'Serialized asset transfer or immutable ledger failed';
+ IF v_warehouse<>'33333333-3333-4333-8333-333333333332' OR v_count<>4 THEN
+   RAISE EXCEPTION 'Serialized asset transfer, lifecycle or immutable ledger failed';
  END IF;
 END $$;
 
