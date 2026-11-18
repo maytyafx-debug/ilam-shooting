@@ -27,7 +27,7 @@ type ApiPayload = {
 
 const ACTIVE_TENANT_STORAGE_KEY = "metatya-sports-os-active-tenant";
 const EMPTY_FORM: FormState = {
-  full_name: "", phone: "", sport_type: "تیراندازی ورزشی", membership_number: "",
+  full_name: "", phone: "", sport_type: "", membership_number: "",
   birth_date: "", athlete_category: "", status: "active",
 };
 
@@ -313,7 +313,7 @@ export default function MemberManagementPage() {
                 </div>
                 <div className="field">
                   <label htmlFor="member-sport">رشته ورزشی</label>
-                  <input id="member-sport" maxLength={120} value={form.sport_type} onChange={(event) => setForm({ ...form, sport_type: event.target.value })} />
+                  <input id="member-sport" maxLength={120} placeholder="رشته ورزشی عضو را وارد کنید" value={form.sport_type} onChange={(event) => setForm({ ...form, sport_type: event.target.value })} />
                 </div>
                 <div className="field">
                   <label htmlFor="member-number">شماره عضویت</label>
