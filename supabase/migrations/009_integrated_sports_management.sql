@@ -922,11 +922,21 @@ FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_athlete_profile_delete();
 
 -- Audit stores changed field names only, never personal values.
 CREATE OR REPLACE FUNCTION public.sports_audit_member_change()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog
+SET row_security = off
 AS $member_audit$
 DECLARE actor uuid := auth.uid(); changes jsonb := '{}'::jsonb; event_action text;
 BEGIN
   IF actor IS NULL THEN RAISE EXCEPTION 'Authenticated actor required for member audit' USING ERRCODE = '42501'; END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = NEW.tenant_id
+      AND tm.user_id = actor
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  ) THEN
+    RAISE EXCEPTION 'Active organization administrator required for member audit' USING ERRCODE = '42501';
+  END IF;
   IF TG_OP = 'INSERT' THEN
     event_action := 'created';
     changes := jsonb_build_object('full_name',true,'phone',true,'sport_type',true,'status',true,'joined_on',true);
@@ -950,11 +960,21 @@ CREATE TRIGGER sports_members_history_audit AFTER INSERT OR UPDATE ON public.spo
 FOR EACH ROW EXECUTE FUNCTION public.sports_audit_member_change();
 
 CREATE OR REPLACE FUNCTION public.sports_audit_athlete_profile_change()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog
+SET row_security = off
 AS $profile_audit$
 DECLARE actor uuid := auth.uid(); changes jsonb := '{}'::jsonb;
 BEGIN
   IF actor IS NULL THEN RAISE EXCEPTION 'Authenticated actor required for athlete profile audit' USING ERRCODE = '42501'; END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = NEW.tenant_id
+      AND tm.user_id = actor
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  ) THEN
+    RAISE EXCEPTION 'Active organization administrator required for athlete profile audit' USING ERRCODE = '42501';
+  END IF;
   IF TG_OP='INSERT' THEN
     changes := jsonb_build_object('birth_date',true,'membership_number',true,'athlete_category',true);
   ELSE
