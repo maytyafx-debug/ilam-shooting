@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoreEvent, CoreMember, CoreResult, CoreRole } from "@/lib/core-sports/types";
 
@@ -470,8 +471,8 @@ export default function DashboardPage() {
               </div>
             )}
             <span className="role-chip">{roleLabel}</span>
-            <a className="btn secondary" href="/">صفحه عمومی</a>
-            <a className="btn secondary" href="/portal">پنل شخصی</a>
+            <Link className="btn secondary" href="/">صفحه عمومی</Link>
+            <Link className="btn secondary" href="/portal">پنل شخصی</Link>
             <button className="btn secondary" onClick={signOut}>خروج</button>
           </div>
         </div>
