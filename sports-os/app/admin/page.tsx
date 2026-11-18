@@ -190,7 +190,8 @@ export default function DashboardPage() {
           throw new Error(tenantPayload.error || "سازمان فعالی برای این حساب پیدا نشد.");
         }
 
-        const options = tenantPayload.tenants ?? (tenantPayload.tenant ? [tenantPayload.tenant] : []);
+        const options = (tenantPayload.tenants ?? (tenantPayload.tenant ? [tenantPayload.tenant] : []))
+          .filter((tenant) => ["owner", "admin", "referee"].includes(tenant.role));
         if (!options.some((tenant) => ["owner", "admin", "referee"].includes(tenant.role))) {
           router.replace("/portal");
           return;
@@ -489,6 +490,17 @@ export default function DashboardPage() {
           </section>
         )}
 
+        {canManage && (
+          <nav className="admin-quick-nav" aria-label="دسترسی سریع مدیریت">
+            <a href="#analytics">نمای کلی</a>
+            <a href="#members-add">ثبت عضو</a>
+            <a href="#accounts">اتصال حساب‌ها</a>
+            <a href="#events-add">ثبت رویداد</a>
+            <a href="#results-add">ثبت نتیجه</a>
+            <a href="#members-list">فهرست اعضا</a>
+          </nav>
+        )}
+
         {message && <p className="status" role="status" aria-live="polite">{message}</p>}
 
         {!tenantId && tenantOptions.length > 1 && (
@@ -529,7 +541,7 @@ export default function DashboardPage() {
                     <small>نتایج ثبت‌شده</small>
                   </article>
                 </section>
-                <section className="panel analytics-panel">
+                <section className="panel analytics-panel" id="analytics">
                   <div className="section-heading-row">
                     <div>
                       <h2 className="section-title">نمای آماری رویدادها</h2>
@@ -557,7 +569,7 @@ export default function DashboardPage() {
             )}
 
             {canManage && (
-              <section className="panel">
+              <section className="panel" id="members-add">
                 <h2 className="section-title">ثبت عضو جدید</h2>
                 <form className="form-grid" onSubmit={submitMember}>
                   <div className="field">
@@ -580,7 +592,7 @@ export default function DashboardPage() {
             )}
 
             {canManage && (
-              <section className="panel">
+              <section className="panel" id="accounts">
                 <h2 className="section-title">اتصال حساب شخصی ورزشکار، مربی یا داور</h2>
                 <p className="muted">حساب باید از قبل در سامانه احراز هویت ایجاد و ایمیل آن تأیید شده باشد. کد تولیدشده شناسه پرونده است، نه رمز ورود.</p>
                 <form className="form-grid" onSubmit={submitPersonLink}>
@@ -613,7 +625,7 @@ export default function DashboardPage() {
             )}
 
             {canManage && (
-              <section className="panel">
+              <section className="panel" id="events-add">
                 <h2 className="section-title">ثبت رویداد جدید</h2>
                 <form className="form-grid" onSubmit={submitEvent}>
                   <div className="field">
@@ -639,7 +651,7 @@ export default function DashboardPage() {
               </section>
             )}
 
-            <section className="panel">
+            <section className="panel" id="results-add">
               <h2 className="section-title">ثبت نتیجه رویداد</h2>
               {canRecordResults ? (
                 <form className="form-grid" onSubmit={submitResult}>
@@ -677,7 +689,7 @@ export default function DashboardPage() {
             </section>
 
             {canManage && (
-              <section className="panel">
+              <section className="panel" id="members-list">
                 <div className="section-heading-row">
                   <h2 className="section-title">فهرست اعضا</h2>
                   <span className="muted">{filteredMembers.length.toLocaleString("fa-IR")} مورد</span>
