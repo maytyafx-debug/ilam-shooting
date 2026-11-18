@@ -89,7 +89,15 @@ RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,pu
  JOIN public.sports_tenants t ON t.id=c.tenant_id
  LEFT JOIN public.sports_athlete_profiles p ON p.member_id=m.id AND p.tenant_id=m.tenant_id
  WHERE c.public_token=p_token AND c.published_at IS NOT NULL AND c.revoked_at IS NULL
-  AND m.status='active' AND t.status='active' LIMIT 1;
+  AND m.status='active' AND t.status='active'
+  AND (
+    (p.birth_date IS NOT NULL AND age(current_date,p.birth_date)>=interval '18 years')
+    OR EXISTS (
+      SELECT 1 FROM public.sports_guardian_consents gc
+      WHERE gc.tenant_id=m.tenant_id AND gc.member_id=m.id AND gc.consent_scope='media'
+        AND gc.revoked_at IS NULL AND (gc.expires_at IS NULL OR gc.expires_at>now())
+    )
+  ) LIMIT 1;
 $public_card$;
 
 REVOKE ALL ON FUNCTION public.sports_publish_athlete_public_card(uuid,uuid) FROM PUBLIC,anon;
