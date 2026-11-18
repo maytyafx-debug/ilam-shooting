@@ -44,7 +44,7 @@ function storedTenant() {
 function labelMovement(value: string) {
   const labels: Record<string, string> = {
     receipt: "ورود / خرید", return: "عودت به انبار", issue: "تحویل / خروج",
-    consumption: "مصرف", adjustment: "اصلاح موجودی", correction: "تصحیح",
+    consumption: "مصرف", adjustment: "اصلاح موجودی", correction: "تصحیح", transfer_in: "ورود انتقالی", transfer_out: "خروج انتقالی",
   };
   return labels[value] ?? value;
 }
@@ -390,6 +390,7 @@ export default function InventoryPage() {
               {data.transfers.length === 0 ? <p className="text-sm text-slate-500">انتقالی ثبت نشده است.</p> : data.transfers.map((transfer) => <div key={transfer.id} className="flex flex-wrap justify-between gap-2 border-t border-slate-800 py-3 text-sm"><div><strong>{itemById.get(transfer.item_id)?.name || "کالا"}</strong><p className="text-xs text-slate-400">{warehouseById.get(transfer.from_warehouse_id)?.name || "مبدأ"} ← {warehouseById.get(transfer.to_warehouse_id)?.name || "مقصد"} · {transfer.reason}</p></div><div className="text-left"><strong>{transfer.quantity}</strong><p className="text-xs text-slate-500">{new Date(transfer.created_at).toLocaleString("fa-IR")}</p></div></div>)}
             </div>}
             {tab === "reports" && <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold">خلاصه مدیریتی انبار</h3><button type="button" onClick={exportReport} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">خروجی CSV</button></div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {[["کالاهای فعال", activeItems.length],["دارایی‌های شناسه‌دار", data.assets.length],["انتقال‌های ثبت‌شده", data.transfers.length],["اقلام نیازمند سفارش", lowStock.length]].map(([label,value]) => <div key={String(label)} className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><p className="text-xs text-slate-400">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>)}
               </div>
