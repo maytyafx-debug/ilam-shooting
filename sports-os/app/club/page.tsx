@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -71,7 +71,7 @@ export default function ClubManagementPage() {
 
   const active = TABS.find((tab) => tab.id === activeTab) ?? TABS[0];
 
-  async function load(organizationId: string) {
+  const load = useCallback(async (organizationId: string) => {
     const headers = { "x-tenant-id": organizationId };
     const [clubResponse, memberResponse, eventResponse] = await Promise.all([
       fetch("/api/core-sports/club-management", { cache: "no-store", headers }),
@@ -93,7 +93,7 @@ export default function ClubManagementPage() {
       id: item.id, full_name: item.full_name, membership_number: item.membership_number,
     })));
     setEvents(eventPayload.events ?? []);
-  }
+  }, [router]);
 
   useEffect(() => {
     let mounted = true;
@@ -129,7 +129,7 @@ export default function ClubManagementPage() {
     }
     void initialize();
     return () => { mounted = false; };
-  }, [router]);
+  }, [load, router]);
 
   async function changeTenant(nextId: string) {
     const selected = tenantOptions.find((item) => item.id === nextId);
