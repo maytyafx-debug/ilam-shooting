@@ -86,7 +86,7 @@ jobs:
         working-directory: .
         run: node sports-os/tests/security-static.mjs
 
-      - name: Champion QR security regression checks\n        working-directory: .\n        run: node sports-os/tests/security-static-champion-qr.mjs\n\n      - name: Champion QR security regression checks
+      - name: Champion QR security regression checks
         working-directory: .
         run: node sports-os/tests/security-static-champion-qr.mjs
 
