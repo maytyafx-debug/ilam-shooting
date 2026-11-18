@@ -8,12 +8,12 @@ alter table public.sports_athlete_profiles
   add column if not exists personal_code text;
 
 update public.sports_athlete_profiles
-set personal_code = 'MTX-ATH-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8))
+set personal_code = 'MTX-ATH-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))
 where personal_code is null;
 
 alter table public.sports_athlete_profiles
   alter column personal_code set not null,
-  alter column personal_code set default ('MTX-ATH-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)));
+  alter column personal_code set default ('MTX-ATH-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12)));
 
 create unique index if not exists sports_athlete_profiles_tenant_personal_code_uq
   on public.sports_athlete_profiles(tenant_id, personal_code);
@@ -24,7 +24,7 @@ create table if not exists public.sports_staff_profiles (
   user_id uuid not null references auth.users(id) on delete cascade,
   staff_type text not null check (staff_type in ('coach','referee')),
   personal_code text not null default (
-    'MTX-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10))
+    'MTX-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))
   ),
   display_name text,
   credential_title text,
@@ -228,7 +228,7 @@ begin
   if v_actor is null then
     raise exception 'Authenticated actor required';
   end if;
-  if p_person_type not in ('athlete','coach','referee') then
+  if p_person_type is null or p_person_type not in ('athlete','coach','referee') then
     raise exception 'Unsupported person type';
   end if;
   if p_email is null or length(trim(p_email)) < 5 or length(trim(p_email)) > 254 then
