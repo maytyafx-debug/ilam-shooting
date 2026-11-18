@@ -25,6 +25,9 @@ INSERT INTO public.sports_results(id,tenant_id,member_id,event_id,rank,score,ver
  ('44444444-4444-4444-8444-444444444441','11111111-1111-4111-8111-111111111113','22222222-2222-4222-8222-222222222221','33333333-3333-4333-8333-333333333331',1,9.8,'verified'),
  ('44444444-4444-4444-8444-444444444442','11111111-1111-4111-8111-111111111113','22222222-2222-4222-8222-222222222221','33333333-3333-4333-8333-333333333331',2,9.1,'pending_review')
 ON CONFLICT DO NOTHING;
+INSERT INTO public.sports_results(id,tenant_id,member_id,event_id,rank,score,verification_status) VALUES
+ ('44444444-4444-4444-8444-444444444443','11111111-1111-4111-8111-111111111113','22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333331',3,8.9,'verified')
+ON CONFLICT DO NOTHING;
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','aaaaaaaa-0000-4000-8000-000000000011',true);
@@ -54,15 +57,19 @@ BEGIN
   RAISE EXCEPTION 'Minor publication unexpectedly succeeded without consent';
  EXCEPTION WHEN insufficient_privilege THEN NULL;
  END;
+ RESET ROLE;
  INSERT INTO public.sports_guardian_consents(tenant_id,member_id,consent_scope)
  VALUES('11111111-1111-4111-8111-111111111113','22222222-2222-4222-8222-222222222222','media');
+ SET LOCAL ROLE authenticated;
  v_youth_token:=public.sports_publish_athlete_public_card(
   '11111111-1111-4111-8111-111111111113','22222222-2222-4222-8222-222222222222');
  IF public.sports_get_public_athlete_card(v_youth_token) IS NULL THEN
   RAISE EXCEPTION 'Minor card should be visible while current guardian media consent exists';
  END IF;
+ RESET ROLE;
  UPDATE public.sports_guardian_consents SET revoked_at=now()
  WHERE member_id='22222222-2222-4222-8222-222222222222';
+ SET LOCAL ROLE authenticated;
  IF public.sports_get_public_athlete_card(v_youth_token) IS NOT NULL THEN
   RAISE EXCEPTION 'Revoked guardian consent did not immediately hide public card';
  END IF;
