@@ -482,4 +482,366 @@ to authenticated;
 
 grant select, insert on public.sports_financial_transactions to authenticated;
 
+
+-- ---------------------------------------------------------------------------
+-- P0 MEMBER MANAGEMENT + SECURITY HARDENING
+-- Additive only: existing member/event/result rows are preserved.
+-- National identifiers are intentionally excluded from this general profile.
+-- ---------------------------------------------------------------------------
+
+ALTER TABLE public.sports_members
+  ADD COLUMN IF NOT EXISTS membership_number text,
+  ADD COLUMN IF NOT EXISTS birth_date date,
+  ADD COLUMN IF NOT EXISTS athlete_category text,
+  ADD COLUMN IF NOT EXISTS joined_on date NOT NULL DEFAULT current_date,
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+
+ALTER TABLE public.sports_members
+  DROP CONSTRAINT IF EXISTS sports_members_membership_number_length_check,
+  ADD CONSTRAINT sports_members_membership_number_length_check
+    CHECK (membership_number IS NULL OR length(trim(membership_number)) BETWEEN 1 AND 40),
+  DROP CONSTRAINT IF EXISTS sports_members_athlete_category_length_check,
+  ADD CONSTRAINT sports_members_athlete_category_length_check
+    CHECK (athlete_category IS NULL OR length(trim(athlete_category)) BETWEEN 1 AND 80);
+
+CREATE UNIQUE INDEX IF NOT EXISTS sports_members_tenant_membership_number_uq
+  ON public.sports_members(tenant_id, membership_number)
+  WHERE membership_number IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS sports_members_tenant_name_idx
+  ON public.sports_members(tenant_id, lower(full_name));
+
+CREATE INDEX IF NOT EXISTS sports_members_tenant_status_idx
+  ON public.sports_members(tenant_id, status, created_at DESC);
+
+-- Append-only, administrator-visible member change history.
+CREATE TABLE IF NOT EXISTS public.sports_member_history (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL REFERENCES public.sports_tenants(id) ON DELETE CASCADE,
+  member_id uuid NOT NULL,
+  actor_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+  action text NOT NULL CHECK (action IN ('created','updated','archived')),
+  changed_fields jsonb NOT NULL DEFAULT '{}'::jsonb
+    CHECK (jsonb_typeof(changed_fields) = 'object'),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT sports_member_history_member_tenant_fk
+    FOREIGN KEY (member_id, tenant_id)
+    REFERENCES public.sports_members(id, tenant_id) ON DELETE RESTRICT
+);
+
+CREATE INDEX IF NOT EXISTS sports_member_history_member_idx
+  ON public.sports_member_history(tenant_id, member_id, created_at DESC);
+
+-- Updated timestamp for member records.
+DROP TRIGGER IF EXISTS sports_members_updated_at ON public.sports_members;
+CREATE TRIGGER sports_members_updated_at
+BEFORE UPDATE ON public.sports_members
+FOR EACH ROW EXECUTE FUNCTION public.sports_set_updated_at();
+
+-- All new and existing P009 tables enforce row-level security, including
+-- table-owner access. Client grants are explicitly least-privilege.
+ALTER TABLE public.sports_athlete_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_athlete_profiles FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_guardian_consents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_guardian_consents FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_club_memberships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_club_memberships FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_insurance_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_insurance_records FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_event_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_event_entries FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_development_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_development_plans FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_financial_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_financial_transactions FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_member_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sports_member_history FORCE ROW LEVEL SECURITY;
+
+REVOKE ALL PRIVILEGES ON TABLE
+  public.sports_athlete_profiles,
+  public.sports_guardian_consents,
+  public.sports_club_memberships,
+  public.sports_insurance_records,
+  public.sports_event_entries,
+  public.sports_development_plans,
+  public.sports_financial_transactions,
+  public.sports_member_history
+FROM PUBLIC, anon, authenticated;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
+  public.sports_athlete_profiles,
+  public.sports_guardian_consents,
+  public.sports_club_memberships,
+  public.sports_insurance_records,
+  public.sports_event_entries,
+  public.sports_development_plans
+TO authenticated;
+
+GRANT SELECT, INSERT ON TABLE
+  public.sports_financial_transactions,
+  public.sports_member_history
+TO authenticated;
+
+-- Until verified athlete-account linking and coach-to-athlete assignments exist,
+-- sensitive personal, insurance, consent and development data remain admin-only.
+DROP POLICY IF EXISTS sports_athlete_profiles_read ON public.sports_athlete_profiles;
+DROP POLICY IF EXISTS sports_athlete_profiles_manage ON public.sports_athlete_profiles;
+CREATE POLICY sports_athlete_profiles_admin_only
+ON public.sports_athlete_profiles FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_athlete_profiles.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_athlete_profiles.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+-- Guardian consent records are administrator-only.
+DROP POLICY IF EXISTS sports_guardian_consents_admin ON public.sports_guardian_consents;
+CREATE POLICY sports_guardian_consents_admin
+ON public.sports_guardian_consents FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_guardian_consents.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_guardian_consents.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+-- Membership and insurance details are administrator-only until a dedicated
+-- least-privilege staff/athlete workflow is implemented.
+DROP POLICY IF EXISTS sports_club_memberships_read ON public.sports_club_memberships;
+DROP POLICY IF EXISTS sports_club_memberships_admin_manage ON public.sports_club_memberships;
+CREATE POLICY sports_club_memberships_admin_only
+ON public.sports_club_memberships FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_club_memberships.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_club_memberships.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+DROP POLICY IF EXISTS sports_insurance_read ON public.sports_insurance_records;
+DROP POLICY IF EXISTS sports_insurance_admin_manage ON public.sports_insurance_records;
+CREATE POLICY sports_insurance_admin_only
+ON public.sports_insurance_records FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_insurance_records.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_insurance_records.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+-- Referees may read entries; only administrators may create or alter them.
+DROP POLICY IF EXISTS sports_event_entries_read ON public.sports_event_entries;
+DROP POLICY IF EXISTS sports_event_entries_insert ON public.sports_event_entries;
+DROP POLICY IF EXISTS sports_event_entries_update ON public.sports_event_entries;
+CREATE POLICY sports_event_entries_read
+ON public.sports_event_entries FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_event_entries.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin','referee')
+  )
+);
+CREATE POLICY sports_event_entries_admin_manage
+ON public.sports_event_entries FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_event_entries.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_event_entries.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+-- Coach access is intentionally withheld until coach assignments are enforced.
+DROP POLICY IF EXISTS sports_development_plans_read ON public.sports_development_plans;
+DROP POLICY IF EXISTS sports_development_plans_manage ON public.sports_development_plans;
+CREATE POLICY sports_development_plans_admin_only
+ON public.sports_development_plans FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_development_plans.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_development_plans.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+DROP POLICY IF EXISTS sports_financial_transactions_admin ON public.sports_financial_transactions;
+CREATE POLICY sports_financial_transactions_admin
+ON public.sports_financial_transactions FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_financial_transactions.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_financial_transactions.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+DROP POLICY IF EXISTS sports_member_history_admin_read ON public.sports_member_history;
+DROP POLICY IF EXISTS sports_member_history_admin_insert ON public.sports_member_history;
+CREATE POLICY sports_member_history_admin_read
+ON public.sports_member_history FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_member_history.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+CREATE POLICY sports_member_history_admin_insert
+ON public.sports_member_history FOR INSERT TO authenticated
+WITH CHECK (
+  actor_id = (SELECT auth.uid())
+  AND EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_member_history.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner','admin')
+  )
+);
+
+-- A reversal must reference a transaction in the same tenant.
+CREATE UNIQUE INDEX IF NOT EXISTS sports_financial_transactions_id_tenant_uq
+  ON public.sports_financial_transactions(id, tenant_id);
+ALTER TABLE public.sports_financial_transactions
+  DROP CONSTRAINT IF EXISTS sports_financial_transactions_reverses_transaction_id_fkey;
+ALTER TABLE public.sports_financial_transactions
+  ADD CONSTRAINT sports_financial_reversal_same_tenant_fk
+  FOREIGN KEY (reverses_transaction_id, tenant_id)
+  REFERENCES public.sports_financial_transactions(id, tenant_id)
+  ON DELETE RESTRICT;
+CREATE UNIQUE INDEX IF NOT EXISTS sports_financial_single_reversal_uq
+  ON public.sports_financial_transactions(reverses_transaction_id)
+  WHERE reverses_transaction_id IS NOT NULL;
+
+-- Tenant IDs are immutable on every newly introduced tenant-scoped table.
+DROP TRIGGER IF EXISTS sports_athlete_profiles_tenant_immutable ON public.sports_athlete_profiles;
+CREATE TRIGGER sports_athlete_profiles_tenant_immutable BEFORE UPDATE ON public.sports_athlete_profiles
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+DROP TRIGGER IF EXISTS sports_guardian_consents_tenant_immutable ON public.sports_guardian_consents;
+CREATE TRIGGER sports_guardian_consents_tenant_immutable BEFORE UPDATE ON public.sports_guardian_consents
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+DROP TRIGGER IF EXISTS sports_club_memberships_tenant_immutable ON public.sports_club_memberships;
+CREATE TRIGGER sports_club_memberships_tenant_immutable BEFORE UPDATE ON public.sports_club_memberships
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+DROP TRIGGER IF EXISTS sports_insurance_records_tenant_immutable ON public.sports_insurance_records;
+CREATE TRIGGER sports_insurance_records_tenant_immutable BEFORE UPDATE ON public.sports_insurance_records
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+DROP TRIGGER IF EXISTS sports_event_entries_tenant_immutable ON public.sports_event_entries;
+CREATE TRIGGER sports_event_entries_tenant_immutable BEFORE UPDATE ON public.sports_event_entries
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+DROP TRIGGER IF EXISTS sports_development_plans_tenant_immutable ON public.sports_development_plans;
+CREATE TRIGGER sports_development_plans_tenant_immutable BEFORE UPDATE ON public.sports_development_plans
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+DROP TRIGGER IF EXISTS sports_financial_transactions_tenant_immutable ON public.sports_financial_transactions;
+CREATE TRIGGER sports_financial_transactions_tenant_immutable BEFORE UPDATE ON public.sports_financial_transactions
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+DROP TRIGGER IF EXISTS sports_member_history_tenant_immutable ON public.sports_member_history;
+CREATE TRIGGER sports_member_history_tenant_immutable BEFORE UPDATE ON public.sports_member_history
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+
+CREATE OR REPLACE FUNCTION public.sports_prevent_member_history_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog
+AS $
+BEGIN
+  RAISE EXCEPTION 'Member history is append-only';
+END;
+$;
+REVOKE ALL ON FUNCTION public.sports_prevent_member_history_mutation() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS sports_member_history_append_only ON public.sports_member_history;
+CREATE TRIGGER sports_member_history_append_only
+BEFORE UPDATE OR DELETE ON public.sports_member_history
+FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_member_history_mutation();
+
+REVOKE ALL ON FUNCTION public.sports_set_updated_at() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.sports_prevent_finance_mutation() FROM PUBLIC, anon, authenticated;
+
 commit;
