@@ -20,7 +20,7 @@ function optionalText(value: unknown, max: number): string | null | undefined {
   return value.trim() || null;
 }
 function validDate(value: unknown, optional = false): string | null | undefined {
-  if (value === undefined || value === "") return optional ? null : undefined;
+  if (value === undefined || value === null || value === "") return optional ? null : undefined;
   if (typeof value !== "string" || !DATE_RE.test(value)) return undefined;
   const date = new Date(value + "T00:00:00.000Z");
   return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value ? undefined : value;
@@ -89,15 +89,16 @@ export async function POST(request: NextRequest) {
       const end_date = validDate(data.end_date, true);
       const fee = data.fee_amount === "" || data.fee_amount == null ? null : Number(data.fee_amount);
       const billing = data.billing_period == null || data.billing_period === "" ? null : data.billing_period;
+      const notes = optionalText(data.notes, 1000);
       if (!membership_type || start_date === undefined || end_date === undefined ||
           (fee !== null && (!Number.isFinite(fee) || fee < 0)) ||
-          (billing !== null && !["monthly","quarterly","semiannual","annual","one_time"].includes(String(billing))) ||
+          (billing !== null && !["monthly","quarterly","semiannual","annual","one_time"].includes(String(billing))) || notes === undefined ||
           (start_date && end_date && end_date < start_date)) return fail("اطلاعات دوره عضویت معتبر نیست.");
       const currency = text(data.currency ?? "IRR", 3, 3);
       if (!currency || !/^[A-Z]{3}$/.test(currency)) return fail("واحد پول معتبر نیست.");
       table = "sports_club_memberships";
       payload = { tenant_id, member_id: data.member_id, membership_type, start_date: start_date ?? undefined,
-        end_date, fee_amount: fee, currency, billing_period: billing, notes: optionalText(data.notes, 1000) ?? null, created_by: actor };
+        end_date, fee_amount: fee, currency, billing_period: billing, notes: notes ?? null, created_by: actor };
       break;
     }
     case "insurance": {
