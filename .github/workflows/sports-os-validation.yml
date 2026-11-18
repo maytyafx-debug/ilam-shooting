@@ -114,7 +114,8 @@ jobs:
         run: |
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010-fixture.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/010_result_verification_guard.sql
-          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010.integration.sql\n
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010.integration.sql
+
       - name: Migration 011 universal inventory database integration tests
         working-directory: .
         env:
