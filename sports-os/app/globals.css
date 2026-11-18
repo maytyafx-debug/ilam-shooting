@@ -166,3 +166,10 @@ main { padding: 32px 0 56px; }
 .admin-quick-nav a { padding:8px 12px; border-radius:8px; background:#edf4f1; color:#174c40; text-decoration:none; font-size:12px; font-weight:700; }
 .admin-quick-nav a:hover { background:#dcebe4; }
 #analytics,#members-add,#accounts,#events-add,#results-add,#members-list { scroll-margin-top:76px; }
+
+.public-structure { display:grid; grid-template-columns:1fr 1fr; gap:18px; padding-top:0; padding-bottom:68px; }
+.public-structure-card { padding:26px; background:#fff; border:1px solid #e2e9e3; border-radius:12px; }
+.public-structure-card h2 { margin:10px 0; font-size:20px; }
+.public-structure-card p { color:#68776f; font-size:13px; line-height:2; }
+.public-coming { display:inline-block; margin-top:10px; padding:6px 10px; border-radius:20px; background:#f5f1e7; color:#92713a; font-size:10px; }
+@media(max-width:600px) { .public-structure { grid-template-columns:1fr; padding-bottom:48px; } }
