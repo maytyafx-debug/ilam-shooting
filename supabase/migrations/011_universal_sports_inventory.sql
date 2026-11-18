@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.sports_inventory_warehouses (
   created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (tenant_id, id),
+  UNIQUE (id, tenant_id),
   UNIQUE (tenant_id, code)
 );
 
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.sports_inventory_categories (
   description text,
   created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (tenant_id, id),
+  UNIQUE (id, tenant_id),
   UNIQUE NULLS NOT DISTINCT (tenant_id, name, sport_name)
 );
 
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.sports_inventory_items (
   created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (tenant_id, id),
+  UNIQUE (id, tenant_id),
   UNIQUE (tenant_id, sku),
   FOREIGN KEY (category_id, tenant_id)
     REFERENCES public.sports_inventory_categories(id, tenant_id) ON DELETE RESTRICT
