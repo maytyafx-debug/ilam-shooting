@@ -286,6 +286,7 @@ assert.ok(inventoryAdvancedMigration.includes("FOR UPDATE"));
 assert.ok(inventoryAdvancedMigration.includes("sports_inventory_register_asset"));
 assert.ok(inventoryAdvancedMigration.includes("sports_inventory_transfer_asset"));
 assert.ok(inventoryAdvancedMigration.includes("sports_inventory_update_asset_status"));
+assert.ok(!inventoryAdvancedMigration.includes("GRANT INSERT,UPDATE ON TABLE public.sports_inventory_assets"));
 assert.ok(inventoryApi.includes('rpc("sports_inventory_update_asset_status"'));
 assert.ok(inventoryPage.includes("setAssetStatus"));
 assert.ok(inventoryPage.includes("تحویل"));
