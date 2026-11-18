@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type EventInfo = {
   id: string;
@@ -68,6 +69,7 @@ const statusName = (value: string) => ({
 }[value] ?? value);
 
 export default function PersonalPortalPage() {
+  const router = useRouter();
   const [payload, setPayload] = useState<Payload | null>(null);
   const [busy, setBusy] = useState(true);
   const [message, setMessage] = useState("");
@@ -77,6 +79,7 @@ export default function PersonalPortalPage() {
     fetch("/api/personal-portal", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json() as Payload;
+        if (response.status === 401) { router.replace("/login"); return; }
         if (!response.ok) throw new Error(data.error || "دریافت اطلاعات ممکن نشد.");
         if (active) setPayload(data);
       })
@@ -85,7 +88,7 @@ export default function PersonalPortalPage() {
       })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
-  }, []);
+  }, [router]);
 
   return (
     <>
@@ -96,7 +99,7 @@ export default function PersonalPortalPage() {
             <small>پنل شخصی و پرونده اختصاصی</small>
           </div>
           <div className="topbar-actions">
-            <Link className="btn secondary" href="/">بازگشت به سامانه</Link>
+            <Link className="btn secondary" href="/">صفحه عمومی</Link>
           </div>
         </div>
       </header>
