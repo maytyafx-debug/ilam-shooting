@@ -278,8 +278,25 @@ export async function PATCH(request: NextRequest) {
   let body: Body;
   try { body = await request.json(); }
   catch { return fail("درخواست JSON معتبر نیست."); }
-  if (!validObject(body) || !isUuid(body.id) || !["item", "warehouse"].includes(String(body.module))) {
-    return fail("اطلاعات غیرفعال‌سازی معتبر نیست.");
+  if (!validObject(body) || !isUuid(body.id) || !["item", "warehouse", "asset_status"].includes(String(body.module))) {
+    return fail("اطلاعات عملیات انبار معتبر نیست.");
+  }
+
+  if (body.module === "asset_status") {
+    const status = body.status;
+    const notes = text(body.notes, 2, 500);
+    if (!["available", "issued", "maintenance", "retired", "lost"].includes(String(status)) || !notes) {
+      return fail("وضعیت جدید یا توضیحات تغییر معتبر نیست.");
+    }
+    const { data: eventId, error } = await db.rpc("sports_inventory_update_asset_status", {
+      p_tenant_id: auth.tenantId, p_asset_id: body.id,
+      p_new_status: status, p_notes: notes,
+    });
+    if (error || !eventId) {
+      console.error("[Sports OS] asset status update failed:", error);
+      return fail("تغییر وضعیت دارایی ناموفق بود.", 400);
+    }
+    return NextResponse.json({ asset_movement_id: eventId }, { headers: { "Cache-Control": "private, no-store" } });
   }
 
   const table = body.module === "item" ? "sports_inventory_items" : "sports_inventory_warehouses";
