@@ -249,6 +249,7 @@ export default function MemberManagementPage() {
           <div>
             <div className="brand">METATYA Sports OS</div>
             <small>مدیریت اعضا و ورزشکاران{tenantName ? " — " + tenantName : ""}</small>
+            <nav className="top-nav"><a href="/">داشبورد</a><a href="/club">مدیریت باشگاه</a></nav>
           </div>
           <div className="topbar-actions">
             {tenantOptions.length > 1 && (
