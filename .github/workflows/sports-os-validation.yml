@@ -15,6 +15,7 @@ on:
     branches:
       - "feat/metatya-sports-os-foundation-v1"
       - "feat/sports-os-shooting-integrated-v1"
+      - "feat/sports-os-integrated-management-v1"
     paths:
       - "sports-os/**"
       - ".github/workflows/sports-os-validation.yml"

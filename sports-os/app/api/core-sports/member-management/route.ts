@@ -67,10 +67,10 @@ function rpcArguments(tenantId:string, memberId:string|null, values:Record<strin
 
 export async function GET(request:NextRequest) {
   const db=await createSupabaseServerClient();
-  const auth=await requireCoreRole(db,["admin"],request.headers.get("x-tenant-id"));
+  const auth=await requireCoreRole(db, ["admin"],request.headers.get("x-tenant-id"));
   if(!auth.ok) return NextResponse.json({error:auth.error},{status:auth.status});
   const {data:members,error}=await db.from("sports_members").select(MEMBER_SELECT)
-    .eq("tenant_id",auth.tenantId).order("created_at",{ascending:false}).limit(1000);
+    .eq("tenant_id", auth.tenantId).order("created_at",{ascending:false}).limit(1000);
   if(error) {
     console.error("[Sports OS] member management list failed:",error);
     return NextResponse.json({error:"دریافت فهرست اعضا ناموفق بود."},{status:400});
@@ -79,7 +79,7 @@ export async function GET(request:NextRequest) {
   let profiles:Array<{member_id:string;birth_date:string|null;membership_number:string|null;athlete_category:string|null}>=[];
   if(ids.length) {
     const result=await db.from("sports_athlete_profiles").select("member_id,birth_date,membership_number,athlete_category")
-      .eq("tenant_id",auth.tenantId).in("member_id",ids);
+      .eq("tenant_id", auth.tenantId).in("member_id",ids);
     if(result.error) {
       console.error("[Sports OS] private athlete profile list failed:",result.error);
       return NextResponse.json({error:"دریافت اطلاعات محرمانه اعضا ناموفق بود."},{status:400});
@@ -96,7 +96,7 @@ export async function GET(request:NextRequest) {
 
 export async function POST(request:NextRequest) {
   const db=await createSupabaseServerClient();
-  const auth=await requireCoreRole(db,["admin"],request.headers.get("x-tenant-id"));
+  const auth=await requireCoreRole(db, ["admin"],request.headers.get("x-tenant-id"));
   if(!auth.ok) return NextResponse.json({error:auth.error},{status:auth.status});
   let body:MemberInput;
   try{body=await request.json();}catch{return NextResponse.json({error:"درخواست JSON معتبر نیست."},{status:400});}
@@ -114,7 +114,7 @@ export async function POST(request:NextRequest) {
 
 export async function PATCH(request:NextRequest) {
   const db=await createSupabaseServerClient();
-  const auth=await requireCoreRole(db,["admin"],request.headers.get("x-tenant-id"));
+  const auth=await requireCoreRole(db, ["admin"],request.headers.get("x-tenant-id"));
   if(!auth.ok) return NextResponse.json({error:auth.error},{status:auth.status});
   let body:MemberInput&{id?:unknown};
   try{body=await request.json();}catch{return NextResponse.json({error:"درخواست JSON معتبر نیست."},{status:400});}
@@ -124,11 +124,11 @@ export async function PATCH(request:NextRequest) {
   if("error" in validated) return NextResponse.json({error:validated.error},{status:400});
   if(!Object.keys(validated.patch).length) return NextResponse.json({error:"هیچ فیلدی برای ویرایش ارسال نشده است."},{status:400});
   const {data:before,error:readError}=await db.from("sports_members").select(MEMBER_SELECT)
-    .eq("id",body.id).eq("tenant_id",auth.tenantId).maybeSingle();
+    .eq("id",body.id).eq("tenant_id", auth.tenantId).maybeSingle();
   if(readError||!before) return NextResponse.json({error:"پرونده عضو پیدا نشد."},{status:404});
   const {data:profile,error:profileError}=await db.from("sports_athlete_profiles")
     .select("birth_date,membership_number,athlete_category").eq("member_id",body.id)
-    .eq("tenant_id",auth.tenantId).maybeSingle();
+    .eq("tenant_id", auth.tenantId).maybeSingle();
   if(profileError) {
     console.error("[Sports OS] member profile read failed:",profileError);
     return NextResponse.json({error:"دریافت اطلاعات محرمانه عضو ناموفق بود."},{status:400});
@@ -149,16 +149,16 @@ export async function PATCH(request:NextRequest) {
 
 export async function DELETE(request:NextRequest) {
   const db=await createSupabaseServerClient();
-  const auth=await requireCoreRole(db,["admin"],request.headers.get("x-tenant-id"));
+  const auth=await requireCoreRole(db, ["admin"],request.headers.get("x-tenant-id"));
   if(!auth.ok) return NextResponse.json({error:auth.error},{status:auth.status});
   const memberId=request.nextUrl.searchParams.get("id");
   if(!memberId||!UUID_RE.test(memberId)) return NextResponse.json({error:"شناسه پرونده معتبر نیست."},{status:400});
   const {data:before,error:readError}=await db.from("sports_members").select(MEMBER_SELECT)
-    .eq("id",memberId).eq("tenant_id",auth.tenantId).maybeSingle();
+    .eq("id",memberId).eq("tenant_id", auth.tenantId).maybeSingle();
   if(readError||!before) return NextResponse.json({error:"پرونده عضو پیدا نشد."},{status:404});
   if(before.status==="inactive") return NextResponse.json({success:true,alreadyArchived:true});
-  const {data,error}=await db.from("sports_members").update({status:"inactive"})
-    .eq("id",memberId).eq("tenant_id",auth.tenantId).select(MEMBER_SELECT).maybeSingle();
+  const {data,error}=await db.from("sports_members").update({ status: "inactive" })
+    .eq("id",memberId).eq("tenant_id", auth.tenantId).select(MEMBER_SELECT).maybeSingle();
   if(error||!data) {
     console.error("[Sports OS] member archive failed:",error);
     return NextResponse.json({error:"غیرفعال‌سازی پرونده ناموفق بود."},{status:400});
