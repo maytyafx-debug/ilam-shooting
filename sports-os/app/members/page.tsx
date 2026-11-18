@@ -22,7 +22,7 @@ type FormState = {
 };
 type ApiPayload = {
   error?: string; members?: Member[]; member?: Member; history?: HistoryItem[];
-  historyRecorded?: boolean; success?: boolean;
+  success?: boolean;
 };
 
 const ACTIVE_TENANT_STORAGE_KEY = "metatya-sports-os-active-tenant";
@@ -196,9 +196,7 @@ export default function MemberManagementPage() {
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok) throw new Error(payload.error || "ذخیره پرونده ناموفق بود.");
       await loadMembers(tenantId);
-      setMessage(payload.historyRecorded === false
-        ? "اطلاعات ذخیره شد، اما ثبت تاریخچه ناموفق بود؛ موضوع را به مدیر فنی گزارش کنید."
-        : editingId ? "پرونده عضو با موفقیت ویرایش شد." : "پرونده عضو با موفقیت ایجاد شد.");
+      setMessage(editingId ? "پرونده عضو با موفقیت ویرایش شد." : "پرونده عضو با موفقیت ایجاد شد.");
       startCreate();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "ذخیره پرونده ناموفق بود.");
@@ -217,9 +215,7 @@ export default function MemberManagementPage() {
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok) throw new Error(payload.error || "غیرفعال‌سازی ناموفق بود.");
       await loadMembers(tenantId);
-      setMessage(payload.historyRecorded === false
-        ? "پرونده غیرفعال شد، اما ثبت تاریخچه ناموفق بود."
-        : "پرونده غیرفعال شد و سوابق آن حفظ شد.");
+      setMessage("پرونده غیرفعال شد و سوابق آن حفظ شد.");
       if (editingId === member.id) startCreate();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "غیرفعال‌سازی ناموفق بود.");
