@@ -3,7 +3,7 @@ import {use,useEffect,useState} from "react";
 import Link from "next/link";
 type Achievement={event_title:string;sport_type:string;event_date:string;rank:number;medal:string};
 type PublicCard={full_name:string;sport_type:string|null;athlete_category:string|null;organization:string;published_at:string;achievements:Achievement[]};
-export default function PublicAthleteCardPage({params}:{params:{token:string}}){
+export default function PublicAthleteCardPage({params}:{params:Promise<{token:string}>}){\n const {token}=use(params);
  const [card,setCard]=useState<PublicCard|null>(null),[error,setError]=useState(""),[loading,setLoading]=useState(true);
  useEffect(()=>{let active=true;fetch("/api/public/athlete-card?token="+encodeURIComponent(token),{cache:"no-store"})
  .then(async r=>{const p=await r.json();if(!r.ok)throw new Error(p.error||"کارت در دسترس نیست.");return p.card as PublicCard;})
