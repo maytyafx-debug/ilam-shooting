@@ -519,7 +519,7 @@ CREATE TABLE IF NOT EXISTS public.sports_member_history (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES public.sports_tenants(id) ON DELETE CASCADE,
   member_id uuid NOT NULL,
-  actor_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+  actor_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   action text NOT NULL CHECK (action IN ('created','updated','archived')),
   changed_fields jsonb NOT NULL DEFAULT '{}'::jsonb
     CHECK (jsonb_typeof(changed_fields) = 'object'),
