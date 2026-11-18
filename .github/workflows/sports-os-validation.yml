@@ -123,3 +123,12 @@ jobs:
         run: |
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/012_inventory_transfers_and_assets.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-012.integration.sql
+
+      - name: Migration 013 champion QR database integration tests
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-013-fixture.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/013_champion_public_qr_cards.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-013.integration.sql
