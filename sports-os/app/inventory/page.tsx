@@ -132,24 +132,22 @@ export default function InventoryPage() {
     setBusy(true); setMessage(""); setErrorMessage("");
     const form = event.currentTarget;
     const raw = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
-    let payload: Record<string, unknown> = { ...raw };
-    let module: string = tab;
-    if (tab === "warehouses") module = "warehouse";
-    if (tab === "categories") module = "category";
+    const payload: Record<string, unknown> = { ...raw };
+    const moduleName = tab === "warehouses" ? "warehouse"
+      : tab === "categories" ? "category"
+      : tab === "items" ? "item" : "movement";
     if (tab === "items") {
-      module = "item";
       payload.minimum_quantity = raw.minimum_quantity ? Number(raw.minimum_quantity) : 0;
       payload.category_id = raw.category_id || null;
     }
     if (tab === "movements") {
-      module = "movement";
       payload.quantity = Number(raw.quantity);
     }
     try {
       const response = await fetch("/api/core-sports/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
-        body: JSON.stringify({ module, data: payload }),
+        body: JSON.stringify({ module: moduleName, data: payload }),
       });
       const result = (await response.json()) as ApiPayload;
       if (response.status === 401) { router.replace("/login"); return; }
