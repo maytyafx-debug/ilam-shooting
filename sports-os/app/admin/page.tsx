@@ -451,7 +451,7 @@ export default function DashboardPage() {
         <div className="shell topbar-inner">
           <div>
             <div className="brand">METATYA Sports OS</div>
-            <small>هسته مشترک مدیریت ورزش{tenantName ? " — " + tenantName : ""}</small>
+            <small>{tenantName || "سازمان ورزشی"}</small>
           </div>
           <div className="topbar-actions">
             {tenantOptions.length > 1 && (
