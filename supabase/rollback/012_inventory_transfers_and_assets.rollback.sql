@@ -9,6 +9,7 @@ DROP TRIGGER IF EXISTS sports_inventory_asset_movements_immutable ON public.spor
 DROP TRIGGER IF EXISTS sports_inventory_assets_updated_at ON public.sports_inventory_assets;
 
 DROP FUNCTION IF EXISTS public.sports_inventory_transfer_asset(uuid,uuid,uuid,text,text);
+DROP FUNCTION IF EXISTS public.sports_inventory_update_asset_status(uuid,uuid,text,text);
 DROP FUNCTION IF EXISTS public.sports_inventory_register_asset(uuid,uuid,uuid,text,text,text,date,text);
 DROP FUNCTION IF EXISTS public.sports_inventory_transfer_stock(uuid,uuid,uuid,uuid,numeric,text,text);
 DROP FUNCTION IF EXISTS public.sports_inventory_prevent_asset_movement_mutation();
