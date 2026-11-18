@@ -454,7 +454,7 @@ FROM PUBLIC,anon,authenticated;
 GRANT SELECT ON TABLE
   public.sports_inventory_transfers,public.sports_inventory_assets,public.sports_inventory_asset_movements
 TO authenticated;
-GRANT INSERT,UPDATE ON TABLE public.sports_inventory_assets TO authenticated;
+-- Asset creation and lifecycle changes are restricted to verified SECURITY DEFINER RPCs.
 
 CREATE POLICY sports_inventory_transfers_admin_read
 ON public.sports_inventory_transfers FOR SELECT TO authenticated
