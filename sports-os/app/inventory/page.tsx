@@ -166,6 +166,28 @@ export default function InventoryPage() {
     } finally { setBusy(false); }
   }
 
+  async function transferAsset(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!tenantId) return;
+    const form = event.currentTarget;
+    const values = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+    setBusy(true); setErrorMessage(""); setMessage("");
+    try {
+      const response = await fetch("/api/core-sports/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
+        body: JSON.stringify({ module: "asset_transfer", data: values }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "انتقال دارایی ناموفق بود.");
+      await load(tenantId);
+      form.reset();
+      setMessage("انتقال دارایی شناسه‌دار ثبت شد.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "انتقال دارایی ناموفق بود.");
+    } finally { setBusy(false); }
+  }
+
   async function archive(module: "item" | "warehouse", id: string) {
     if (!tenantId || !window.confirm("این رکورد غیرفعال شود؟ سوابق آن حذف نخواهد شد.")) return;
     setBusy(true); setErrorMessage(""); setMessage("");
@@ -323,6 +345,14 @@ export default function InventoryPage() {
 
             {tab === "assets" && <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold">دفتر اموال شناسه‌دار و برچسب‌های QR</h3><button type="button" onClick={() => window.print()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm print:hidden">چاپ برچسب‌ها</button></div>
+              <form onSubmit={transferAsset} className="grid gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 sm:grid-cols-2 print:hidden">
+                <div className="sm:col-span-2 font-semibold">انتقال اموال شناسه‌دار</div>
+                <div><label className="mb-1 block text-sm text-slate-300">دارایی</label><select name="asset_id" required className={inputClass}><option value="">انتخاب دارایی</option>{data.assets.filter((asset) => !["retired","lost"].includes(asset.lifecycle_status)).map((asset) => <option key={asset.id} value={asset.id}>{asset.asset_code} · {itemById.get(asset.item_id)?.name || "دارایی"}</option>)}</select></div>
+                <div><label className="mb-1 block text-sm text-slate-300">انبار مقصد</label><select name="to_warehouse_id" required className={inputClass}><option value="">انتخاب انبار مقصد</option>{activeWarehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}</select></div>
+                <Field name="reason" label="علت انتقال" required placeholder="جابجایی بین سالن‌ها" />
+                <Field name="reference_code" label="شماره سند (اختیاری)" />
+                <div className="sm:col-span-2"><button type="submit" disabled={busy || !tenantId} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">ثبت انتقال دارایی</button></div>
+              </form>
               <div className="inventory-labels grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {data.assets.map((asset) => <article key={asset.id} className="flex items-center gap-4 rounded-xl border border-slate-800 bg-white p-4 text-slate-950">
                   <QRCodeSVG value={asset.barcode_value} size={104} level="M" includeMargin />
