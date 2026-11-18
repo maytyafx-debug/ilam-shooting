@@ -176,6 +176,7 @@ assert.ok(integratedMigration.includes("sports_athlete_profiles_no_hard_delete")
 assert.ok(integratedMigration.includes("REVOKE DELETE ON TABLE public.sports_athlete_profiles FROM authenticated"));
 assert.ok(integratedMigration.includes("DROP COLUMN IF EXISTS birth_date"));
 assert.ok(integratedMigration.includes("sports_athlete_profiles_tenant_membership_number_uq"));
+assert.ok(integratedMigration.includes("COALESCE(joined_on, created_at::date)"));
 assert.ok(!integratedMigration.includes("'before', OLD.full_name"));
 assert.ok(!integratedMigration.includes("'after', NEW.full_name"));
 assert.ok(memberManagementApi.includes('rpc("sports_save_member"'));

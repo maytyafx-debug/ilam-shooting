@@ -513,8 +513,21 @@ ON CONFLICT (member_id, tenant_id) DO UPDATE SET
   athlete_category = COALESCE(public.sports_athlete_profiles.athlete_category, EXCLUDED.athlete_category);
 
 ALTER TABLE public.sports_members
-  ADD COLUMN IF NOT EXISTS joined_on date NOT NULL DEFAULT current_date,
-  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+  ADD COLUMN IF NOT EXISTS joined_on date,
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+
+-- Preserve the best available historical timestamps instead of marking every
+-- pre-existing member as having joined or changed on migration day.
+UPDATE public.sports_members
+SET joined_on = COALESCE(joined_on, created_at::date),
+    updated_at = COALESCE(updated_at, created_at)
+WHERE joined_on IS NULL OR updated_at IS NULL;
+
+ALTER TABLE public.sports_members
+  ALTER COLUMN joined_on SET DEFAULT current_date,
+  ALTER COLUMN joined_on SET NOT NULL,
+  ALTER COLUMN updated_at SET DEFAULT now(),
+  ALTER COLUMN updated_at SET NOT NULL;
 
 ALTER TABLE public.sports_athlete_profiles
   DROP CONSTRAINT IF EXISTS sports_athlete_profiles_membership_number_length_check,
