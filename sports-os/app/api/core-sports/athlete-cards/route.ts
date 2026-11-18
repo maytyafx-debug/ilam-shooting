@@ -33,9 +33,15 @@ export async function POST(request:NextRequest) {
  if(!body||typeof body.member_id!=="string"||!UUID_RE.test(body.member_id))
   return NextResponse.json({error:"شناسه ورزشکار معتبر نیست."},{status:400});
  const {data,error}=await db.rpc("sports_publish_athlete_public_card",{p_tenant_id:auth.tenantId,p_member_id:body.member_id});
- if(error||!data)return NextResponse.json({error:error?.code==="42501"
-  ?"انتشار مجاز نیست؛ برای ورزشکار زیر ۱۸ سال یا با سن نامشخص، رضایت معتبر سرپرست با محدوده رسانه لازم است."
-  :"صدور کارت قهرمانی ناموفق بود."},{status:error?.code==="42501"?403:400});
+ if(error||!data){
+  const consentRequired=error?.code==="42501";
+  const achievementRequired=error?.code==="22023";
+  return NextResponse.json({error:consentRequired
+   ?"انتشار مجاز نیست؛ برای ورزشکار زیر ۱۸ سال یا با سن نامشخص، رضایت معتبر سرپرست با محدوده رسانه لازم است."
+   :achievementRequired
+    ?"برای صدور کارت قهرمانی، حداقل یک رتبه سکوی تأییدشده لازم است."
+    :"صدور کارت قهرمانی ناموفق بود."},{status:consentRequired?403:400});
+ }
  return NextResponse.json({success:true,public_token:data},{status:201,headers:{"Cache-Control":"private, no-store"}});
 }
 
