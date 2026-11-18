@@ -81,8 +81,8 @@ BEGIN
  BEGIN
   UPDATE public.sports_inventory_movements SET reason='tampered' WHERE id=v_id;
   RAISE EXCEPTION 'Movement history unexpectedly allowed an update';
- EXCEPTION WHEN raise_exception THEN
-  IF SQLERRM = 'Movement history unexpectedly allowed an update' THEN RAISE; END IF;
+ EXCEPTION WHEN insufficient_privilege THEN
+  NULL;
  END;
 END $$;
 
