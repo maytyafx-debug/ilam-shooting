@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -69,7 +69,7 @@ export default function MemberManagementPage() {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function loadMembers(activeTenantId: string) {
+  const loadMembers = useCallback(async (activeTenantId: string) => {
     const response = await fetch("/api/core-sports/member-management", {
       cache: "no-store", headers: { "x-tenant-id": activeTenantId },
     });
@@ -77,7 +77,7 @@ export default function MemberManagementPage() {
     if (response.status === 401) { router.replace("/login"); return; }
     if (!response.ok) throw new Error(payload.error || "دریافت اعضا ناموفق بود.");
     setMembers(payload.members ?? []);
-  }
+  }, [router]);
 
   useEffect(() => {
     let active = true;
@@ -118,7 +118,7 @@ export default function MemberManagementPage() {
     }
     void initialize();
     return () => { active = false; };
-  }, [router]);
+  }, [loadMembers, router]);
 
   const filteredMembers = useMemo(() => {
     const normalized = search.trim().toLocaleLowerCase();
