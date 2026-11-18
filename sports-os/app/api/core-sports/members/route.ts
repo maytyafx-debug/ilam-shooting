@@ -57,5 +57,18 @@ export async function POST(request: NextRequest) {
     console.error("[Sports OS] create member failed:", error);
     return NextResponse.json({ error: "Unable to create member." }, { status: 400 });
   }
-  return NextResponse.json({ member: data }, { status: 201 });
+  const { error: historyError } = await db.from("sports_member_history").insert({
+    tenant_id: auth.tenantId,
+    member_id: data.id,
+    actor_id: auth.user.id,
+    action: "created",
+    changed_fields: {
+      full_name: { after: data.full_name },
+      phone: { after: data.phone },
+      sport_type: { after: data.sport_type },
+    },
+  });
+  if (historyError) console.error("[Sports OS] initial member history write failed:", historyError);
+
+  return NextResponse.json({ member: data, historyRecorded: !historyError }, { status: 201 });
 }
