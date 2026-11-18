@@ -99,7 +99,7 @@ jobs:
         working-directory: .
         run: node sports-os/tests/security-static.mjs
 
-      - name: Check legacy JavaScript syntax
+      - name: Champion QR security regression checks\n        working-directory: .\n        run: node sports-os/tests/security-static-champion-qr.mjs\n\n      - name: Check legacy JavaScript syntax
         working-directory: .
         run: node --check sports-os/app.js
 
