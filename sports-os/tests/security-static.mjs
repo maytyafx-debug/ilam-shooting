@@ -233,7 +233,6 @@ assert.ok(clubManagementPage.includes("metatya-sports-os-active-tenant"));
 assert.ok(clubManagementPage.includes('selected.role !== "owner" && selected.role !== "admin"'));
 assert.ok(clubManagementPage.includes("رضایت رسانه‌ای مستقل است"));
 assert.ok(clubManagementPage.includes("دفتر مالی تغییرناپذیر است"));
-assert.ok(clubManagementPage.includes("sports-os") === false);
 assert.ok(clubManagementPage.includes('href="/">داشبورد'));
 assert.ok(clubManagementPage.includes('href="/members">پرونده اعضا'));
 assert.ok(clubManagementPage.includes("active.module"));
