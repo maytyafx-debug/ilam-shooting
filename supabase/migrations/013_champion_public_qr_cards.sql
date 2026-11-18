@@ -43,6 +43,9 @@ BEGIN
   RAISE EXCEPTION 'Only active athlete records can receive a public card' USING ERRCODE='22023';
  END IF;
  -- Unknown age is treated conservatively as a minor.
+ IF NOT EXISTS(SELECT 1 FROM public.sports_results r WHERE r.tenant_id=p_tenant_id AND r.member_id=p_member_id AND r.verification_status='verified' AND r.rank IN(1,2,3)) THEN
+  RAISE EXCEPTION 'At least one verified podium achievement is required' USING ERRCODE='22023';
+ END IF;
  IF v_birth_date IS NULL OR age(current_date,v_birth_date)<interval '18 years' THEN
   IF NOT EXISTS(SELECT 1 FROM public.sports_guardian_consents gc
    WHERE gc.tenant_id=p_tenant_id AND gc.member_id=p_member_id AND gc.consent_scope='media'
@@ -106,8 +109,8 @@ REVOKE ALL ON FUNCTION public.sports_revoke_athlete_public_card(uuid,uuid) FROM 
 GRANT EXECUTE ON FUNCTION public.sports_revoke_athlete_public_card(uuid,uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.sports_get_public_athlete_card(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.sports_get_public_athlete_card(uuid) TO anon,authenticated;
-REVOKE ALL ON FUNCTION public.sports_prevent_tenant_change() FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.sports_athlete_public_cards_prevent_tenant_change() FROM PUBLIC,anon,authenticated;
 DROP TRIGGER IF EXISTS sports_athlete_public_cards_tenant_immutable ON public.sports_athlete_public_cards;
 CREATE TRIGGER sports_athlete_public_cards_tenant_immutable BEFORE UPDATE ON public.sports_athlete_public_cards
- FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_tenant_change();
+ FOR EACH ROW EXECUTE FUNCTION public.sports_athlete_public_cards_prevent_tenant_change();
 COMMIT;
