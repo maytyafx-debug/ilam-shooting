@@ -65,6 +65,20 @@ Live read-back confirmed RLS + FORCE RLS on all five tables, no `anon`/PUBLIC ta
 
 Repository migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_isolation.sql` describe an older `sports_core` schema design. They are not used by the current application and must not be applied to the connected pilot. The active runtime uses the `public.sports_*` tables listed above. Any future schema transition requires a separate reviewed migration, verified backup, explicit owner approval, and cross-tenant integration tests.
 
+### Result verification integrity — Migration 010
+
+**IMPLEMENTED IN SOURCE / NOT LIVE-VERIFIED:** `supabase/migrations/010_result_verification_guard.sql` adds a database trigger to the active `public.sports_results` table.
+
+- Every new result is forced to `pending_review`; client-supplied `verified_by` and `verified_at` values are discarded.
+- A verification status transition requires an authenticated user with an active `owner` or `admin` membership in the same tenant.
+- The database stamps `verified_by` from `auth.uid()` and `verified_at` from the database clock. Returning a result to `pending_review` clears both fields.
+- Verification metadata cannot be edited independently of a status transition.
+- The trigger uses `SECURITY INVOKER`; it does not bypass membership RLS. The existing Migration 007 owner/admin UPDATE policy remains the row-level authorization layer.
+- Existing result rows are deliberately not rewritten. The provenance of any pre-existing `verified` or `rejected` status must be reviewed separately.
+- A rollback script is provided at `supabase/rollback/010_result_verification_guard.rollback.sql`; it removes only the trigger/function and does not modify result rows.
+
+**Not applied to the connected Supabase project by this source change.** Live behavior, direct PostgREST attempts, owner/admin approval, referee denial, and cross-tenant denial must pass isolated integration tests after a verified backup and explicit migration approval. A future service-role verification workflow must use a separately reviewed trusted path; service-role calls without an authenticated actor cannot perform verification transitions through this trigger.
+
 ## 4. Multi-tenancy and organization isolation
 
 **LIVE IMPLEMENTED IN THE CURRENT PILOT:** the tenant API returns only active memberships for the authenticated user. When more than one active membership exists, the dashboard presents an organization selector. The last authorized selection is remembered in browser `sessionStorage` only as a UI preference and is restored only if it still appears in the server-verified membership list. Every operational GET/POST request sends the selected ID in `x-tenant-id`; every API route independently checks the authenticated user's active membership and role. The header and browser storage are selection hints, never authorization.
