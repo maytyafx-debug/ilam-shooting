@@ -184,6 +184,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ asset }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
   }
 
+  if (body.module === "asset_transfer") {
+    const asset_id = data.asset_id;
+    const to_warehouse_id = data.to_warehouse_id;
+    const reason = text(data.reason, 2, 500);
+    const reference_code = optionalText(data.reference_code, 100);
+    if (!isUuid(asset_id) || !isUuid(to_warehouse_id) || !reason || reference_code === undefined) {
+      return fail("اطلاعات انتقال دارایی معتبر نیست.");
+    }
+    const { data: eventId, error } = await db.rpc("sports_inventory_transfer_asset", {
+      p_tenant_id: tenant_id, p_asset_id: asset_id,
+      p_to_warehouse_id: to_warehouse_id, p_reason: reason,
+      p_reference_code: reference_code ?? null,
+    });
+    if (error || !eventId) {
+      console.error("[Sports OS] asset transfer failed:", error);
+      return fail("انتقال دارایی ناموفق بود.", 400);
+    }
+    return NextResponse.json({ asset_movement_id: eventId }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
+  }
+
   if (body.module === "transfer") {
     const item_id = data.item_id;
     const from_warehouse_id = data.from_warehouse_id;
