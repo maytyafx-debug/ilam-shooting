@@ -60,6 +60,9 @@ export default function DashboardPage() {
   const [notes, setNotes] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
+  const [linkEmail, setLinkEmail] = useState("");
+  const [linkType, setLinkType] = useState<"athlete" | "coach" | "referee">("athlete");
+  const [linkMemberId, setLinkMemberId] = useState("");
   const [sportType, setSportType] = useState("تیراندازی ورزشی");
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -320,6 +323,36 @@ export default function DashboardPage() {
     }
   }
 
+
+  async function submitPersonLink(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      if (!tenantId) throw new Error("سازمان فعال انتخاب نشده است.");
+      if (linkType === "athlete" && !linkMemberId) throw new Error("ابتدا پرونده ورزشکار را انتخاب کنید.");
+      const response = await fetch("/api/core-sports/person-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
+        body: JSON.stringify({
+          email: linkEmail,
+          person_type: linkType,
+          member_id: linkType === "athlete" ? linkMemberId : null,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "اتصال حساب انجام نشد.");
+      setMessage(`حساب با موفقیت متصل شد. کد شخصی: ${payload.personal_code} — این کد شناسه است و رمز ورود نیست.`);
+      setLinkEmail("");
+      setLinkMemberId("");
+      await loadData(tenantId);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "اتصال حساب ناموفق بود.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function submitEvent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -536,6 +569,39 @@ export default function DashboardPage() {
                   </div>
                   <div className="field full">
                     <button className="btn" disabled={busy || !tenantId}>ثبت عضو</button>
+                  </div>
+                </form>
+              </section>
+            )}
+
+            {canManage && (
+              <section className="panel">
+                <h2 className="section-title">اتصال حساب شخصی ورزشکار، مربی یا داور</h2>
+                <p className="muted">حساب باید از قبل در سامانه احراز هویت ایجاد و ایمیل آن تأیید شده باشد. کد تولیدشده شناسه پرونده است، نه رمز ورود.</p>
+                <form className="form-grid" onSubmit={submitPersonLink}>
+                  <div className="field">
+                    <label htmlFor="person-link-email">ایمیل حساب کاربری</label>
+                    <input id="person-link-email" type="email" required maxLength={254} value={linkEmail} onChange={(event) => setLinkEmail(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="person-link-type">نوع پرونده</label>
+                    <select id="person-link-type" value={linkType} onChange={(event) => { setLinkType(event.target.value as "athlete" | "coach" | "referee"); setLinkMemberId(""); }}>
+                      <option value="athlete">ورزشکار</option>
+                      <option value="coach">مربی</option>
+                      <option value="referee">داور</option>
+                    </select>
+                  </div>
+                  {linkType === "athlete" && (
+                    <div className="field full">
+                      <label htmlFor="person-link-member">پرونده ورزشکار ثبت‌شده</label>
+                      <select id="person-link-member" required value={linkMemberId} onChange={(event) => setLinkMemberId(event.target.value)}>
+                        <option value="">انتخاب پرونده</option>
+                        {members.map((member) => <option key={member.id} value={member.id}>{member.full_name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <div className="field full">
+                    <button className="btn" disabled={busy || !tenantId || (linkType === "athlete" && !members.length)}>اتصال حساب و تولید کد شخصی</button>
                   </div>
                 </form>
               </section>
