@@ -191,6 +191,10 @@ export default function DashboardPage() {
         }
 
         const options = tenantPayload.tenants ?? (tenantPayload.tenant ? [tenantPayload.tenant] : []);
+        if (!options.some((tenant) => ["owner", "admin", "referee"].includes(tenant.role))) {
+          router.replace("/portal");
+          return;
+        }
         if (options.length === 0) {
           persistActiveTenant(null);
           throw new Error("این حساب عضویت فعال در هیچ سازمانی ندارد.");
@@ -465,6 +469,7 @@ export default function DashboardPage() {
               </div>
             )}
             <span className="role-chip">{roleLabel}</span>
+            <a className="btn secondary" href="/">صفحه عمومی</a>
             <a className="btn secondary" href="/portal">پنل شخصی</a>
             <button className="btn secondary" onClick={signOut}>خروج</button>
           </div>
