@@ -13,7 +13,7 @@ type Member = {
   athlete_category: string | null; joined_on: string; created_at: string; updated_at: string;
 };
 type HistoryItem = {
-  id: string; actor_id: string; action: "created" | "updated" | "archived";
+  id: string; actor_id: string | null; action: "created" | "updated" | "archived";
   changed_fields: Record<string, { before?: unknown; after?: unknown }>; created_at: string;
 };
 type FormState = {
