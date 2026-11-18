@@ -253,7 +253,6 @@ export default function InventoryPage() {
                 <Field name="model" label="مدل / شناسه سازنده (اختیاری)" />
                 <Field name="unit" label="واحد شمارش" required defaultValue="عدد" placeholder="عدد، جفت، کیلوگرم، بسته..." />
                 <Field name="minimum_quantity" label="حداقل موجودی" type="number" defaultValue="0" min="0" step="0.001" />
-                <div><label className="mb-1 block text-sm text-slate-300">روش ردیابی</label><select name="tracking_mode" className={inputClass}><option value="quantity">تعدادی / مصرفی</option><option value="individual">اموال با شناسه مستقل</option></select></div>
                 <div className="sm:col-span-2"><Field name="description" label="توضیحات" /></div>
               </div>}
               {tab === "movements" && <div className="grid gap-3 sm:grid-cols-2">
