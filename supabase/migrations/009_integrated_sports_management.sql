@@ -526,7 +526,7 @@ CREATE TABLE IF NOT EXISTS public.sports_member_history (
   created_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT sports_member_history_member_tenant_fk
     FOREIGN KEY (member_id, tenant_id)
-    REFERENCES public.sports_members(id, tenant_id) ON DELETE RESTRICT
+    REFERENCES public.sports_members(id, tenant_id) ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE INDEX IF NOT EXISTS sports_member_history_member_idx
