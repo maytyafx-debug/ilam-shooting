@@ -155,7 +155,16 @@ export async function POST(request: NextRequest) {
         !MOVEMENT_TYPES.includes(movement_type as typeof MOVEMENT_TYPES[number]) ||
         !Number.isFinite(quantity) || quantity <= 0 || quantity > 1000000000 ||
         !reason || reference_code === undefined) return fail("اطلاعات گردش موجودی معتبر نیست.");
-    const quantity_delta = ["issue", "consumption"].includes(String(movement_type)) ? -quantity : quantity;
+    const direction = data.direction ?? "increase";
+    if (!["increase", "decrease"].includes(String(direction))) return fail("جهت اصلاح موجودی معتبر نیست.");
+    if (["adjustment", "correction"].includes(String(movement_type))) {
+      // Adjustments may increase or decrease the counted balance.
+    } else if (direction !== "increase") {
+      return fail("جهت این نوع گردش از نوع عملیات مشخص می‌شود.");
+    }
+    const quantity_delta = ["issue", "consumption"].includes(String(movement_type)) ||
+      (["adjustment", "correction"].includes(String(movement_type)) && direction === "decrease")
+      ? -quantity : quantity;
     const { data: movementId, error } = await db.rpc("sports_inventory_record_movement", {
       p_tenant_id: tenant_id,
       p_item_id: item_id,
