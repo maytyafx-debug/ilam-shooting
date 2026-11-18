@@ -17,6 +17,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "درخواست معتبر نیست." }, { status: 400 });
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "اطلاعات درخواست معتبر نیست." }, { status: 400 });
+  }
+
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const personType = body.person_type;
   const memberId = body.member_id;
