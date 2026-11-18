@@ -124,3 +124,11 @@ jobs:
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011-fixture.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/011_universal_sports_inventory.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011.integration.sql
+
+      - name: Migration 012 transfers and serialized assets integration tests
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/012_inventory_transfers_and_assets.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-012.integration.sql
