@@ -122,7 +122,9 @@ export async function POST(request: NextRequest) {
     const model = optionalText(data.model, 100);
     const description = optionalText(data.description, 1000);
     const unit = text(data.unit ?? "عدد", 1, 24);
-    const trackingModeValue = data.tracking_mode ?? "quantity";\n    if (trackingModeValue !== "quantity" && trackingModeValue !== "individual") return fail("روش ردیابی کالا معتبر نیست.");\n    const tracking_mode: "quantity" | "individual" = trackingModeValue;
+    const trackingModeValue = data.tracking_mode ?? "quantity";
+    if (trackingModeValue !== "quantity" && trackingModeValue !== "individual") return fail("روش ردیابی کالا معتبر نیست.");
+    const tracking_mode: "quantity" | "individual" = trackingModeValue;
     const minimum_quantity = Number(data.minimum_quantity ?? 0);
     const category_id = data.category_id == null || data.category_id === "" ? null : data.category_id;
     if (!sku || !name || sport_name === undefined || brand === undefined || model === undefined ||
@@ -162,8 +164,8 @@ export async function POST(request: NextRequest) {
     } else if (direction !== "increase") {
       return fail("جهت این نوع گردش از نوع عملیات مشخص می‌شود.");
     }
-    const quantity_delta = ["issue", "consumption"].includes(String(movement_type)) ||
-      (["adjustment", "correction"].includes(String(movement_type)) && direction === "decrease")
+    const quantity_delta = ["issue", "consumption"].includes(String(movementType)) ||
+      (["adjustment", "correction"].includes(String(movementType)) && direction === "decrease")
       ? -quantity : quantity;
     const { data: movementId, error } = await db.rpc("sports_inventory_record_movement", {
       p_tenant_id: tenant_id,
