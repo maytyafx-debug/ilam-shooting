@@ -844,4 +844,81 @@ FOR EACH ROW EXECUTE FUNCTION public.sports_prevent_member_history_mutation();
 REVOKE ALL ON FUNCTION public.sports_set_updated_at() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.sports_prevent_finance_mutation() FROM PUBLIC, anon, authenticated;
 
+
+-- Member history is written by a SECURITY INVOKER trigger in the same
+-- transaction as each member insert/update. RLS therefore validates the
+-- authenticated administrator and a failed audit write rolls back the change.
+CREATE OR REPLACE FUNCTION public.sports_audit_member_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $member_audit$
+DECLARE
+  actor uuid := auth.uid();
+  changes jsonb := '{}'::jsonb;
+  event_action text;
+BEGIN
+  IF actor IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'INSERT' THEN
+    event_action := 'created';
+    changes := jsonb_build_object(
+      'full_name', jsonb_build_object('after', NEW.full_name),
+      'phone', jsonb_build_object('after', NEW.phone),
+      'sport_type', jsonb_build_object('after', NEW.sport_type),
+      'membership_number', jsonb_build_object('after', NEW.membership_number),
+      'birth_date', jsonb_build_object('after', NEW.birth_date),
+      'athlete_category', jsonb_build_object('after', NEW.athlete_category),
+      'status', jsonb_build_object('after', NEW.status)
+    );
+  ELSE
+    IF OLD.full_name IS DISTINCT FROM NEW.full_name THEN
+      changes := changes || jsonb_build_object('full_name', jsonb_build_object('before', OLD.full_name, 'after', NEW.full_name));
+    END IF;
+    IF OLD.phone IS DISTINCT FROM NEW.phone THEN
+      changes := changes || jsonb_build_object('phone', jsonb_build_object('before', OLD.phone, 'after', NEW.phone));
+    END IF;
+    IF OLD.sport_type IS DISTINCT FROM NEW.sport_type THEN
+      changes := changes || jsonb_build_object('sport_type', jsonb_build_object('before', OLD.sport_type, 'after', NEW.sport_type));
+    END IF;
+    IF OLD.membership_number IS DISTINCT FROM NEW.membership_number THEN
+      changes := changes || jsonb_build_object('membership_number', jsonb_build_object('before', OLD.membership_number, 'after', NEW.membership_number));
+    END IF;
+    IF OLD.birth_date IS DISTINCT FROM NEW.birth_date THEN
+      changes := changes || jsonb_build_object('birth_date', jsonb_build_object('before', OLD.birth_date, 'after', NEW.birth_date));
+    END IF;
+    IF OLD.athlete_category IS DISTINCT FROM NEW.athlete_category THEN
+      changes := changes || jsonb_build_object('athlete_category', jsonb_build_object('before', OLD.athlete_category, 'after', NEW.athlete_category));
+    END IF;
+    IF OLD.status IS DISTINCT FROM NEW.status THEN
+      changes := changes || jsonb_build_object('status', jsonb_build_object('before', OLD.status, 'after', NEW.status));
+    END IF;
+
+    IF changes = '{}'::jsonb THEN
+      RETURN NEW;
+    END IF;
+    event_action := CASE
+      WHEN OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'inactive' THEN 'archived'
+      ELSE 'updated'
+    END;
+  END IF;
+
+  INSERT INTO public.sports_member_history(
+    tenant_id, member_id, actor_id, action, changed_fields
+  ) VALUES (
+    NEW.tenant_id, NEW.id, actor, event_action, changes
+  );
+
+  RETURN NEW;
+END;
+$member_audit$;
+
+REVOKE ALL ON FUNCTION public.sports_audit_member_change() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS sports_members_history_audit ON public.sports_members;
+CREATE TRIGGER sports_members_history_audit
+AFTER INSERT OR UPDATE ON public.sports_members
+FOR EACH ROW EXECUTE FUNCTION public.sports_audit_member_change();
+
 commit;
