@@ -3,7 +3,7 @@ import type { CreateEventInput, CreateMemberInput, CreateResultInput } from "./t
 
 export class CoreSportsService {
   constructor(
-    private readonly db: SupabaseClient<any, any, any, any, any>,
+    private readonly db: SupabaseClient,
     private readonly tenantId: string,
   ) {}
 

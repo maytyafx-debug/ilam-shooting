@@ -19,7 +19,7 @@ type TenantRecord = {
 };
 
 export async function listUserActiveTenants(
-  db: SupabaseClient<any, any, any, any, any>,
+  db: SupabaseClient,
   userId: string,
 ) {
   const { data: memberships, error: membershipError } = await db
@@ -73,7 +73,7 @@ export async function listUserActiveTenants(
 }
 
 export async function requireCoreRole(
-  db: SupabaseClient<any, any, any, any, any>,
+  db: SupabaseClient,
   allowed: readonly CoreRole[],
   requestedTenantId: string | null,
 ) {
