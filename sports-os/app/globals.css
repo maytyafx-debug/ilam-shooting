@@ -120,3 +120,39 @@ main { padding: 32px 0 56px; }
   .club-record { flex-direction: column; }
   .club-record-actions { width: 100%; }
 }
+
+
+/* Champion QR card — premium dark emerald, champagne and silver identity */
+.champion-card-wrap { display:grid; gap:14px; justify-items:start; }
+.champion-card { width:min(760px,100%); overflow:hidden; border:1px solid #c6a76a; border-radius:22px; color:#f8f5ec; background:radial-gradient(circle at 82% 18%,#285b50 0,#102c29 42%,#091916 100%); box-shadow:0 24px 70px #0b211d30; padding:24px; }
+.champion-card-top,.champion-card-foot,.champion-card-body { display:flex; align-items:center; justify-content:space-between; gap:18px; }
+.champion-card-top,.champion-card-foot { color:#d9c18e; font-size:11px; letter-spacing:1.5px; }
+.champion-card-body { padding:34px 0; }
+.champion-kicker { color:#d9c18e; font-size:13px; font-weight:700; }
+.champion-card-body h2 { margin:8px 0; font-size:clamp(24px,4vw,34px); color:#fff; }
+.champion-card-body p { margin:6px 0; color:#e1e9e5; }
+.champion-card-body small { color:#b6c9c1; }
+.champion-qr { padding:10px; border-radius:14px; background:#fff; flex:none; }
+.champion-card-foot { border-top:1px solid #ffffff28; padding-top:15px; }
+.public-champion-page { max-width:820px; }
+.champion-public-card { position:relative; overflow:hidden; padding:clamp(22px,5vw,46px); border:1px solid #c6a76a; border-radius:24px; color:#f8f5ec; background:radial-gradient(circle at 80% 10%,#285b50 0,#102c29 48%,#091916 100%); box-shadow:0 24px 70px #0b211d25; }
+.champion-public-top { display:flex; justify-content:space-between; gap:12px; color:#d9c18e; font-size:11px; letter-spacing:1.5px; }
+.champion-public-emblem { display:grid; place-items:center; width:62px; height:62px; margin:32px 0 18px; border:1px solid #d9c18e; border-radius:50%; color:#e4c77f; font-size:34px; }
+.champion-public-card h1 { margin:6px 0; font-size:clamp(28px,6vw,42px); }
+.champion-public-sport { color:#e3e9e5; font-size:17px; }
+.champion-public-org { color:#d9c18e; }
+.champion-public-divider { height:1px; margin:28px 0; background:#ffffff35; }
+.champion-public-card h2 { font-size:20px; }
+.champion-achievements { display:grid; gap:10px; padding:0; list-style:none; }
+.champion-achievements li { display:flex; align-items:center; gap:12px; padding:14px; border:1px solid #ffffff25; border-radius:13px; background:#ffffff0b; }
+.champion-achievements li span:nth-child(2) { display:grid; flex:1; gap:4px; }
+.champion-achievements small { color:#c5d4ce; }
+.champion-achievements b { color:#e6cd91; white-space:nowrap; }
+.champion-medal { min-width:48px; color:#e6cd91; font-weight:800; }
+.champion-public-card footer { margin-top:28px; padding-top:16px; border-top:1px solid #ffffff30; color:#c5d4ce; font-size:12px; }
+@media print {
+ body { background:#fff !important; }
+ .topbar,.page-intro,.panel,.status,.print-hide { display:none !important; }
+ .champion-card-wrap { width:100%; }
+ .champion-card { width:100%; max-width:760px; print-color-adjust:exact; -webkit-print-color-adjust:exact; box-shadow:none; }
+}
