@@ -156,6 +156,7 @@ assert.ok(memberManagementApi.includes("export async function PATCH"));
 assert.ok(memberManagementApi.includes("export async function DELETE"));
 assert.ok(memberManagementApi.includes('update({ status: "inactive" })'));
 assert.ok(memberManagementApi.includes('writeHistory'));
+assert.ok(membersApi.includes('from("sports_member_history")'));
 assert.ok(memberHistoryApi.includes('from("sports_member_history")'));
 assert.ok(memberManagementPage.includes('selected.role !== "owner" && selected.role !== "admin"'));
 assert.ok(memberManagementPage.includes("جستجو بر اساس نام، شماره عضویت یا تماس"));
