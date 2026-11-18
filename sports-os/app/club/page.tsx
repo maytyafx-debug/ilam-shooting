@@ -189,15 +189,15 @@ export default function ClubManagementPage() {
 
   async function updateRecord(tab: Tab, row: Row, patch: Record<string, unknown>) {
     if (!tenantId || typeof row.id !== "string") return;
-    const module = TABS.find((item) => item.id === tab)?.module;
-    if (!module) return;
+    const moduleName = TABS.find((item) => item.id === tab)?.module;
+    if (!moduleName) return;
     setBusy(true);
     setMessage("");
     setErrorMessage("");
     try {
       const response = await fetch("/api/core-sports/club-management", {
         method: "PATCH", headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
-        body: JSON.stringify({ module, id: row.id, data: patch }),
+        body: JSON.stringify({ module: moduleName, id: row.id, data: patch }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "به‌روزرسانی ناموفق بود.");
