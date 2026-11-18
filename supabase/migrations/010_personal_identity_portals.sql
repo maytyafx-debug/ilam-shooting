@@ -215,7 +215,7 @@ returns table(linked_user_id uuid, personal_code text, display_name text)
 language plpgsql
 security definer
 set search_path = pg_catalog, public, auth
-as $
+as $portal$
 declare
   v_actor uuid;
   v_target uuid;
@@ -318,9 +318,7 @@ begin
 
   return query select v_target, v_code, v_name;
 end;
-$;
-
-revoke all on function public.sports_admin_link_person(uuid,text,text,uuid) from public, anon;
+$portal$;(uuid,text,text,uuid) from public, anon;
 grant execute on function public.sports_admin_link_person(uuid,text,text,uuid) to authenticated;
 
 commit;
