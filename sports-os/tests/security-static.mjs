@@ -285,6 +285,12 @@ assert.ok(inventoryAdvancedMigration.includes("sports_inventory_transfer_stock")
 assert.ok(inventoryAdvancedMigration.includes("FOR UPDATE"));
 assert.ok(inventoryAdvancedMigration.includes("sports_inventory_register_asset"));
 assert.ok(inventoryAdvancedMigration.includes("sports_inventory_transfer_asset"));
+assert.ok(inventoryAdvancedMigration.includes("sports_inventory_update_asset_status"));
+assert.ok(inventoryApi.includes('rpc("sports_inventory_update_asset_status"'));
+assert.ok(inventoryPage.includes("setAssetStatus"));
+assert.ok(inventoryPage.includes("تحویل"));
+assert.ok(inventoryPage.includes("تعمیرات"));
+assert.ok(inventoryPage.includes("اسقاط"));
 assert.ok(inventoryAdvancedMigration.includes("barcode_value"));
 assert.ok(inventoryAdvancedMigration.includes("sports_inventory_asset_movements"));
 assert.ok(inventoryAdvancedMigration.includes("Inventory asset movement history is append-only"));
