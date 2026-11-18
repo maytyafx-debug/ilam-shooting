@@ -8,10 +8,10 @@ const publicPage=fs.readFileSync("sports-os/app/athlete/[token]/page.tsx","utf8"
 assert.match(migration,/sports_publish_athlete_public_card/);
 assert.match(migration,/sports_revoke_athlete_public_card/);
 assert.match(migration,/sports_get_public_athlete_card/);
-assert.match(migration,/CREATE OR REPLACE FUNCTION public\\.sports_athlete_public_cards_prevent_tenant_change/);
+assert.match(migration,/CREATE OR REPLACE FUNCTION public\.sports_athlete_public_cards_prevent_tenant_change/);
 assert.match(migration,/consent_scope='media'/);
 assert.match(migration,/verification_status='verified'/);
-assert.match(migration,/REVOKE ALL ON public\.sports_athlete_public_cards FROM PUBLIC,\\s*anon,\\s*authenticated/);
+assert.match(migration,/REVOKE ALL ON public\.sports_athlete_public_cards FROM PUBLIC,\s*anon,\s*authenticated/);
 assert.match(migration,/GRANT EXECUTE ON FUNCTION public\.sports_get_public_athlete_card\(uuid\) TO anon,authenticated/);
 assert.match(publicApi,/sports_get_public_athlete_card/);
 assert.match(publicApi,/X-Robots-Tag/);
