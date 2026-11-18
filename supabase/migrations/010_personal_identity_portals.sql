@@ -235,11 +235,14 @@ begin
     raise exception 'Valid account email required';
   end if;
   if not exists (
-    select 1 from public.sports_tenant_memberships tm
+    select 1
+    from public.sports_tenant_memberships tm
+    join public.sports_tenants t on t.id = tm.tenant_id
     where tm.tenant_id = p_tenant_id
       and tm.user_id = v_actor
       and tm.status = 'active'
       and tm.role in ('owner','admin')
+      and t.status = 'active'
   ) then
     raise exception 'Organization administrator permission required';
   end if;
