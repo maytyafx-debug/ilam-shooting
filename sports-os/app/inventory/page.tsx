@@ -211,6 +211,25 @@ export default function InventoryPage() {
     } finally { setBusy(false); }
   }
 
+  async function setAssetStatus(assetId: string, status: string) {
+    if (!tenantId) return;
+    if (["retired","lost"].includes(status) && !window.confirm("این وضعیت محدودکننده است و دارایی پس از آن قابل انتقال نخواهد بود. ادامه می‌دهید؟")) return;
+    setBusy(true); setErrorMessage(""); setMessage("");
+    try {
+      const response = await fetch("/api/core-sports/inventory", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
+        body: JSON.stringify({ module: "asset_status", id: assetId, status, notes: "تغییر وضعیت از پنل مدیریت انبار" }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "تغییر وضعیت دارایی ناموفق بود.");
+      await load(tenantId);
+      setMessage("وضعیت دارایی تغییر کرد و در تاریخچه ثبت شد.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "تغییر وضعیت ناموفق بود.");
+    } finally { setBusy(false); }
+  }
+
   async function archive(module: "item" | "warehouse", id: string) {
     if (!tenantId || !window.confirm("این رکورد غیرفعال شود؟ سوابق آن حذف نخواهد شد.")) return;
     setBusy(true); setErrorMessage(""); setMessage("");
@@ -379,7 +398,13 @@ export default function InventoryPage() {
               <div className="inventory-labels grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {data.assets.map((asset) => <article key={asset.id} className="flex items-center gap-4 rounded-xl border border-slate-800 bg-white p-4 text-slate-950">
                   <QRCodeSVG value={asset.barcode_value} size={104} level="M" includeMargin />
-                  <div className="min-w-0"><p className="font-bold">{itemById.get(asset.item_id)?.name || "دارایی ورزشی"}</p><p className="mt-1 break-all font-mono text-sm">{asset.asset_code}</p><p className="text-xs text-slate-600">سریال: {asset.serial_number || "—"}</p><p className="text-xs text-slate-600">{warehouseById.get(asset.warehouse_id)?.name || "—"} · {asset.lifecycle_status}</p></div>
+                  <div className="min-w-0"><p className="font-bold">{itemById.get(asset.item_id)?.name || "دارایی ورزشی"}</p><p className="mt-1 break-all font-mono text-sm">{asset.asset_code}</p><p className="text-xs text-slate-600">سریال: {asset.serial_number || "—"}</p><p className="text-xs text-slate-600">{warehouseById.get(asset.warehouse_id)?.name || "—"} · {asset.lifecycle_status}</p>
+                    <div className="mt-2 flex flex-wrap gap-2 print:hidden">
+                      {asset.lifecycle_status === "available" && <button type="button" disabled={busy} onClick={() => void setAssetStatus(asset.id,"issued")} className="text-xs text-amber-700">تحویل</button>}
+                      {asset.lifecycle_status === "issued" && <button type="button" disabled={busy} onClick={() => void setAssetStatus(asset.id,"available")} className="text-xs text-emerald-700">عودت</button>}
+                      {!["retired","lost"].includes(asset.lifecycle_status) && <button type="button" disabled={busy} onClick={() => void setAssetStatus(asset.id,"maintenance")} className="text-xs text-blue-700">تعمیرات</button>}
+                      {!["retired","lost"].includes(asset.lifecycle_status) && <button type="button" disabled={busy} onClick={() => void setAssetStatus(asset.id,"retired")} className="text-xs text-rose-700">اسقاط</button>}
+                    </div></div>
                 </article>)}
               </div>
               {data.assets.length === 0 && <p className="rounded-xl border border-slate-800 p-4 text-sm text-slate-500">هنوز دارایی شناسه‌داری ثبت نشده است. ابتدا یک کالا با روش ردیابی مستقل تعریف کنید.</p>}
