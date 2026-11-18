@@ -30,7 +30,7 @@ function cleanOptionalText(value: unknown, maxLength: number): string | null | u
 function validateMemberInput(body: MemberInput, partial: boolean) {
   const patch: Record<string, unknown> = {};
 
-  if (!partial || Object.hasOwn(body, "full_name")) {
+  if (!partial || Object.prototype.hasOwnProperty.call(body, "full_name")) {
     if (typeof body.full_name !== "string" || body.full_name.trim().length < 2 || body.full_name.trim().length > 150) {
       return { error: "نام و نام خانوادگی باید بین ۲ تا ۱۵۰ نویسه باشد." };
     }
@@ -43,14 +43,14 @@ function validateMemberInput(body: MemberInput, partial: boolean) {
     ["membership_number", 40],
     ["athlete_category", 80],
   ] as const) {
-    if (!partial || Object.hasOwn(body, key)) {
+    if (!partial || Object.prototype.hasOwnProperty.call(body, key)) {
       const value = cleanOptionalText(body[key], max);
       if (value === undefined) return { error: "یکی از فیلدهای متنی معتبر نیست." };
       patch[key] = value;
     }
   }
 
-  if (!partial || Object.hasOwn(body, "birth_date")) {
+  if (!partial || Object.prototype.hasOwnProperty.call(body, "birth_date")) {
     const value = body.birth_date;
     if (value === null || value === "") {
       patch.birth_date = null;
@@ -66,7 +66,7 @@ function validateMemberInput(body: MemberInput, partial: boolean) {
     }
   }
 
-  if (Object.hasOwn(body, "status")) {
+  if (Object.prototype.hasOwnProperty.call(body, "status")) {
     if (typeof body.status !== "string" || !ALLOWED_STATUSES.includes(body.status as typeof ALLOWED_STATUSES[number])) {
       return { error: "وضعیت پرونده معتبر نیست." };
     }
