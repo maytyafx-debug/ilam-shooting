@@ -413,6 +413,7 @@ export default function DashboardPage() {
           <div>
             <div className="brand">METATYA Sports OS</div>
             <small>هسته مشترک مدیریت ورزش{tenantName ? " — " + tenantName : ""}</small>
+            <nav className="top-nav"><a href="/members">پرونده اعضا</a><a href="/club">مدیریت باشگاه</a></nav>
           </div>
           <div className="topbar-actions">
             {tenantOptions.length > 1 && (
