@@ -109,6 +109,15 @@ REVOKE ALL ON FUNCTION public.sports_revoke_athlete_public_card(uuid,uuid) FROM 
 GRANT EXECUTE ON FUNCTION public.sports_revoke_athlete_public_card(uuid,uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.sports_get_public_athlete_card(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.sports_get_public_athlete_card(uuid) TO anon,authenticated;
+CREATE OR REPLACE FUNCTION public.sports_athlete_public_cards_prevent_tenant_change()
+RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $tenant_guard$
+BEGIN
+ IF NEW.tenant_id IS DISTINCT FROM OLD.tenant_id THEN
+  RAISE EXCEPTION 'Tenant ID cannot be changed' USING ERRCODE='42501';
+ END IF;
+ RETURN NEW;
+END;
+$tenant_guard$;
 REVOKE ALL ON FUNCTION public.sports_athlete_public_cards_prevent_tenant_change() FROM PUBLIC,anon,authenticated;
 DROP TRIGGER IF EXISTS sports_athlete_public_cards_tenant_immutable ON public.sports_athlete_public_cards;
 CREATE TRIGGER sports_athlete_public_cards_tenant_immutable BEFORE UPDATE ON public.sports_athlete_public_cards
