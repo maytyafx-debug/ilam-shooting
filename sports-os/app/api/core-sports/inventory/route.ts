@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   if (!auth.ok) return fail(auth.error, auth.status);
 
   const tenantId = auth.tenantId;
-  const [warehouses, categories, items, stock, movements] = await Promise.all([
+  const [warehouses, categories, items, stock, movements, transfers, assets, assetMovements] = await Promise.all([
     db.from("sports_inventory_warehouses")
       .select("id,code,name,location_label,is_active,created_at")
       .eq("tenant_id", tenantId).order("name").limit(300),
@@ -49,11 +49,20 @@ export async function GET(request: NextRequest) {
       .select("item_id,warehouse_id,quantity_on_hand,updated_at")
       .eq("tenant_id", tenantId).limit(5000),
     db.from("sports_inventory_movements")
-      .select("id,item_id,warehouse_id,movement_type,quantity_delta,reason,reference_code,recorded_by,created_at")
-      .eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(200),
+      .select("id,item_id,warehouse_id,movement_type,quantity_delta,reason,reference_code,recorded_by,created_at,transfer_id")
+      .eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(1000),
+    db.from("sports_inventory_transfers")
+      .select("id,item_id,from_warehouse_id,to_warehouse_id,quantity,reason,reference_code,status,created_by,created_at")
+      .eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(1000),
+    db.from("sports_inventory_assets")
+      .select("id,item_id,warehouse_id,asset_code,barcode_value,serial_number,condition_status,lifecycle_status,acquired_on,notes,created_at")
+      .eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(3000),
+    db.from("sports_inventory_asset_movements")
+      .select("id,asset_id,event_type,from_warehouse_id,to_warehouse_id,notes,reference_code,recorded_by,created_at")
+      .eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(1000),
   ]);
 
-  const results = [warehouses, categories, items, stock, movements];
+  const results = [warehouses, categories, items, stock, movements, transfers, assets, assetMovements];
   if (results.some((result) => result.error)) {
     console.error("[Sports OS] inventory load failed:", results.filter((result) => result.error).map((result) => result.error));
     return fail("بارگذاری اطلاعات انبار ناموفق بود.", 500);
@@ -65,6 +74,9 @@ export async function GET(request: NextRequest) {
     items: items.data ?? [],
     stock: stock.data ?? [],
     movements: movements.data ?? [],
+    transfers: transfers.data ?? [],
+    assets: assets.data ?? [],
+    assetMovements: assetMovements.data ?? [],
   }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
@@ -122,8 +134,8 @@ export async function POST(request: NextRequest) {
     const model = optionalText(data.model, 100);
     const description = optionalText(data.description, 1000);
     const unit = text(data.unit ?? "عدد", 1, 24);
-    const tracking_mode = "quantity";
-    if (data.tracking_mode !== undefined && data.tracking_mode !== "quantity") return fail("ردیابی اموال با شناسه مستقل در مرحله بعدی فعال می‌شود.");
+    const tracking_mode = data.tracking_mode ?? "quantity";
+    if (tracking_mode !== "quantity" && tracking_mode !== "individual") return fail("روش ردیابی کالا معتبر نیست.");
     const minimum_quantity = Number(data.minimum_quantity ?? 0);
     const category_id = data.category_id == null || data.category_id === "" ? null : data.category_id;
     if (!sku || !name || sport_name === undefined || brand === undefined || model === undefined ||
@@ -143,6 +155,58 @@ export async function POST(request: NextRequest) {
       return fail(error.code === "23505" ? "کد کالا قبلاً در این سازمان ثبت شده است." : "ثبت کالا ناموفق بود.", error.code === "23505" ? 409 : 400);
     }
     return NextResponse.json({ record: saved }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
+  }
+
+  if (body.module === "asset") {
+    const item_id = data.item_id;
+    const warehouse_id = data.warehouse_id;
+    const asset_code = optionalText(data.asset_code, 80);
+    const serial_number = optionalText(data.serial_number, 120);
+    const notes = text(data.notes ?? "ثبت اولیه دارایی", 2, 500);
+    const condition_status = data.condition_status ?? "good";
+    const acquired_on = optionalText(data.acquired_on, 10);
+    if (!isUuid(item_id) || !isUuid(warehouse_id) || asset_code === undefined ||
+        serial_number === undefined || !notes ||
+        !["new", "good", "fair", "damaged"].includes(String(condition_status)) ||
+        (acquired_on !== undefined && acquired_on !== null && !/^\\d{4}-\\d{2}-\\d{2}$/.test(acquired_on))) {
+      return fail("مشخصات دارایی مستقل معتبر نیست.");
+    }
+    const { data: registered, error } = await db.rpc("sports_inventory_register_asset", {
+      p_tenant_id: tenant_id, p_item_id: item_id, p_warehouse_id: warehouse_id,
+      p_asset_code: asset_code ?? null, p_serial_number: serial_number ?? null,
+      p_condition_status: condition_status, p_acquired_on: acquired_on ?? null, p_notes: notes,
+    });
+    if (error || !registered) {
+      console.error("[Sports OS] asset registration failed:", error);
+      return fail(error?.code === "23505" ? "کد اموال تکراری است." : "ثبت دارایی مستقل ناموفق بود.", error?.code === "23505" ? 409 : 400);
+    }
+    const asset = Array.isArray(registered) ? registered[0] : registered;
+    return NextResponse.json({ asset }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
+  }
+
+  if (body.module === "transfer") {
+    const item_id = data.item_id;
+    const from_warehouse_id = data.from_warehouse_id;
+    const to_warehouse_id = data.to_warehouse_id;
+    const quantity = Number(data.quantity);
+    const reason = text(data.reason, 2, 500);
+    const reference_code = optionalText(data.reference_code, 100);
+    if (!isUuid(item_id) || !isUuid(from_warehouse_id) || !isUuid(to_warehouse_id) ||
+        from_warehouse_id === to_warehouse_id || !Number.isFinite(quantity) || quantity <= 0 ||
+        quantity > 1000000000 || !reason || reference_code === undefined) {
+      return fail("اطلاعات انتقال بین انبارها معتبر نیست.");
+    }
+    const { data: transferId, error } = await db.rpc("sports_inventory_transfer_stock", {
+      p_tenant_id: tenant_id, p_item_id: item_id,
+      p_from_warehouse_id: from_warehouse_id, p_to_warehouse_id: to_warehouse_id,
+      p_quantity: quantity, p_reason: reason, p_reference_code: reference_code ?? null,
+    });
+    if (error || !transferId) {
+      console.error("[Sports OS] stock transfer failed:", error);
+      const insufficient = error?.code === "23514";
+      return fail(insufficient ? "موجودی انبار مبدأ کافی نیست." : "انتقال موجودی ناموفق بود.", insufficient ? 409 : 400);
+    }
+    return NextResponse.json({ transfer_id: transferId }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
   }
 
   if (body.module === "movement") {
