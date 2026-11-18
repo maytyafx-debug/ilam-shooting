@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { QRCodeSVG } from "qrcode.react";
 
 type TenantOption = { id: string; name: string; role: string };
 type Warehouse = { id: string; code: string; name: string; location_label: string | null; is_active: boolean };
@@ -18,17 +19,22 @@ type Movement = {
   id: string; item_id: string; warehouse_id: string; movement_type: string;
   quantity_delta: number; reason: string; reference_code: string | null; created_at: string;
 };
-type InventoryData = { warehouses: Warehouse[]; categories: Category[]; items: Item[]; stock: Stock[]; movements: Movement[] };
-type Tab = "items" | "warehouses" | "categories" | "movements";
+type Asset = { id: string; item_id: string; warehouse_id: string; asset_code: string; barcode_value: string; serial_number: string | null; condition_status: string; lifecycle_status: string; acquired_on: string | null; notes: string | null; created_at: string };
+type Transfer = { id: string; item_id: string; from_warehouse_id: string; to_warehouse_id: string; quantity: number; reason: string; reference_code: string | null; status: string; created_at: string };
+type InventoryData = { warehouses: Warehouse[]; categories: Category[]; items: Item[]; stock: Stock[]; movements: Movement[]; transfers: Transfer[]; assets: Asset[]; assetMovements: unknown[] };
+type Tab = "items" | "warehouses" | "categories" | "movements" | "transfers" | "assets" | "reports";
 type ApiPayload = { error?: string; record?: unknown; movement_id?: string };
 
 const STORAGE_KEY = "metatya-sports-os-active-tenant";
-const EMPTY: InventoryData = { warehouses: [], categories: [], items: [], stock: [], movements: [] };
+const EMPTY: InventoryData = { warehouses: [], categories: [], items: [], stock: [], movements: [], transfers: [], assets: [], assetMovements: [] };
 const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: "items", label: "کالاها و تجهیزات", hint: "تعریف اقلام عمومی و رشته‌ای" },
   { id: "warehouses", label: "انبارها", hint: "تعریف محل‌های نگهداری" },
   { id: "categories", label: "دسته‌بندی‌ها", hint: "دسته‌بندی مستقل یا مختص رشته" },
   { id: "movements", label: "گردش موجودی", hint: "رسید، عودت، تحویل، مصرف و اصلاح" },
+  { id: "transfers", label: "انتقال بین انبارها", hint: "انتقال اتمیک با کنترل موجودی مبدأ" },
+  { id: "assets", label: "اموال شناسه‌دار", hint: "ثبت دارایی، شناسه یکتا و QR" },
+  { id: "reports", label: "گزارش‌های مدیریتی", hint: "موجودی، نقطه سفارش، دارایی و انتقال" },
 ];
 
 function storedTenant() {
@@ -135,14 +141,14 @@ export default function InventoryPage() {
     const payload: Record<string, unknown> = { ...raw };
     const moduleName = tab === "warehouses" ? "warehouse"
       : tab === "categories" ? "category"
-      : tab === "items" ? "item" : "movement";
+      : tab === "items" ? "item"
+      : tab === "assets" ? "asset"
+      : tab === "transfers" ? "transfer" : "movement";
     if (tab === "items") {
       payload.minimum_quantity = raw.minimum_quantity ? Number(raw.minimum_quantity) : 0;
       payload.category_id = raw.category_id || null;
     }
-    if (tab === "movements") {
-      payload.quantity = Number(raw.quantity);
-    }
+    if (tab === "movements" || tab === "transfers") payload.quantity = Number(raw.quantity);
     try {
       const response = await fetch("/api/core-sports/inventory", {
         method: "POST",
@@ -154,7 +160,7 @@ export default function InventoryPage() {
       if (!response.ok) throw new Error(result.error || "ثبت اطلاعات ناموفق بود.");
       await load(tenantId);
       form.reset();
-      setMessage(tab === "movements" ? "گردش موجودی با موفقیت ثبت شد." : "اطلاعات با موفقیت ثبت شد.");
+      setMessage(tab === "movements" ? "گردش موجودی ثبت شد." : tab === "transfers" ? "انتقال بین دو انبار با موفقیت ثبت شد." : tab === "assets" ? "دارایی ثبت شد و شناسه QR آن آماده است." : "اطلاعات با موفقیت ثبت شد.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "ثبت اطلاعات ناموفق بود.");
     } finally { setBusy(false); }
@@ -180,7 +186,7 @@ export default function InventoryPage() {
 
   const activeItems = data.items.filter((item) => item.is_active);
   const activeWarehouses = data.warehouses.filter((item) => item.is_active);
-  const lowStock = activeItems.filter((item) => {
+  const lowStock = activeItems.filter((item) => item.tracking_mode === "quantity").filter((item) => {
     const total = data.stock.filter((row) => row.item_id === item.id)
       .reduce((sum, row) => sum + Number(row.quantity_on_hand), 0);
     return Number(item.minimum_quantity) > 0 && total <= Number(item.minimum_quantity);
@@ -188,6 +194,7 @@ export default function InventoryPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 sm:px-6">
+      <style jsx global>{`@media print { body * { visibility: hidden !important; } .inventory-labels, .inventory-labels * { visibility: visible !important; } .inventory-labels { position: absolute; left: 0; top: 0; width: 100%; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; } .inventory-labels article { break-inside: avoid; border: 1px solid #222; } }`}</style>
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -251,7 +258,26 @@ export default function InventoryPage() {
                 <Field name="model" label="مدل / شناسه سازنده (اختیاری)" />
                 <Field name="unit" label="واحد شمارش" required defaultValue="عدد" placeholder="عدد، جفت، کیلوگرم، بسته..." />
                 <Field name="minimum_quantity" label="حداقل موجودی" type="number" defaultValue="0" min="0" step="0.001" />
+                <div><label className="mb-1 block text-sm text-slate-300">روش ردیابی</label><select name="tracking_mode" className={inputClass}><option value="quantity">موجودی تعدادی / مصرفی</option><option value="individual">دارایی مستقل با شناسه و QR</option></select></div>
                 <div className="sm:col-span-2"><Field name="description" label="توضیحات" /></div>
+              </div>}
+              {tab === "assets" && <div className="grid gap-3 sm:grid-cols-2">
+                <div><label className="mb-1 block text-sm text-slate-300">قلم دارای ردیابی مستقل</label><select name="item_id" required className={inputClass}><option value="">انتخاب کالا</option>{activeItems.filter((item) => item.tracking_mode === "individual").map((item) => <option key={item.id} value={item.id}>{item.name} · {item.sku}</option>)}</select></div>
+                <div><label className="mb-1 block text-sm text-slate-300">انبار فعلی</label><select name="warehouse_id" required className={inputClass}><option value="">انتخاب انبار</option>{activeWarehouses.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+                <Field name="asset_code" label="کد اموال (اختیاری؛ خودکار ساخته می‌شود)" placeholder="مثلاً MET-000125" />
+                <Field name="serial_number" label="شماره سریال سازنده (اختیاری)" />
+                <div><label className="mb-1 block text-sm text-slate-300">وضعیت فیزیکی</label><select name="condition_status" className={inputClass}><option value="new">نو</option><option value="good">سالم</option><option value="fair">متوسط</option><option value="damaged">آسیب‌دیده</option></select></div>
+                <Field name="acquired_on" label="تاریخ خرید / تحصیل" type="date" />
+                <div className="sm:col-span-2"><Field name="notes" label="توضیحات" defaultValue="ثبت اولیه دارایی" required /></div>
+              </div>}
+              {tab === "transfers" && <div className="grid gap-3 sm:grid-cols-2">
+                <div><label className="mb-1 block text-sm text-slate-300">کالای تعدادی</label><select name="item_id" required className={inputClass}><option value="">انتخاب کالا</option>{activeItems.filter((item) => item.tracking_mode === "quantity").map((item) => <option key={item.id} value={item.id}>{item.name} · {item.sku}</option>)}</select></div>
+                <div><label className="mb-1 block text-sm text-slate-300">انبار مبدأ</label><select name="from_warehouse_id" required className={inputClass}><option value="">انتخاب مبدأ</option>{activeWarehouses.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+                <div><label className="mb-1 block text-sm text-slate-300">انبار مقصد</label><select name="to_warehouse_id" required className={inputClass}><option value="">انتخاب مقصد</option>{activeWarehouses.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+                <Field name="quantity" label="مقدار انتقال" type="number" required min="0.001" step="0.001" />
+                <Field name="reason" label="علت انتقال" required placeholder="توزیع بین سالن‌ها یا شعب" />
+                <Field name="reference_code" label="شماره حواله (اختیاری)" />
+                <p className="sm:col-span-2 text-xs text-slate-500">انتقال در یک تراکنش انجام می‌شود؛ اگر موجودی مبدأ کافی نباشد هیچ بخشی از انتقال ثبت نخواهد شد.</p>
               </div>}
               {tab === "movements" && <div className="grid gap-3 sm:grid-cols-2">
                 <div><label className="mb-1 block text-sm text-slate-300">کالا</label><select name="item_id" required className={inputClass}><option value="">انتخاب کالا</option>{activeItems.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.sku}</option>)}</select></div>
@@ -267,7 +293,7 @@ export default function InventoryPage() {
                   className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">
                   {busy ? "در حال ثبت..." : "ثبت اطلاعات"}
                 </button>
-                {tab === "movements" && <span className="text-xs text-slate-500">خروجی بیش از موجودی قابل ثبت نیست؛ سوابق گردش حذف یا ویرایش نمی‌شوند.</span>}
+                {(tab === "movements" || tab === "transfers") && <span className="text-xs text-slate-500">موجودی منفی مجاز نیست؛ سوابق ثبت‌شده حذف یا ویرایش نمی‌شوند.</span>}
               </div>
             </form>
 
@@ -295,6 +321,27 @@ export default function InventoryPage() {
               {data.categories.length === 0 ? <p className="text-sm text-slate-500">هنوز دسته‌بندی ثبت نشده است.</p> : data.categories.map((c) => <div key={c.id} className="border-t border-slate-800 py-3 text-sm"><strong>{c.name}</strong><span className="mr-2 text-slate-500">{c.sport_name || "عمومی / مشترک"}</span></div>)}
             </div>}
 
+            {tab === "assets" && <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold">دفتر اموال شناسه‌دار و برچسب‌های QR</h3><button type="button" onClick={() => window.print()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm print:hidden">چاپ برچسب‌ها</button></div>
+              <div className="inventory-labels grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {data.assets.map((asset) => <article key={asset.id} className="flex items-center gap-4 rounded-xl border border-slate-800 bg-white p-4 text-slate-950">
+                  <QRCodeSVG value={asset.barcode_value} size={104} level="M" includeMargin />
+                  <div className="min-w-0"><p className="font-bold">{itemById.get(asset.item_id)?.name || "دارایی ورزشی"}</p><p className="mt-1 break-all font-mono text-sm">{asset.asset_code}</p><p className="text-xs text-slate-600">سریال: {asset.serial_number || "—"}</p><p className="text-xs text-slate-600">{warehouseById.get(asset.warehouse_id)?.name || "—"} · {asset.lifecycle_status}</p></div>
+                </article>)}
+              </div>
+              {data.assets.length === 0 && <p className="rounded-xl border border-slate-800 p-4 text-sm text-slate-500">هنوز دارایی شناسه‌داری ثبت نشده است. ابتدا یک کالا با روش ردیابی مستقل تعریف کنید.</p>}
+            </div>}
+            {tab === "transfers" && <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+              <h3 className="mb-3 font-semibold">تاریخچه انتقال بین انبارها</h3>
+              {data.transfers.length === 0 ? <p className="text-sm text-slate-500">انتقالی ثبت نشده است.</p> : data.transfers.map((transfer) => <div key={transfer.id} className="flex flex-wrap justify-between gap-2 border-t border-slate-800 py-3 text-sm"><div><strong>{itemById.get(transfer.item_id)?.name || "کالا"}</strong><p className="text-xs text-slate-400">{warehouseById.get(transfer.from_warehouse_id)?.name || "مبدأ"} ← {warehouseById.get(transfer.to_warehouse_id)?.name || "مقصد"} · {transfer.reason}</p></div><div className="text-left"><strong>{transfer.quantity}</strong><p className="text-xs text-slate-500">{new Date(transfer.created_at).toLocaleString("fa-IR")}</p></div></div>)}
+            </div>}
+            {tab === "reports" && <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {[["ارزش شمارشی اقلام", activeItems.length],["دارایی‌های شناسه‌دار", data.assets.length],["انتقال‌های ثبت‌شده", data.transfers.length],["اقلام نیازمند سفارش", lowStock.length]].map(([label,value]) => <div key={String(label)} className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><p className="text-xs text-slate-400">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>)}
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><h3 className="mb-3 font-semibold">گزارش نقطه سفارش</h3>{lowStock.length ? lowStock.map((item) => <div key={item.id} className="flex justify-between border-t border-slate-800 py-2 text-sm"><span>{item.name} · حداقل {item.minimum_quantity} {item.unit}</span><strong className="text-amber-300">{data.stock.filter((row) => row.item_id === item.id).reduce((sum,row) => sum + Number(row.quantity_on_hand),0)} {item.unit}</strong></div>) : <p className="text-sm text-slate-500">در حال حاضر قلمی در نقطه سفارش نیست.</p>}</div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><h3 className="mb-3 font-semibold">خلاصه موجودی به تفکیک انبار</h3>{activeWarehouses.map((warehouse) => <div key={warehouse.id} className="border-t border-slate-800 py-2"><strong>{warehouse.name}</strong>{activeItems.filter((item) => item.tracking_mode === "quantity").map((item) => <p key={item.id} className="text-sm text-slate-400">{item.name}: {fmt(stockByKey.get(item.id + ":" + warehouse.id) ?? 0)} {item.unit}</p>)}</div>)}</div>
+            </div>}
             {tab === "movements" && <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
               <div className="border-b border-slate-800 p-4 font-semibold">آخرین گردش‌های موجودی</div>
               <div className="divide-y divide-slate-800">{data.movements.length === 0 ? <p className="p-4 text-sm text-slate-500">گردشی ثبت نشده است.</p> : data.movements.map((movement) => <div key={movement.id} className="flex flex-wrap justify-between gap-2 p-4 text-sm">
