@@ -830,11 +830,11 @@ CREATE OR REPLACE FUNCTION public.sports_prevent_member_history_mutation()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = pg_catalog
-AS $
+AS $member_history$
 BEGIN
   RAISE EXCEPTION 'Member history is append-only';
 END;
-$;
+$member_history$;
 REVOKE ALL ON FUNCTION public.sports_prevent_member_history_mutation() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS sports_member_history_append_only ON public.sports_member_history;
 CREATE TRIGGER sports_member_history_append_only
