@@ -432,6 +432,7 @@ export default function DashboardPage() {
               </div>
             )}
             <span className="role-chip">{roleLabel}</span>
+            <a className="btn secondary" href="/portal">پنل شخصی</a>
             <button className="btn secondary" onClick={signOut}>خروج</button>
           </div>
         </div>
