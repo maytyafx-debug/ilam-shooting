@@ -27,10 +27,10 @@ CREATE POLICY sports_athlete_public_cards_admin_manage ON public.sports_athlete_
   WHERE tm.tenant_id=sports_athlete_public_cards.tenant_id AND tm.user_id=(SELECT auth.uid())
   AND tm.status='active' AND tm.role IN('owner','admin')));
 REVOKE ALL ON public.sports_athlete_public_cards FROM PUBLIC,anon,authenticated;
-GRANT SELECT,INSERT,UPDATE ON public.sports_athlete_public_cards TO authenticated;
+GRANT SELECT ON public.sports_athlete_public_cards TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.sports_publish_athlete_public_card(p_tenant_id uuid,p_member_id uuid)
-RETURNS uuid LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,public AS $publish_card$
+RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $publish_card$
 DECLARE v_actor uuid:=auth.uid(); v_birth_date date; v_status text; v_token uuid;
 BEGIN
  IF v_actor IS NULL OR NOT EXISTS(SELECT 1 FROM public.sports_tenant_memberships tm
@@ -58,7 +58,7 @@ END;
 $publish_card$;
 
 CREATE OR REPLACE FUNCTION public.sports_revoke_athlete_public_card(p_tenant_id uuid,p_member_id uuid)
-RETURNS boolean LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,public AS $revoke_card$
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $revoke_card$
 DECLARE v_actor uuid:=auth.uid();
 BEGIN
  IF v_actor IS NULL OR NOT EXISTS(SELECT 1 FROM public.sports_tenant_memberships tm
