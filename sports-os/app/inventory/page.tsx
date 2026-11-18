@@ -21,7 +21,8 @@ type Movement = {
 };
 type Asset = { id: string; item_id: string; warehouse_id: string; asset_code: string; barcode_value: string; serial_number: string | null; condition_status: string; lifecycle_status: string; acquired_on: string | null; notes: string | null; created_at: string };
 type Transfer = { id: string; item_id: string; from_warehouse_id: string; to_warehouse_id: string; quantity: number; reason: string; reference_code: string | null; status: string; created_at: string };
-type InventoryData = { warehouses: Warehouse[]; categories: Category[]; items: Item[]; stock: Stock[]; movements: Movement[]; transfers: Transfer[]; assets: Asset[]; assetMovements: unknown[] };
+type AssetMovement = { id: string; asset_id: string; event_type: string; from_warehouse_id: string | null; to_warehouse_id: string | null; notes: string; reference_code: string | null; created_at: string };
+type InventoryData = { warehouses: Warehouse[]; categories: Category[]; items: Item[]; stock: Stock[]; movements: Movement[]; transfers: Transfer[]; assets: Asset[]; assetMovements: AssetMovement[] };
 type Tab = "items" | "warehouses" | "categories" | "movements" | "transfers" | "assets" | "reports";
 type ApiPayload = { error?: string; record?: unknown; movement_id?: string };
 
@@ -166,6 +167,28 @@ export default function InventoryPage() {
     } finally { setBusy(false); }
   }
 
+  function exportReport() {
+    const rows = [["کد کالا","نام کالا","رشته","واحد","انبار","موجودی","حداقل موجودی","روش ردیابی"]];
+    for (const item of activeItems) {
+      if (item.tracking_mode === "individual") {
+        for (const warehouse of activeWarehouses) {
+          const count = data.assets.filter((asset) => asset.item_id === item.id && asset.warehouse_id === warehouse.id && !["retired","lost"].includes(asset.lifecycle_status)).length;
+          rows.push([item.sku,item.name,item.sport_name || "عمومی",item.unit,warehouse.name,String(count),"—","شناسه‌دار"]);
+        }
+      } else {
+        for (const warehouse of activeWarehouses) {
+          rows.push([item.sku,item.name,item.sport_name || "عمومی",item.unit,warehouse.name,String(stockByKey.get(item.id + ":" + warehouse.id) ?? 0),String(item.minimum_quantity),"تعدادی"]);
+        }
+      }
+    }
+    const csv = "\uFEFF" + rows.map((row) => row.map((cell) => '"' + String(cell).replaceAll('"','""') + '"').join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url; link.download = "metatya-inventory-report.csv"; link.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function transferAsset(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!tenantId) return;
@@ -259,7 +282,7 @@ export default function InventoryPage() {
           </nav>
 
           <div className="space-y-5">
-            <form onSubmit={submit} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 sm:p-6">
+            <form hidden={tab === "reports"} onSubmit={submit} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">{TABS.find((item) => item.id === tab)?.label} · ثبت جدید</h2>
               {tab === "warehouses" && <div className="grid gap-3 sm:grid-cols-2">
                 <Field name="code" label="کد انبار" required placeholder="مثلاً WH-01" />
@@ -360,6 +383,7 @@ export default function InventoryPage() {
                 </article>)}
               </div>
               {data.assets.length === 0 && <p className="rounded-xl border border-slate-800 p-4 text-sm text-slate-500">هنوز دارایی شناسه‌داری ثبت نشده است. ابتدا یک کالا با روش ردیابی مستقل تعریف کنید.</p>}
+              <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 print:hidden"><h3 className="mb-2 font-semibold">آخرین سوابق جابه‌جایی اموال</h3>{data.assetMovements.slice(0,20).map((event) => <div key={event.id} className="border-t border-slate-800 py-2 text-xs text-slate-400">{event.event_type} · {event.notes} · {new Date(event.created_at).toLocaleString("fa-IR")}</div>)}</div>
             </div>}
             {tab === "transfers" && <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
               <h3 className="mb-3 font-semibold">تاریخچه انتقال بین انبارها</h3>
@@ -367,7 +391,7 @@ export default function InventoryPage() {
             </div>}
             {tab === "reports" && <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {[["ارزش شمارشی اقلام", activeItems.length],["دارایی‌های شناسه‌دار", data.assets.length],["انتقال‌های ثبت‌شده", data.transfers.length],["اقلام نیازمند سفارش", lowStock.length]].map(([label,value]) => <div key={String(label)} className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><p className="text-xs text-slate-400">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>)}
+                {[["کالاهای فعال", activeItems.length],["دارایی‌های شناسه‌دار", data.assets.length],["انتقال‌های ثبت‌شده", data.transfers.length],["اقلام نیازمند سفارش", lowStock.length]].map(([label,value]) => <div key={String(label)} className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><p className="text-xs text-slate-400">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>)}
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><h3 className="mb-3 font-semibold">گزارش نقطه سفارش</h3>{lowStock.length ? lowStock.map((item) => <div key={item.id} className="flex justify-between border-t border-slate-800 py-2 text-sm"><span>{item.name} · حداقل {item.minimum_quantity} {item.unit}</span><strong className="text-amber-300">{data.stock.filter((row) => row.item_id === item.id).reduce((sum,row) => sum + Number(row.quantity_on_hand),0)} {item.unit}</strong></div>) : <p className="text-sm text-slate-500">در حال حاضر قلمی در نقطه سفارش نیست.</p>}</div>
               <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"><h3 className="mb-3 font-semibold">خلاصه موجودی به تفکیک انبار</h3>{activeWarehouses.map((warehouse) => <div key={warehouse.id} className="border-t border-slate-800 py-2"><strong>{warehouse.name}</strong>{activeItems.filter((item) => item.tracking_mode === "quantity").map((item) => <p key={item.id} className="text-sm text-slate-400">{item.name}: {fmt(stockByKey.get(item.id + ":" + warehouse.id) ?? 0)} {item.unit}</p>)}</div>)}</div>
