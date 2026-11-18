@@ -188,4 +188,22 @@ assert.ok(integratedMigration.includes("sports_member_history_admin_insert"));
 assert.ok(integratedMigration.includes("ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED"));
 assert.ok(integratedMigration.includes("sports_financial_reversal_same_tenant_fk"));
 
+
+const verificationMigration = await read("../../supabase/migrations/010_result_verification_guard.sql");
+assert.ok(verificationMigration.includes("SECURITY INVOKER"));
+assert.ok(verificationMigration.includes("SET search_path = pg_catalog"));
+assert.ok(verificationMigration.includes("NEW.verification_status := 'pending_review'"));
+assert.ok(verificationMigration.includes("NEW.verified_by := NULL"));
+assert.ok(verificationMigration.includes("NEW.verified_at := NULL"));
+assert.ok(verificationMigration.includes("tm.role IN ('owner', 'admin')"));
+assert.ok(verificationMigration.includes("tm.status = 'active'"));
+assert.ok(verificationMigration.includes("NEW.verified_by := v_actor_id"));
+assert.ok(verificationMigration.includes("NEW.verified_at := pg_catalog.now()"));
+assert.ok(verificationMigration.includes("BEFORE INSERT OR UPDATE ON public.sports_results"));
+assert.ok(verificationMigration.includes("REVOKE ALL ON FUNCTION"));
+assert.ok(!verificationMigration.includes("UPDATE public.sports_results"));
+assert.ok(!services.includes("verification_status"));
+assert.ok(!services.includes("verified_by"));
+assert.ok(!services.includes("verified_at"));
+
 console.log("METATYA Sports OS static security checks passed.");
