@@ -11,8 +11,9 @@ export default function AthleteCardsPage(){
  const [tenantId,setTenantId]=useState(""),[tenantName,setTenantName]=useState("");
  const [tenants,setTenants]=useState<Tenant[]>([]),[athletes,setAthletes]=useState<Athlete[]>([]);
  const [search,setSearch]=useState(""),[selected,setSelected]=useState<Athlete|null>(null);
- const [message,setMessage]=useState(""),[error,setError]=useState("");
+ const [message,setMessage]=useState(""),[error,setError]=useState(""),[origin,setOrigin]=useState("");
  const load=useCallback(async(id:string)=>{const r=await fetch("/api/core-sports/athlete-cards",{cache:"no-store",headers:{"x-tenant-id":id}});const p=await r.json();if(!r.ok)throw new Error(p.error||"دریافت فهرست کارت‌ها ناموفق بود.");setAthletes(p.athletes??[]);},[]);
+ useEffect(()=>{setOrigin(window.location.origin);},[]);
  useEffect(()=>{let active=true;async function init(){try{const db=createSupabaseBrowserClient();const {data}=await db.auth.getUser();if(!data.user){window.location.assign("/login");return;}
  const r=await fetch("/api/core-sports/tenant",{cache:"no-store"}),p=await r.json();if(!r.ok)throw new Error(p.error||"سازمان فعالی پیدا نشد.");
  const options=(p.tenants??[]) as Tenant[];if(!active)return;setTenants(options);
@@ -29,7 +30,7 @@ export default function AthleteCardsPage(){
  async function issueCard(a:Athlete){if(!tenantId)return;setBusy(true);setError("");setMessage("");try{const r=await fetch("/api/core-sports/athlete-cards",{method:"POST",headers:{"Content-Type":"application/json","x-tenant-id":tenantId},body:JSON.stringify({member_id:a.id})});const p=await r.json();if(!r.ok)throw new Error(p.error||"صدور کارت ناموفق بود.");const next={...a,card:{member_id:a.id,public_token:p.public_token,published_at:new Date().toISOString(),revoked_at:null}};await load(tenantId);setSelected(next);setMessage("کارت قهرمانی صادر شد؛ QR اختصاصی آماده اسکن و چاپ است.");}catch(e){setError(e instanceof Error?e.message:"صدور کارت ناموفق بود.");}finally{setBusy(false);}}
  async function revokeCard(a:Athlete){if(!tenantId||!window.confirm("انتشار کارت لغو شود؟ QR قبلی بلافاصله از اعتبار خارج می‌شود."))return;setBusy(true);setError("");setMessage("");try{const r=await fetch("/api/core-sports/athlete-cards?member_id="+encodeURIComponent(a.id),{method:"DELETE",headers:{"x-tenant-id":tenantId}});const p=await r.json();if(!r.ok)throw new Error(p.error||"لغو انتشار ناموفق بود.");await load(tenantId);setSelected(null);setMessage("انتشار کارت لغو شد و QR قبلی دیگر معتبر نیست.");}catch(e){setError(e instanceof Error?e.message:"لغو انتشار ناموفق بود.");}finally{setBusy(false);}}
  const activeCard=selected?.card&&!selected.card.revoked_at&&selected.card.published_at?selected.card:null;
- const publicUrl=activeCard&&typeof window!=="undefined"?window.location.origin+"/athlete/"+activeCard.public_token:"";
+ const publicUrl=activeCard&&origin?origin+"/athlete/"+activeCard.public_token:"";
  if(!ready)return <main className="shell"><p>در حال بارگذاری کارت‌های قهرمانی...</p></main>;
  return <><header className="topbar"><div className="shell topbar-inner"><div><div className="brand">METATYA Sports OS</div><small>کارت هوشمند قهرمانان{tenantName?" — "+tenantName:""}</small><nav className="top-nav"><Link href="/">داشبورد</Link><Link href="/members">پرونده ورزشکاران</Link></nav></div>
  <div className="topbar-actions">{tenants.length>1&&<div className="tenant-switcher"><label htmlFor="card-tenant">سازمان فعال</label><select id="card-tenant" value={tenantId} disabled={busy} onChange={e=>void changeTenant(e.target.value)}><option value="">انتخاب سازمان</option>{tenants.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></div>}<span className="role-chip">مدیر سازمان</span><Link className="btn secondary" href="/">بازگشت</Link></div></div></header>
