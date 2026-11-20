@@ -54,7 +54,7 @@ The active Next.js runtime uses exactly these five operational tables:
 
 - `owner` / `admin`: read and manage members, events and results within their active tenant.
 - `referee`: read members/events/results and insert results only; cannot manage members/events or update/delete results.
-- `coach`, `staff`, and `member`: no operational-row access in the current policy set. Athlete self-service remains blocked until a verified Auth-user-to-member-record link and dedicated self-row policies exist.
+- `coach`, `staff`, and `member`: no general operational-row access. Migration 011 adds narrowly scoped personal reads through verified identity links and dedicated self-row policies; the portal does not accept browser-supplied user IDs or personal codes as authorization.
 - Tenant memberships are self-readable only; membership provisioning remains owner-controlled.
 - A database trigger rejects changes to `tenant_id` on member, event and result rows.
 - Authenticated clients have no TRUNCATE, REFERENCES or TRIGGER privileges on these tables.
@@ -86,7 +86,7 @@ Repository migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_i
 - Tenant resolution is performed from `sports_tenant_memberships` joined to active `sports_tenants`.
 - Admin/owner may manage operational records only within their active tenant.
 - Referee may read operational records and insert results only within their active tenant.
-- Member/coach/staff have no operational-row access until a verified member-account link and dedicated self-service policies are implemented.
+- Member/coach/staff have no general operational-row access. Personal self-service is limited to the verified account links and dedicated RLS policies introduced by migration 011.
 - Tenant membership provisioning remains owner-controlled; authenticated clients cannot create or change memberships.
 - The database has immutable `tenant_id` guards on operational members, events and results.
 - The UI clears prior tenant data and tenant-bound form selections before loading a newly selected tenant.
@@ -127,7 +127,7 @@ Repository migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_i
 | Multi-tenant dashboard selector | IMPLEMENTED; session persistence and stale-response guard included; CI SUCCESS in run #110 |
 | Separate admin/referee/member/Tenant2 Auth accounts | NOT PROVISIONED |
 | Full two-user/two-tenant integration matrix | NOT RUN |
-| Member self-service / verified account-to-member link | BLOCKED BY DESIGN; NOT IMPLEMENTED |
+| Personal portal / verified account-to-member link | IMPLEMENTED IN SOURCE; NOT LIVE-VERIFIED |
 | Backup/restore exercise in an isolated environment | NOT EVIDENCED |
 | Independent production security approval | NOT GRANTED |
 
@@ -138,7 +138,7 @@ Latest source validation evidence: [GitHub Actions run #110](https://github.com/
 - [ ] Apply reviewed migrations only after explicit owner approval and backup verification.
 - [ ] Verify exact Auth redirect URLs, email confirmation policy, session expiry and leaked-password protection.
 - [ ] Test admin/referee/member authorization with separate accounts.
-- [ ] Test RLS with anon, authenticated users of each role, and a service-role boundary review.
+- [ ] Test RLS with anon, authenticated users of each role, personal-portal self-links, and a service-role boundary review.
 - [x] Implement browser tenant selection and send `x-tenant-id` on operational API requests; each API request still verifies membership and role server-side.
 - [ ] Provision distinct Auth test users and complete the full two-user/two-tenant authorization matrix.
 - [ ] Keep the old `sports_core` migrations 005/006 unapplied; any future schema move requires a separate reviewed migration and backup plan.

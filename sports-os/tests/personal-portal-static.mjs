@@ -1,0 +1,34 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const api = await readFile(new URL("../app/api/personal-portal/route.ts", import.meta.url), "utf8");
+const page = await readFile(new URL("../app/portal/page.tsx", import.meta.url), "utf8");
+const migration = await readFile(new URL("../../supabase/migrations/011_personal_identity_portals.sql", import.meta.url), "utf8");
+const linkingApi = await readFile(new URL("../app/api/core-sports/person-links/route.ts", import.meta.url), "utf8");
+
+assert.ok(api.includes("db.auth.getUser()"));
+assert.ok(api.includes('.eq("user_id", user.id)'));
+assert.ok(api.includes('.eq("coach_user_id", user.id)'));
+assert.ok(api.includes('.eq("referee_user_id", user.id)'));
+assert.ok(!api.includes("request.headers.get"));
+assert.ok(!api.includes("request.nextUrl"));
+assert.ok(api.includes('"Cache-Control": "private, no-store"'));
+assert.ok(api.includes('.eq("verification_status", "verified")'));
+assert.ok(page.includes("/api/personal-portal"));
+assert.ok(page.includes("کد شخصی فقط شناسه پرونده است"));
+assert.ok(page.includes("مدیر مجاز سازمان باید"));
+assert.ok(migration.includes("sports_members_select_linked_self"));
+assert.ok(migration.includes("sports_results_select_linked_athlete"));
+assert.ok(migration.includes("sports_staff_profiles_self_or_admin_read"));
+assert.ok(migration.includes("sports_official_assignments_self_or_admin_read"));
+assert.ok(migration.includes("sports_admin_link_person"));
+assert.ok(migration.includes("email_confirmed_at is not null"));
+assert.ok(migration.includes("t.status ="));
+assert.ok(migration.includes("as $portal$"));
+assert.ok(migration.includes("$portal$;"));
+assert.ok(linkingApi.includes("requireCoreRole(db, [\"admin\"]"));
+assert.ok(linkingApi.includes("sports_admin_link_person"));
+assert.ok(linkingApi.includes("p_tenant_id: auth.tenantId"));
+assert.ok(linkingApi.includes("Array.isArray(body)"));
+assert.ok(!linkingApi.includes("service_role"));
+console.log("Personal portal static security checks passed.");
