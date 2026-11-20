@@ -321,7 +321,8 @@ begin
 
   return query select v_target, v_code, v_name;
 end;
-$portal$;(uuid,text,text,uuid) from public, anon;
+$portal$;
+REVOKE ALL ON FUNCTION public.sports_admin_link_person(uuid,text,text,uuid) FROM PUBLIC, anon;
 grant execute on function public.sports_admin_link_person(uuid,text,text,uuid) to authenticated;
 
 commit;
