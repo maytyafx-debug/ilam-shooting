@@ -115,3 +115,14 @@ jobs:
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010-fixture.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/010_result_verification_guard.sql
           psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010.integration.sql
+
+      - name: Migration 011 personal-portal isolated database integration tests
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+        run: |
+          createdb -h localhost -p 5432 -U postgres sports_os_portal_test
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011-fixture.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f supabase/migrations/010_result_verification_guard.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f supabase/migrations/011_personal_identity_portals.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011.integration.sql
