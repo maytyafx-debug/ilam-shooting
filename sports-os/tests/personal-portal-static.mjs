@@ -27,7 +27,7 @@ assert.ok(migration.includes("t.status ="));
 assert.ok(migration.includes("as $portal$"));
 assert.ok(migration.includes("$portal$;"));
 assert.ok(migration.includes("REVOKE ALL ON FUNCTION public.sports_admin_link_person"));
-assert.ok(migration.includes("GRANT EXECUTE ON FUNCTION public.sports_admin_link_person"));
+assert.ok(migration.toLowerCase().includes("grant execute on function public.sports_admin_link_person"));
 assert.ok(linkingApi.includes("requireCoreRole(db, [\"admin\"]"));
 assert.ok(linkingApi.includes("sports_admin_link_person"));
 assert.ok(linkingApi.includes("p_tenant_id: auth.tenantId"));

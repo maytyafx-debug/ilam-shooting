@@ -323,6 +323,6 @@ begin
 end;
 $portal$;
 REVOKE ALL ON FUNCTION public.sports_admin_link_person(uuid,text,text,uuid) FROM PUBLIC, anon;
-grant execute on function public.sports_admin_link_person(uuid,text,text,uuid) to authenticated;
+GRANT EXECUTE ON FUNCTION public.sports_admin_link_person(uuid,text,text,uuid) TO authenticated;
 
 commit;
