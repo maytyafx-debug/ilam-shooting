@@ -30,7 +30,7 @@ The current schema defines these persisted roles:
 |---|---|---|
 | `owner` / `admin` | مدیر سازمان | manage members/events and read/write permitted operational data within the active tenant |
 | `referee` | داور | read operational members/events/results and insert results only |
-| `coach` / `staff` / `member` | ورزشکار / همکار | no operational-row access in the current pilot; self-service remains blocked pending a verified account-to-member link |
+| `coach` / `staff` / `member` | ورزشکار / همکار | no general operational-row access; personal portal reads are limited to verified self-links and dedicated RLS policies from migration 011 (source implemented, not live-verified) |
 
 - **IMPLEMENTED:** API handlers call `requireCoreRole`; unauthenticated requests receive 401 and missing/invalid/disallowed profiles receive 403.
 - **IMPLEMENTED:** the role guard obtains the user through `auth.getUser()`; it does not trust a role supplied by the browser or user metadata.
