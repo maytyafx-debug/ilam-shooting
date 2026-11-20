@@ -104,6 +104,18 @@ USING (user_id = (SELECT auth.uid()));
 
 ALTER TABLE public.sports_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sports_members FORCE ROW LEVEL SECURITY;
+CREATE POLICY sports_members_select_admin
+ON public.sports_members
+FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.sports_tenant_memberships tm
+    WHERE tm.tenant_id = sports_members.tenant_id
+      AND tm.user_id = (SELECT auth.uid())
+      AND tm.status = 'active'
+      AND tm.role IN ('owner', 'admin', 'referee')
+  )
+);
 ALTER TABLE public.sports_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sports_results FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.sports_events ENABLE ROW LEVEL SECURITY;
