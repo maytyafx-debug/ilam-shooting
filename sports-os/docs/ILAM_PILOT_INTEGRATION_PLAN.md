@@ -67,14 +67,14 @@ The order is based on both additions depending on the core schema established by
 - [x] PR #4 changes integrated.
 - [x] PR #3 changes integrated.
 - [x] Migration filenames normalized and portal-test reference updated.
-- [ ] Re-run CI after correcting the stale dashboard path in the static security test.
-- [ ] Confirm TypeScript, lint, static security, portal, demo, production build, and disposable-database integration tests pass.
+- [x] Re-run CI after correcting the stale dashboard path in the static security test (workflow run #8 passed).
+- [x] TypeScript, lint, static security, portal, demo, production build, and migration 010 disposable-database integration tests passed (workflow run #240).
 - [ ] Review primary administrator, public visitor, and personal-portal journeys.
-- [ ] Verify RLS and application authorization against isolated test identities.
+- [ ] Add/replay a disposable-database integration test for migration 011 and verify its RLS/account-linking behavior against isolated test identities.
 - [ ] Review preview against the agreed customer scope.
 - [ ] Complete handover documentation.
 
-**Latest CI evidence:** workflow run #7 failed at the static security test because it still read the dashboard from `app/page.tsx` after the public/admin route split. TypeScript validation passed in that run; security tests stopped the job before production build. The test reference has been corrected in this integration branch and a new CI result is required before this PR can be considered review-ready.
+**Latest CI evidence:** [Sports OS verification run #8](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44837583812) passed TypeScript validation, the complete npm test chain (security, demo, and personal portal static tests), and the production build. [Dependency install and validation run #240](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44837583875) passed TypeScript, ESLint, production build, static security checks, legacy JavaScript syntax, demo/legacy validation, and the isolated PostgreSQL integration test for migration 010. The Netlify pull-request preview check also succeeded. Migration 011 has passed source/static portal checks but does not yet have a dedicated disposable-database replay/integration test; that remains a review-readiness item.
 
 ## Explicit exclusions and safety gates
 
@@ -86,4 +86,4 @@ The order is based on both additions depending on the core schema established by
 
 ## Current status
 
-Both requested PR changes are integrated into the single controlled branch and PR #8. The branch is aligned with the current `main` history. CI has exposed one stale test path, now corrected; the integrated test suite must pass before review readiness. PR #8 remains Draft.
+Both requested PR changes are integrated into the single controlled branch and PR #8. The branch is aligned with the current `main` history. The current CI and migration 010 isolated-database checks pass. Migration 011 database replay/integration, identity-based RLS checks, and acceptance review remain open. PR #8 remains Draft.
