@@ -43,7 +43,7 @@ const [
   read("../app/api/core-sports/events/route.ts"),
   read("../app/api/core-sports/results/route.ts"),
   read("../app/api/core-sports/tenant/route.ts"),
-  read("../app/page.tsx"),
+  read("../app/admin/page.tsx"),
   read("../app/api/core-sports/member-management/route.ts"),
   read("../app/api/core-sports/member-management/history/route.ts"),
   read("../app/members/page.tsx"),

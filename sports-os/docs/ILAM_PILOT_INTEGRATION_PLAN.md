@@ -1,9 +1,9 @@
 # Ilam Pilot — First Delivery Integration Plan
 
-**Status:** Draft integration plan; not an implementation or release approval.  
+**Status:** Draft integration in progress; not approved for merge or release.  
 **Target:** `main` of the pilot repository.  
 **Integration branch:** `integrate/ilam-pilot-first-delivery-v1`.  
-**Starting point:** `feat/sports-os-integrated-management-v1`.
+**Base reconciliation:** completed; `main` history is included and the branch is 0 commits behind.
 
 ## Purpose
 
@@ -11,18 +11,19 @@ Consolidate the existing pilot foundation and the minimum required first-deliver
 
 This document is an execution register. It does not authorize production database changes, migrations, deployments, or merging.
 
-## Evidence-based starting point
+## Evidence-based integration record
 
-- The selected source branch is 215 commits ahead of `main` and 2 commits behind it at the time this plan was prepared.
-- The source branch contains the integrated pilot foundation, application routes, tenant-scoped data model, and migrations through `009_integrated_sports_management.sql`.
-- Existing PR #3 is based on the integrated foundation and contains personal portal work, including migration `010_personal_identity_portals.sql`.
-- Existing PR #4 is also based on the integrated foundation and contains club-management work, result-verification safeguards, tests, and a separate migration currently named `010_result_verification_guard.sql`.
-- PR #3 and PR #4 modify overlapping application and workflow files. Their migration filenames collide and must not be copied unchanged into one migration chain.
-- PR #5 and PR #6 are downstream work and are not required for the bounded first delivery unless the signed customer scope explicitly requires them.
+- The integrated-management foundation was retained.
+- The two commits on `main` that were previously absent from the foundation branch were reconciled through a two-parent merge commit; the resulting comparison reports 219 commits ahead and 0 behind.
+- PR #4 was integrated first in commit `551ee30ed3f63581ebd95facfb9febcf8ab294dc`.
+- PR #3 was integrated second in commit `ec27e4d398c02e2a4711ae2040cb0a3c250f1182`.
+- Both changesets are in this branch and the existing PR #8. No parallel PR was created.
+- The public information portal is now at `/`; the authenticated management dashboard is at `/admin`. The club and member navigation links were placed in the admin dashboard rather than exposing management navigation on the public page.
+- The shared stylesheet was merged additively, preserving both portal and club-management style additions.
+- Migration order is now unique and sequential after `009_integrated_sports_management.sql`: `010_result_verification_guard.sql`, followed by `011_personal_identity_portals.sql`. The personal-portal static test was updated to the new migration path.
+- The original PR #4 database integration fixture and test remain named for migration 010 and target the result-verification guard.
 
 ## First-delivery scope
-
-The integration target is limited to:
 
 1. Public information portal and core navigation.
 2. Authenticated administrative access and tenant-scoped administration.
@@ -35,77 +36,54 @@ The integration target is limited to:
 
 Do not add future marketplace, ticketing, advanced inventory, or other roadmap-only modules to this delivery without a confirmed customer requirement.
 
-## Ordered integration work
+## Integration and conflict decisions
 
-### 1. Reconcile the base
+### PR #4 — integrated first
 
-- Compare the current `main` with the selected integrated-foundation branch.
-- Incorporate the two commits that are present on `main` but absent from the source branch.
-- Resolve any resulting conflicts without overwriting newer main-branch work.
-- Record the resulting base and commit SHAs in this PR.
+- Club-management API and page, security regression coverage, disposable database fixture, result-verification integration test, migration and rollback script were added.
+- The discipline-neutral member form changes were retained.
+- Its dashboard navigation change was adapted to the new `/admin` dashboard created by PR #3.
+- Its stylesheet additions were merged with the personal/public portal styles.
 
-### 2. Integrate result integrity and club management
+### PR #3 — integrated second
 
-- Bring in the relevant PR #4 changes.
-- Review all overlapping application routes, UI files, security documentation, and workflow changes.
-- Preserve the result-verification trigger, rollback script, and database integration tests.
-- Ensure the database-side authorization checks match the active tenant membership model and RLS policies.
+- Public federation page, admin dashboard route, personal portal page and API, account-linking API, login/layout updates, portal tests, and CI workflow were added.
+- The dashboard was moved to `/admin`; the public page at `/` remains a public-only surface.
+- The portal stylesheet was preserved together with the club-management stylesheet.
+- Its migration was renumbered to `011_personal_identity_portals.sql`; its static test now references that path.
+- The security document was updated to distinguish implemented source behavior from live verification that is still pending.
 
-### 3. Integrate personal portals
+### Migration chain
 
-- Bring in the relevant PR #3 changes.
-- Review overlapping routes, pages, styles, package metadata, and CI workflows.
-- Preserve account-linking protections and tenant-scoped personal data access.
-- Verify that users can only access their own permitted records.
+- `009_integrated_sports_management.sql`
+- `010_result_verification_guard.sql`
+- `011_personal_identity_portals.sql`
 
-### 4. Normalize migration history
+The order is based on both additions depending on the core schema established by 009; the result guard is retained first to match the approved PR #4-then-PR #3 integration sequence. This is repository ordering only. No live migration has been executed.
 
-- Resolve the two competing migration names currently numbered `010`.
-- Assign a single sequential migration order after `009_integrated_sports_management.sql`.
-- Update migration references, fixtures, integration tests, and rollback documentation consistently.
-- Replay the complete migration chain against a disposable database.
-- Compare the proposed chain with the live database history before proposing any live migration.
+## Verification status
 
-No migration is to be applied to a live database under this PR preparation authorization.
+- [x] Base reconciliation; no main-branch commits lost.
+- [x] PR #4 changes integrated.
+- [x] PR #3 changes integrated.
+- [x] Migration filenames normalized and portal-test reference updated.
+- [ ] Re-run CI after correcting the stale dashboard path in the static security test.
+- [ ] Confirm TypeScript, lint, static security, portal, demo, production build, and disposable-database integration tests pass.
+- [ ] Review primary administrator, public visitor, and personal-portal journeys.
+- [ ] Verify RLS and application authorization against isolated test identities.
+- [ ] Review preview against the agreed customer scope.
+- [ ] Complete handover documentation.
 
-### 5. Run integrated verification
-
-- Install dependencies from the committed lockfile.
-- Run lint, type checks, production build, static security tests, and database integration tests.
-- Test tenant isolation and role boundaries.
-- Test the primary administrator and member journeys with synthetic test data.
-- Verify that public pages expose only intended public information.
-- Record exact CI run links and outcomes in this PR.
-
-### 6. Prepare acceptance and handover
-
-- Produce a working preview only after CI and security checks pass.
-- Document setup, environment variables by name only, backup prerequisites, known limitations, and operator workflows.
-- Confirm the actual customer acceptance scope before treating any optional payment or registration workflow as included.
-- Keep production release blocked until explicit owner approval.
+**Latest CI evidence:** workflow run #7 failed at the static security test because it still read the dashboard from `app/page.tsx` after the public/admin route split. TypeScript validation passed in that run; security tests stopped the job before production build. The test reference has been corrected in this integration branch and a new CI result is required before this PR can be considered review-ready.
 
 ## Explicit exclusions and safety gates
 
 - No production database writes or migrations.
 - No deployment or production configuration changes.
-- No merge to `main` without a separate explicit approval.
+- No merge to `main` without separate explicit approval.
 - No secrets, access tokens, or personal customer data in commits or test fixtures.
 - No expansion into deferred product modules unless supported by the agreed first-delivery scope.
 
-## Acceptance checklist
-
-- [ ] Base reconciliation complete; no main-branch commits lost.
-- [ ] PR #4 changes integrated and reviewed.
-- [ ] PR #3 changes integrated and reviewed.
-- [ ] Migration numbering and replay tests pass.
-- [ ] RLS and application authorization checks are aligned.
-- [ ] Lint, type checks, build, static security, and DB tests pass.
-- [ ] Primary administrator and member journeys pass.
-- [ ] Preview reviewed against the agreed customer scope.
-- [ ] Handover documentation complete.
-- [ ] Owner explicitly approves merge.
-- [ ] Owner separately approves any production migration or deployment.
-
 ## Current status
 
-This branch currently starts from the integrated foundation. The PR #3 and PR #4 implementation changes have not yet been integrated into this branch. This plan must be updated as each integration step is completed and verified.
+Both requested PR changes are integrated into the single controlled branch and PR #8. The branch is aligned with the current `main` history. CI has exposed one stale test path, now corrected; the integrated test suite must pass before review readiness. PR #8 remains Draft.
