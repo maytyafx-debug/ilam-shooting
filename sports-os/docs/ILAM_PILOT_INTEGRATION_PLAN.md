@@ -18,7 +18,7 @@ This document is an execution register. It does not authorize production databas
 - PR #4 was integrated first in commit `551ee30ed3f63581ebd95facfb9febcf8ab294dc`.
 - PR #3 was integrated second in commit `ec27e4d398c02e2a4711ae2040cb0a3c250f1182`.
 - Both changesets are in this branch and the existing PR #8. No parallel PR was created.
-- The public information portal is now at `/`; the authenticated management dashboard is at `/admin`. The club and member navigation links were placed in the admin dashboard rather than exposing management navigation on the public page.
+- The public information portal is now at `/`; the authenticated management dashboard is at `/admin`. Middleware leaves `/` public and protects `/admin`, `/members`, `/club`, and `/portal`; existing sessions visiting `/login` are sent to `/portal`. The club and member navigation links are in the admin dashboard.
 - The shared stylesheet was merged additively, preserving both portal and club-management style additions.
 - Migration order is now unique and sequential after `009_integrated_sports_management.sql`: `010_result_verification_guard.sql`, followed by `011_personal_identity_portals.sql`. The personal-portal static test was updated to the new migration path.
 - The original PR #4 database integration fixture and test remain named for migration 010 and target the result-verification guard.
@@ -51,7 +51,7 @@ Do not add future marketplace, ticketing, advanced inventory, or other roadmap-o
 - The dashboard was moved to `/admin`; the public page at `/` remains a public-only surface.
 - The portal stylesheet was preserved together with the club-management stylesheet.
 - Its migration was renumbered to `011_personal_identity_portals.sql`; its static test now references that path.
-- The security document was updated to distinguish implemented source behavior from live verification that is still pending.
+- The security document was updated to distinguish implemented source behavior from live verification that is still pending. The malformed privilege-revocation statement at the end of migration 011 was corrected and is now covered by static and PostgreSQL tests.
 
 ### Migration chain
 
@@ -68,13 +68,14 @@ The order is based on both additions depending on the core schema established by
 - [x] PR #3 changes integrated.
 - [x] Migration filenames normalized and portal-test reference updated.
 - [x] Re-run CI after correcting the stale dashboard path in the static security test (workflow run #8 passed).
-- [x] TypeScript, lint, static security, portal, demo, production build, and migration 010 disposable-database integration tests passed (workflow run #240).
-- [ ] Review primary administrator, public visitor, and personal-portal journeys.
-- [ ] Add/replay a disposable-database integration test for migration 011 and verify its RLS/account-linking behavior against isolated test identities.
+- [x] TypeScript, lint, static security, portal, demo, production build, and isolated PostgreSQL integration tests for migrations 010 and 011 passed (latest workflow run #248).
+- [ ] Manually review primary administrator, public visitor, and personal-portal journeys in the preview.
+- [x] Added and passed a disposable PostgreSQL integration test for migrations 010 and 011, including confirmed-account linking, unconfirmed-account rejection, self-link rejection, cross-tenant denial, and isolated athlete/coach/referee reads.
 - [ ] Review preview against the agreed customer scope.
 - [ ] Complete handover documentation.
+- [ ] Review npm audit findings reported during dependency installation (1 moderate and 1 high) and the deprecated ESLint version; do not apply force upgrades without compatibility review.
 
-**Latest CI evidence:** [Sports OS verification run #8](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44837583812) passed TypeScript validation, the complete npm test chain (security, demo, and personal portal static tests), and the production build. [Dependency install and validation run #240](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44837583875) passed TypeScript, ESLint, production build, static security checks, legacy JavaScript syntax, demo/legacy validation, and the isolated PostgreSQL integration test for migration 010. The Netlify pull-request preview check also succeeded. Migration 011 has passed source/static portal checks but does not yet have a dedicated disposable-database replay/integration test; that remains a review-readiness item.
+**Latest CI evidence:** [Sports OS verification run #16](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44839014354) passed TypeScript validation, the full npm test chain (security, demo, and personal portal static tests), and the production build. [Dependency install and validation run #248](https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44839014220) passed TypeScript, ESLint, production build, static security checks, legacy JavaScript syntax, demo/legacy validation, migration 010 isolated PostgreSQL tests, and migration 011 personal-portal isolated PostgreSQL tests. The Netlify pull-request preview check succeeded. The 011 database test caught and drove correction of a malformed function privilege-revocation statement before the passing run.
 
 ## Explicit exclusions and safety gates
 
@@ -86,4 +87,4 @@ The order is based on both additions depending on the core schema established by
 
 ## Current status
 
-Both requested PR changes are integrated into the single controlled branch and PR #8. The branch is aligned with the current `main` history. The current CI and migration 010 isolated-database checks pass. Migration 011 database replay/integration, identity-based RLS checks, and acceptance review remain open. PR #8 remains Draft.
+Both requested PR changes are integrated into the single controlled branch and PR #8. The branch is aligned with the current `main` history. CI, targeted tenant/role checks, and isolated PostgreSQL integration for migrations 010 and 011 pass. Manual customer-journey review, dependency advisory review, and handover/acceptance remain open. PR #8 remains Draft.
