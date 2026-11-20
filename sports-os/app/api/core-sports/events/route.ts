@@ -1,0 +1,61 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireCoreRole } from "@/lib/core-sports/auth";
+import { CoreSportsService } from "@/lib/core-sports/services";
+import type { CreateEventInput } from "@/lib/core-sports/types";
+
+export const runtime = "nodejs";
+
+export async function GET(request: NextRequest) {
+  const tenantId = request.headers.get("x-tenant-id");
+  const db = await createSupabaseServerClient();
+  const auth = await requireCoreRole(db, ["admin", "referee"], tenantId);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const { data, error } = await new CoreSportsService(db, auth.tenantId).listEvents();
+  if (error) {
+    console.error("[Sports OS] list events failed:", error);
+    return NextResponse.json({ error: "Unable to list events." }, { status: 400 });
+  }
+  return NextResponse.json({ events: data ?? [] }, {
+    headers: { "Cache-Control": "private, no-store" },
+  });
+}
+
+export async function POST(request: NextRequest) {
+  const tenantId = request.headers.get("x-tenant-id");
+  const db = await createSupabaseServerClient();
+  const auth = await requireCoreRole(db, ["admin"], tenantId);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  let body: CreateEventInput;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid event data" }, { status: 400 });
+  }
+  if (
+    typeof body.title !== "string" ||
+    body.title.trim().length < 2 ||
+    body.title.trim().length > 200 ||
+    typeof body.sport_type !== "string" ||
+    body.sport_type.trim().length < 2 ||
+    body.sport_type.length > 120 ||
+    typeof body.event_date !== "string" ||
+    !Number.isFinite(Date.parse(body.event_date)) ||
+    (body.location != null && (typeof body.location !== "string" || body.location.length > 250))
+  ) {
+    return NextResponse.json({ error: "Invalid event data" }, { status: 400 });
+  }
+
+  const { data, error } = await new CoreSportsService(db, auth.tenantId).createEvent(body);
+  if (error) {
+    console.error("[Sports OS] create event failed:", error);
+    return NextResponse.json({ error: "Unable to create event." }, { status: 400 });
+  }
+  return NextResponse.json({ event: data }, { status: 201 });
+}
