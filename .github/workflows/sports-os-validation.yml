@@ -1,0 +1,119 @@
+name: Sports OS dependency install and validation
+
+on:
+  pull_request:
+    paths:
+      - "sports-os/**"
+      - ".github/workflows/sports-os-validation.yml"
+      - "register-athlete.html"
+      - "register-competition.html"
+      - "register-member.html"
+      - "calendar.html"
+      - "functions/api/submit.js"
+      - "supabase/migrations/**"
+  push:
+    branches:
+      - "feat/metatya-sports-os-foundation-v1"
+      - "feat/sports-os-shooting-integrated-v1"
+      - "feat/sports-os-integrated-management-v1"
+    paths:
+      - "sports-os/**"
+      - ".github/workflows/sports-os-validation.yml"
+      - "register-athlete.html"
+      - "register-competition.html"
+      - "register-member.html"
+      - "calendar.html"
+      - "functions/api/submit.js"
+      - "supabase/migrations/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sports-os-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install-and-validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sports_os_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sports_os_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: sports-os
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Install locked project dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Dependency security audit
+        run: node tests/dependency-audit.mjs
+
+      - name: TypeScript validation
+        run: npm run typecheck
+
+      - name: ESLint validation
+        run: npm run lint
+
+      - name: Next.js production build
+        run: npm run build
+
+      - name: Static security regression checks
+        working-directory: .
+        run: node sports-os/tests/security-static.mjs
+
+      - name: Check legacy JavaScript syntax
+        working-directory: .
+        run: node --check sports-os/app.js
+
+      - name: Validate product demo and legacy routes
+        working-directory: .
+        run: node sports-os/tests/validate-demo.mjs
+
+      - name: Migration 010 isolated database integration tests
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010-fixture.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f supabase/migrations/010_result_verification_guard.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-010.integration.sql
+
+      - name: Migration 011 personal-portal isolated database integration tests
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+        run: |
+          createdb -h localhost -p 5432 -U postgres sports_os_portal_test
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011-fixture.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f supabase/migrations/010_result_verification_guard.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f supabase/migrations/011_personal_identity_portals.sql
+          psql -h localhost -p 5432 -U postgres -d sports_os_portal_test -v ON_ERROR_STOP=1 -f sports-os/tests/db/migration-011.integration.sql

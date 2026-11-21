@@ -1,0 +1,22 @@
+import {NextRequest,NextResponse} from "next/server";
+import {createCoreSportsClient,getBearerToken} from "../../../../core-sports/supabase";
+import {requireCoreRole} from "../../../../core-sports/auth";
+import {CoreSportsService} from "../../../../core-sports/services";
+import type {CreateResultInput} from "../../../../core-sports/types";
+export const runtime="nodejs";
+export async function POST(req:NextRequest){
+ const token=getBearerToken(req);if(!token)return NextResponse.json({error:"Missing bearer token"},{status:401});
+ const db=createCoreSportsClient(token),auth=await requireCoreRole(db,token,["admin","referee"]);
+ if(!auth.ok)return NextResponse.json({error:auth.error},{status:auth.status});
+ let body:CreateResultInput;try{body=await req.json();}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
+ const score=body.score==null?null:Number(body.score),rank=body.rank==null?null:Number(body.rank);
+ if(typeof body.event_id!=="string"||typeof body.member_id!=="string"||
+ (score!==null&&!Number.isFinite(score))||(rank!==null&&(!Number.isInteger(rank)||rank<1))||
+ (body.notes!=null&&(typeof body.notes!=="string"||body.notes.length>2000)))
+ return NextResponse.json({error:"Invalid result data"},{status:400});
+ const {error}=await new CoreSportsService(db).createResult({...body,score,rank},auth.user.id);
+ if(error){const duplicate=error.code==="23505";return NextResponse.json(
+ {error:duplicate?"A result already exists for this member and event.":"Unable to record result."},
+ {status:duplicate?409:400});}
+ return NextResponse.json({success:true},{status:201});
+}

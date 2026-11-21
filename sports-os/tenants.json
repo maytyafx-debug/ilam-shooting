@@ -1,0 +1,29 @@
+{
+  "platform": {
+    "name": "METATYA Sports OS",
+    "tagline": "SHOOTING SPORTS MANAGEMENT",
+    "locale": "fa-IR",
+    "direction": "rtl",
+    "demo": true
+  },
+  "tenants": [
+    {
+      "id": "ilam-shooting",
+      "name": "هیئت تیراندازی استان ایلام",
+      "sport": "تیراندازی",
+      "region": "ایلام",
+      "accent": "#d8b36c",
+      "description": "پایگاه عمومی معرفی سازمان، اطلاعیه‌های اداری، گزارش‌های عمومی و آرشیو تاریخی افتخارات تأییدشده.",
+      "scopeNotice": "این نمونه فقط برای اطلاع‌رسانی عمومی و امور اداری خنثی است.",
+      "modules": [
+        "organization",
+        "news",
+        "historical-honours",
+        "documents",
+        "media",
+        "contact",
+        "aggregate-reports"
+      ]
+    }
+  ]
+}
