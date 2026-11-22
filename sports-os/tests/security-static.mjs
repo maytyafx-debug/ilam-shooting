@@ -188,4 +188,65 @@ assert.ok(integratedMigration.includes("sports_member_history_admin_insert"));
 assert.ok(integratedMigration.includes("ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED"));
 assert.ok(integratedMigration.includes("sports_financial_reversal_same_tenant_fk"));
 
+
+const verificationMigration = await read("../../supabase/migrations/010_result_verification_guard.sql");
+assert.ok(verificationMigration.includes("SECURITY INVOKER"));
+assert.ok(verificationMigration.includes("SET search_path = pg_catalog"));
+assert.ok(verificationMigration.includes("NEW.verification_status := 'pending_review'"));
+assert.ok(verificationMigration.includes("NEW.verified_by := NULL"));
+assert.ok(verificationMigration.includes("NEW.verified_at := NULL"));
+assert.ok(verificationMigration.includes("tm.role IN ('owner', 'admin')"));
+assert.ok(verificationMigration.includes("tm.status = 'active'"));
+assert.ok(verificationMigration.includes("NEW.verified_by := v_actor_id"));
+assert.ok(verificationMigration.includes("NEW.verified_at := pg_catalog.now()"));
+assert.ok(verificationMigration.includes("BEFORE INSERT OR UPDATE ON public.sports_results"));
+assert.ok(verificationMigration.includes("REVOKE ALL ON FUNCTION"));
+assert.ok(!verificationMigration.includes("UPDATE public.sports_results"));
+assert.ok(!services.includes("verification_status"));
+assert.ok(!services.includes("verified_by"));
+assert.ok(!services.includes("verified_at"));
+
+
+const clubManagementApi = await read("../app/api/core-sports/club-management/route.ts");
+const clubManagementPage = await read("../app/club/page.tsx");
+assert.ok(clubManagementApi.includes('requireCoreRole(db, ["admin"]'));
+assert.ok(clubManagementApi.includes('request.headers.get("x-tenant-id")'));
+for (const table of [
+  "sports_club_memberships",
+  "sports_insurance_records",
+  "sports_event_entries",
+  "sports_development_plans",
+  "sports_financial_transactions",
+  "sports_guardian_consents",
+  "sports_athlete_profiles",
+]) {
+  assert.ok(clubManagementApi.includes(table), `Missing club module table: ${table}`);
+}
+assert.ok(clubManagementApi.includes("auth.user.id"));
+assert.ok(clubManagementApi.includes('transaction_type === "reversal"'));
+assert.ok(clubManagementApi.includes('status: "pending"'));
+assert.ok(clubManagementApi.includes('consent_scope'));
+assert.ok(clubManagementApi.includes('onConflict: "member_id,tenant_id"'));
+assert.ok(clubManagementApi.includes('.eq("tenant_id", auth.tenantId)'));
+assert.ok(clubManagementPage.includes("/api/core-sports/club-management"));
+assert.ok(clubManagementPage.includes("metatya-sports-os-active-tenant"));
+assert.ok(clubManagementPage.includes('selected.role !== "owner" && selected.role !== "admin"'));
+assert.ok(clubManagementPage.includes("رضایت رسانه‌ای مستقل است"));
+assert.ok(clubManagementPage.includes("دفتر مالی تغییرناپذیر است"));
+assert.ok(clubManagementPage.includes('href="/">داشبورد'));
+assert.ok(clubManagementPage.includes('href="/members">پرونده اعضا'));
+assert.ok(clubManagementPage.includes("active.module"));
+assert.ok(clubManagementPage.includes('method: "PATCH"'));
+assert.ok(clubManagementPage.includes('method: "POST"'));
+assert.ok(clubManagementApi.includes('data.action === "revoke"'));
+assert.ok(clubManagementApi.includes('created_by: actor'));
+assert.ok(clubManagementApi.includes('recorded_by: actor'));
+
+const databaseIntegration = await read("../tests/db/migration-010.integration.sql");
+assert.ok(databaseIntegration.includes("Referee unexpectedly updated verification status"));
+assert.ok(databaseIntegration.includes("Owner verification was not stamped by the database"));
+assert.ok(databaseIntegration.includes("Cross-tenant admin unexpectedly changed a result"));
+assert.ok(databaseIntegration.includes("Service role without auth.uid() unexpectedly verified a result"));
+assert.ok(databaseIntegration.includes("ROLLBACK;"));
+
 console.log("METATYA Sports OS static security checks passed.");
