@@ -1,6 +1,6 @@
 # METATYA Sports OS — Integrated Implementation Backlog
 Version: 1.0
-Scope: Sports federation administration; initial pilot: Ilam provincial board.
+Scope: Shooting sports only; initial pilot: Ilam Shooting Board.
 This is a planning and acceptance artifact. It does not claim that listed capabilities are implemented.
 
 ## Status vocabulary
@@ -13,10 +13,11 @@ This is a planning and acceptance artifact. It does not claim that listed capabi
 ## Current evidence-based baseline
 | Area | Current evidence | Status |
 |---|---|---|
-| Integrated sports federation product blueprint | `sports-os/MASTER_BLUEPRINT.md` committed on the execution branch | DEFINED |
+| Integrated shooting product blueprint | `sports-os/MASTER_BLUEPRINT.md` committed on the execution branch | DEFINED |
 | Foundation data, role and workflow specification | `sports-os/FOUNDATION_SPEC.md` | DEFINED |
-| Ilam pilot tenant config | `sports-os/tenants.json` contains only Ilam shooting | IMPLEMENTED (static configuration) |
-| | Public demo | Static HTML/CSS/JS, no authenticated backend | IMPLEMENTED (demo only) |
+| Shooting-only pilot tenant config | `sports-os/tenants.json` contains only Ilam shooting | IMPLEMENTED (static configuration) |
+| Shooting discipline catalogue | `sports-os/config/shooting-disciplines.json` | IMPLEMENTED (static catalogue only) |
+| Public demo | Static HTML/CSS/JS, no authenticated backend | IMPLEMENTED (demo only) |
 | Tenant authorization | Five active `public.sports_*` tables have RLS + FORCE RLS; owner/admin/referee policy set is live; one existing identity was verified to see only its assigned tenant. Dashboard selection is session-persisted as a hint, and each operational API request revalidates membership/role. Full two-user/two-tenant negative tests remain pending. | IMPLEMENTED / PARTIALLY TESTED / UNREVIEWED |
 | Identity and role authorization | Supabase Auth session, server-side membership/role guard, admin/referee/member mapping, and multi-tenant selection implemented. Referee/member real-account tests remain pending. | IMPLEMENTED / STATIC-TESTED |
 | Basic member registry | Tenant-scoped member create/list endpoints and dashboard; not yet a complete athlete/guardian registry. | IMPLEMENTED (BASIC) |
@@ -29,9 +30,9 @@ This is a planning and acceptance artifact. It does not claim that listed capabi
 ## Work packages and acceptance criteria
 
 ### FND-01 — Product scope and governance
-- Keep the product focused on federation administration and general sports services.
-- Pilot tenant is the Ilam provincial board.
-- Sport-specific operational catalogues are not part of this product structure.
+- Keep this product restricted to sports shooting.
+- Pilot tenant is Ilam Shooting Board.
+- Discipline catalogue is versioned and references official rulesets by authority, version and effective date.
 - Product ownership, usage license, technical access and athlete data rights are distinct.
 Acceptance: automated checks reject non-shooting tenants and verify the discipline catalogue.
 
@@ -66,11 +67,6 @@ Acceptance: workflow and negative permission tests pass; no demo result can be r
 - Store provider references and redacted metadata only; never card secrets.
 - Track membership and insurance validity with restricted access.
 Acceptance: reconciliation, webhook signature, idempotency, expiry and access tests pass.
-
-### FND-07 — Facilities and general assets administration
-- Track facility profiles, general inventory, maintenance, inspection and service status.
-- Keep records limited to ordinary organizational asset administration.
-Acceptance: asset lifecycle, authorization and audit tests pass.
 
 ### FND-08 — Talent, training and development
 - Require qualified human review for consequential assessments.
