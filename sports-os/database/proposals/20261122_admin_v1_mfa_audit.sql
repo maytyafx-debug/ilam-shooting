@@ -148,6 +148,43 @@ grant select on public.sports_admin_audit_events to authenticated;
 revoke insert, update, delete, truncate, references, trigger
   on public.sports_admin_audit_events from anon, authenticated;
 
+-- Require AAL2 for privileged users on the existing tenant tables too.
+-- Non-privileged active roles retain their existing table policies.
+drop policy if exists sports_tenants_privileged_mfa_required on public.sports_tenants;
+create policy sports_tenants_privileged_mfa_required
+  on public.sports_tenants as restrictive for all to authenticated
+  using (
+    (select auth.jwt()->>'aal') = 'aal2'
+    or not (select private.has_active_tenant_role(id, array['owner','admin']))
+  )
+  with check (
+    (select auth.jwt()->>'aal') = 'aal2'
+    or not (select private.has_active_tenant_role(id, array['owner','admin']))
+  );
+
+do $mfa_policies$
+declare
+  target_table text;
+begin
+  foreach target_table in array array[
+    'sports_tenant_memberships',
+    'sports_members',
+    'sports_member_private',
+    'sports_events',
+    'sports_results'
+  ] loop
+    execute format(
+      'drop policy if exists sports_privileged_mfa_required on public.%I',
+      target_table
+    );
+    execute format(
+      'create policy sports_privileged_mfa_required on public.%I as restrictive for all to authenticated using ((select auth.jwt()->>''aal'') = ''aal2'' or not (select private.has_active_tenant_role(tenant_id, array[''owner'',''admin'']))) with check ((select auth.jwt()->>''aal'') = ''aal2'' or not (select private.has_active_tenant_role(tenant_id, array[''owner'',''admin''])))',
+      target_table
+    );
+  end loop;
+end;
+$mfa_policies$;
+
 commit;
 
 -- Supabase changed Data API exposure defaults for newly created public tables.
