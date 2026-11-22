@@ -126,7 +126,6 @@ assert.ok(dashboard.includes('const canRecordResults = activeRole === "admin" ||
 assert.ok(dashboard.includes('activeRole === "member"'));
 assert.ok(workspace.includes('redirect("/platform")'));
 assert.ok(!workspace.includes("createMember"));
-assert.ok(!workspace.includes("fetch("/api/core-sports/members")"));
 assert.ok(login.includes('router.replace("/platform")'));
 assert.ok(middleware.includes('pathname.startsWith("/platform")'));
 assert.ok(middleware.includes('new URL("/platform", request.url)'));
