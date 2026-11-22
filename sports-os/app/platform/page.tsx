@@ -10,9 +10,11 @@ type Member = { id: string; full_name: string; phone: string | null; sport_type:
 type Section = { id: string; title: string; description: string; icon: string; state: "connected" | "planned"; detail: string };
 
 const sections: Section[] = [
-  { id: "organization", title: "ساختار سازمانی", description: "هیئت، واحدها، کمیته‌ها، شهرستان‌ها، باشگاه‌ها و مراکز", icon: "▦", state: "planned", detail: "مدل سازمانی در سند مرجع تعریف شده است؛ فرم‌ها و APIهای این بخش هنوز به پایگاه داده عملیاتی متصل نشده‌اند." },
+  { id: "organization", title: "ساختار سازمانی", description: "هیئت، واحدها، کمیته‌ها و شهرستان‌ها", icon: "▦", state: "planned", detail: "مدل سازمانی در سند مرجع تعریف شده است؛ فرم‌ها و APIهای این بخش هنوز به پایگاه داده عملیاتی متصل نشده‌اند." },
+  { id: "clubs", title: "باشگاه‌ها و مراکز", description: "پرونده باشگاه، مرکز، مجوز اداری و امکانات عمومی", icon: "⌂", state: "planned", detail: "ثبت و مدیریت باشگاه‌ها و مراکز در معماری تعریف شده؛ هنوز به پایگاه داده عملیاتی متصل نشده است." },
   { id: "members", title: "اعضا و ورزشکاران", description: "پرونده پایه، وضعیت عضویت و جست‌وجوی اعضا", icon: "♙", state: "connected", detail: "فهرست پایه اعضا از API احراز هویت‌شده و با محدوده سازمان فعال خوانده می‌شود." },
   { id: "professionals", title: "کارشناسان و عوامل", description: "پروفایل حرفه‌ای، مدارک، اعتبارنامه و تاریخ انقضا", icon: "♧", state: "planned", detail: "دفتر اطلاعات حرفه‌ای و اعتبارنامه‌ها در این نسخه هنوز API و جداول عملیاتی ندارند." },
+  { id: "calendar", title: "تقویم و برنامه‌های اداری", description: "جلسات، مناسبت‌ها، برنامه‌های داخلی و یادآوری", icon: "▣", state: "planned", detail: "تقویم اداری و یادآوری‌ها در دامنه سامانه قرار دارند؛ هنوز سرویس ذخیره‌سازی و اعلان فعال نیست." },
   { id: "honours", title: "آرشیو افتخارات", description: "سوابق افتخار و مدال بر اساس جنسیت، رده سنی و سال", icon: "✧", state: "planned", detail: "این آرشیو برای نگهداری گواهی‌ها و اسناد رسمیِ تأییدشده طراحی می‌شود؛ آمار تا زمان ورود داده معتبر خالی می‌ماند." },
   { id: "membership", title: "عضویت و تمدید", description: "دوره عضویت، درخواست‌ها، وضعیت و سوابق تمدید", icon: "▤", state: "planned", detail: "چرخه عضویت و درخواست‌های اصلاح اطلاعات هنوز به سرویس عملیاتی متصل نشده است." },
   { id: "insurance", title: "بیمه و پوشش‌ها", description: "مرجع بیمه، اعتبار پوشش و یادآوری انقضا", icon: "◇", state: "planned", detail: "اطلاعات بیمه در دسته داده‌های حساس قرار می‌گیرد و پس از طراحی دسترسی محدود و ذخیره‌سازی امن فعال خواهد شد." },
@@ -160,7 +162,7 @@ export default function PlatformPage() {
           <section className="platform-stats">
             <article><span>اعضای قابل مشاهده</span><b>{membersAvailable ? members.length.toLocaleString("fa-IR") : "—"}</b><small>{membersAvailable ? "داده واقعی از پایگاه داده" : "برای این نقش قابل مشاهده نیست"}</small></article>
             <article><span>ماژول‌های تعریف‌شده</span><b>{(sections.length + 1).toLocaleString("fa-IR")}</b><small>بر اساس دامنه سند مرجع</small></article>
-            <article><span>ماژول‌های متصل به داده</span><b>۱</b><small>فهرست پایه اعضا؛ سایر بخش‌ها در انتظار اتصال</small></article>
+            <article><span>ماژول‌های متصل به داده</span><b>{membersAvailable ? "۱" : "۰"}</b><small>فهرست پایه اعضا؛ سایر بخش‌ها در انتظار اتصال</small></article>
             <article><span>سازمان فعال</span><b className="stat-name">{tenantName}</b><small>عضویت توسط سرور تأیید شده است</small></article>
           </section>
           <div className="section-heading"><div><span className="eyebrow">MODULE DIRECTORY</span><h2>همه بخش‌های سامانه</h2></div><p>برای بررسی هر بخش، آن را از فهرست انتخاب کنید.</p></div>
