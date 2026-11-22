@@ -444,9 +444,12 @@ export default function DashboardPage() {
               <h1 className="page-heading">داشبورد مدیریتی</h1>
               <p className="muted">مدیریت امن اعضا، رویدادها و نتایج ورزشی در محدوده سازمان فعال</p>
             </div>
-            <button className="btn secondary" onClick={refreshData} disabled={busy}>
-              {busy ? "در حال پردازش..." : "به‌روزرسانی"}
-            </button>
+            <div className="topbar-actions">
+              <a className="btn secondary" href="/specialists">بانک مربیان، داوران و ورزشکاران</a>
+              <button className="btn secondary" onClick={refreshData} disabled={busy}>
+                {busy ? "در حال پردازش..." : "به‌روزرسانی"}
+              </button>
+            </div>
           </section>
         )}
 
