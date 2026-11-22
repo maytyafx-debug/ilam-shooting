@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    if (pathname === "/" || pathname.startsWith("/workspace")) {
+    if (pathname === "/" || pathname.startsWith("/workspace") || pathname.startsWith("/platform")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     return response;
@@ -34,12 +34,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if ((pathname === "/" || pathname.startsWith("/workspace")) && !user) {
+  if ((pathname === "/" || pathname.startsWith("/workspace") || pathname.startsWith("/platform")) && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   if ((pathname === "/" || pathname === "/login") && user) {
-    return NextResponse.redirect(new URL("/workspace", request.url));
+    return NextResponse.redirect(new URL("/platform", request.url));
   }
 
   return response;
