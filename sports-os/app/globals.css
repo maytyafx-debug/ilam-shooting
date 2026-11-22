@@ -99,3 +99,33 @@ main { padding: 32px 0 56px; }
   .filter-row { grid-template-columns: 1fr; }
   .section-heading-row { align-items: flex-start; }
 }
+
+
+/* Data-first dashboard layout: preserve the existing Ilam Board palette. */
+.dashboard-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stat-upcoming .stat-icon { background:#e7f0f8; color:#426b92; }
+.stat-completed .stat-icon { background:#e6f3e9; color:#2d7547; }
+.stat-honors .stat-icon { background:#f7f0df; color:#9b7432; }
+.dashboard-lower-grid { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(280px,1fr); gap:16px; align-items:start; }
+.dashboard-chart-panel { grid-row:span 2; min-width:0; }
+.dashboard-list-panel { min-width:0; }
+.dashboard-record-list { display:grid; gap:0; list-style:none; margin:0; padding:0; }
+.dashboard-record { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 0; border-bottom:1px solid #e5ece6; }
+.dashboard-record:last-child { border-bottom:0; padding-bottom:0; }
+.dashboard-record > div { display:grid; gap:5px; min-width:0; }
+.dashboard-record strong { color:#173a30; font-size:13px; overflow-wrap:anywhere; }
+.dashboard-record small { color:#77847c; font-size:11px; line-height:1.7; }
+.dashboard-status,.dashboard-result-value { flex:0 0 auto; border-radius:999px; padding:6px 9px; background:#edf4ef; color:#205340; font-size:10px; white-space:nowrap; }
+.dashboard-status.status-completed { background:#e6f3e9; color:#2d7547; }
+.dashboard-status.status-cancelled { background:#f9e9e7; color:#9f3d34; }
+.dashboard-status.status-ongoing { background:#e7f0f8; color:#426b92; }
+.dashboard-result-value { background:#f7f0df; color:#8b6b2e; }
+@media(max-width:760px) {
+  .dashboard-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .dashboard-lower-grid { grid-template-columns:1fr; }
+  .dashboard-chart-panel { grid-row:auto; }
+}
+@media(max-width:430px) {
+  .dashboard-stats { grid-template-columns:1fr; }
+  .dashboard-record { align-items:flex-start; flex-direction:column; }
+}
