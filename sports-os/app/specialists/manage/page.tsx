@@ -26,6 +26,11 @@ const statusLabels: Record<string, string> = {
   pending: "در انتظار بررسی", active: "فعال", inactive: "غیرفعال",
   suspended: "تعلیق‌شده", expired: "منقضی",
 };
+const optionLabels: Record<string, string> = {
+  female: "زن", male: "مرد", unspecified: "اعلام نشده",
+  active: "فعال", pending: "در انتظار بررسی", inactive: "غیرفعال",
+  suspended: "تعلیق‌شده", expired: "منقضی",
+};
 
 export default function SpecialistManagementPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -192,7 +197,7 @@ export default function SpecialistManagementPage() {
         <label htmlFor={`edit-${key}`}>{label}</label>
         {options ? (
           <select id={`edit-${key}`} value={values[key] ?? ""} onChange={(event) => setValues((old) => ({ ...old, [key]: event.target.value }))}>
-            {options.map((option) => <option key={option} value={option}>{option === "" ? "ثبت نشده" : option}</option>)}
+            {options.map((option) => <option key={option} value={option}>{option === "" ? "ثبت نشده" : optionLabels[option] ?? option}</option>)}
           </select>
         ) : (
           <input id={`edit-${key}`} type={type} value={values[key] ?? ""}
