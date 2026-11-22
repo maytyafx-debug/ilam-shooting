@@ -67,6 +67,10 @@ jobs:
         working-directory: .
         run: node sports-os/tests/architecture-contract.mjs
 
+      - name: Administrative modules and MFA contract checks
+        working-directory: .
+        run: node sports-os/tests/admin-v1-security-contract.mjs
+
       - name: Check legacy JavaScript syntax
         working-directory: .
         run: node --check sports-os/app.js
