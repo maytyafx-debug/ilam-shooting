@@ -34,7 +34,7 @@ This document is an execution register. It does not authorize production databas
 7. Achievements, documents, and basic operational reporting already represented in the pilot foundation.
 8. Responsive UI, access control, and documented handover.
 
-Do not add future marketplace, ticketing, advanced inventory, or other roadmap-only modules to this delivery without a confirmed customer requirement.
+Do not add future marketplace, ticketing, or other roadmap-only modules to this delivery without a confirmed customer requirement.
 
 ## Integration and conflict decisions
 

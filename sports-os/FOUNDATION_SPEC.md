@@ -17,7 +17,6 @@ The platform is divided into bounded domains, but starts as a modular monolith:
 - Competitions & Results: events, entries, assignments, provisional results, reviews, protests and final results.
 - Talent & Training: consent-based intake, expert reviews, development plans and course records.
 - Finance & Insurance: dues, invoices, receipts, refunds, reconciliation and insurance references.
-- Facilities & Assets: centers, facilities, administrative equipment inventory, custody and maintenance.
 - Documents & Communications: official documents, notices, media rights and delivery records.
 - Analytics: authorized aggregate statistics and provenance-aware reports.
 - Audit & Security: append-only audit, security events, access reviews and recovery evidence.
@@ -58,7 +57,7 @@ Every tenant-owned entity must include tenant_id; organizational records should 
 - result_revisions: id, tenant_id, result_id, revision_number, prior_value_reference, new_value_reference, change_reason, changed_by, reviewed_by, changed_at.
 - protests: id, tenant_id, competition_id, entry_id, submitted_by, category, case_state, decision_reference, decided_by, decided_at.
 
-### Development, finance, insurance and assets
+### Development, finance and insurance
 - talent_assessments: id, tenant_id, athlete_id, assessor_id, criteria_version, assessment_state, reviewed_at, appeal_state.
 - development_plans: id, tenant_id, athlete_id, owner_professional_id, plan_state, review_due_at.
 - training_courses: id, tenant_id, provider_org_id, title, course_type, starts_at, ends_at, state.
@@ -66,8 +65,6 @@ Every tenant-owned entity must include tenant_id; organizational records should 
 - invoices: id, tenant_id, account_reference, invoice_number, amount_minor, currency, invoice_state, issued_at, due_at.
 - payment_events: id, tenant_id, provider_event_reference, signature_state, idempotency_key, amount_minor, currency, event_state, received_at.
 - insurance_records: id, tenant_id, athlete_id, provider_reference, policy_reference, coverage_state, valid_from, valid_until.
-- assets: id, tenant_id, facility_id, asset_type, inventory_reference, custody_state, service_state.
-- asset_maintenance: id, tenant_id, asset_id, maintenance_type, due_at, completed_at, evidence_reference.
 
 ### Documents, audit and reporting
 - documents: id, tenant_id, org_unit_id, document_type, classification, storage_reference, version, lifecycle_state, retention_until.

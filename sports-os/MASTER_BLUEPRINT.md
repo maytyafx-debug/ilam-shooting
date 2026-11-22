@@ -31,11 +31,10 @@ A discipline record must include its governing rule-set reference, effective dat
 8. Training & Education — courses, attendance, credentials, renewals, training history.
 9. Finance & Administration — dues, invoices, receipts, debts, refunds and reconciliations; no card data stored.
 10. Insurance & Membership — membership periods, insurance provider/reference, coverage status and expiry alerts.
-11. Equipment & Facility Assets — inventory, custody, maintenance, inspection records and service status. This is administrative asset management, not operational weapon guidance.
-12. Sports Intelligence & Analytics — authorized aggregate reports, competition summaries, trends, data-quality indicators and privacy thresholds.
-13. Communications & Notifications — official notices, audience targeting by authorized organizational scope, delivery status and templates.
-14. Documents & Workflow — correspondence, approvals, controlled archives, retention, versioning and provenance.
-15. Platform Security & Administration — identity, access, ownership, privacy, audit, backup/recovery, integration and assurance.
+11. Sports Intelligence & Analytics — authorized aggregate reports, competition summaries, trends, data-quality indicators and privacy thresholds.
+12. Communications & Notifications — official notices, audience targeting by authorized organizational scope, delivery status and templates.
+13. Documents & Workflow — correspondence, approvals, controlled archives, retention, versioning and provenance.
+14. Platform Security & Administration — identity, access, ownership, privacy, audit, backup/recovery, integration and assurance.
 
 ## 4. Organizational and tenancy model
 - The initial live pilot tenant is the Ilam Shooting Board.
@@ -93,7 +92,6 @@ Use a modular relational model with shared identity references and domain-owned 
 - competitions_and_results
 - talent_and_training
 - finance_and_insurance
-- facilities_and_assets
 - documents_and_workflows
 - communications
 - analytics
@@ -152,7 +150,7 @@ Implement competitions, registration review, assignments, provisional results, o
 Exit: full lifecycle tests, audit trail and role-separation tests pass.
 
 ### Phase 5 — Finance, insurance, facilities and services
-Implement financial ledgers, insurance references, equipment/facility records and notifications.
+Implement financial ledgers, insurance references and notifications.
 Exit: reconciliation, permission, expiry and recovery tests pass.
 
 ### Phase 6 — Talent, training and intelligence

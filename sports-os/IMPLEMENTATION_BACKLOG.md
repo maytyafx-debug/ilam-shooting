@@ -68,11 +68,6 @@ Acceptance: workflow and negative permission tests pass; no demo result can be r
 - Track membership and insurance validity with restricted access.
 Acceptance: reconciliation, webhook signature, idempotency, expiry and access tests pass.
 
-### FND-07 — Facilities and equipment administration
-- Track inventory, custody, maintenance, inspection and service status.
-- Keep this administrative recordkeeping only; no weapon construction, modification or operational-use guidance.
-Acceptance: asset lifecycle, authorization and audit tests pass.
-
 ### FND-08 — Talent, training and development
 - Require qualified human review for consequential assessments.
 - Provide documented criteria, correction and appeal paths.
