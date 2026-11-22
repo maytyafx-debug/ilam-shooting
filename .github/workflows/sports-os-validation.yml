@@ -63,6 +63,10 @@ jobs:
         working-directory: .
         run: node sports-os/tests/security-static.mjs
 
+      - name: Master architecture contract checks
+        working-directory: .
+        run: node sports-os/tests/architecture-contract.mjs
+
       - name: Check legacy JavaScript syntax
         working-directory: .
         run: node --check sports-os/app.js
