@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog, foundationSpec, supabaseAudit] = await Promise.all([
+const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog, foundationSpec, supabaseAudit] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
+  read("../config/shooting-disciplines.json"),
   read("../index.html"),
   read("../app.js"),
   read("../../functions/api/submit.js"),
@@ -20,6 +20,7 @@ const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql,
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
+const disciplineCatalogue = JSON.parse(disciplineText);
 
 assert.deepEqual(pricing.plans.map((p) => p.id), ["basic", "professional", "enterprise"]);
 for (const plan of pricing.plans) {
@@ -29,7 +30,7 @@ for (const plan of pricing.plans) {
   assert.ok(Math.abs(plan.termOptions[2].discountPercent - 16.67) < 0.01);
 }
 assert.equal(pricing.pricingStatus, "quote_required");
-assert.ok(masterBlueprint.includes("Scope: General sports federation administration and management."));
+assert.ok(masterBlueprint.includes("Scope: Sports shooting administration and management only."));
 assert.ok(masterBlueprint.includes("Talent Identification & Development"));
 assert.ok(masterBlueprint.includes("Competition and result integrity"));
 assert.ok(masterBlueprint.includes("METATYA Sovereign Ownership"));
@@ -37,9 +38,9 @@ assert.ok(/immutable encrypted backups/i.test(masterBlueprint));
 assert.ok(masterBlueprint.includes("No merge to main, production deployment"));
 assert.ok(html.includes('id="pricingCards"'));
 assert.ok(html.includes('id="subscription-preview"'));
-assert.equal((html.match(/<article><b>\d{2}<\/b><span>/g) || []).length, 15, "The landing page must list all 15 general sports-management domains.");
-assert.ok(html.includes("برای مدیریت ورزش استان ایلام."));
-assert.ok(!/کشتی|والیبال|فوتبال|MANY SPORTS|چندرشته/.test(html), "The public UI must not expose unrelated sport tenant labels.");
+assert.equal((html.match(/<article><b>\d{2}<\/b><span>/g) || []).length, 14, "The landing page must list the 14 retained shooting Sports OS domains.");
+assert.ok(html.includes("برای تیراندازی ورزشی."));
+assert.ok(!/کشتی|والیبال|فوتبال|MANY SPORTS|چندرشته/.test(html), "The public UI must remain shooting-only.");
 assert.ok(appJs.includes('fetch("pricing.json")'));
 assert.ok(appJs.includes('fetch("tenants.json")'));
 assert.ok(legacySubmit.includes("status: 410"));
@@ -65,7 +66,14 @@ assert.ok(shooting);
 assert.equal(tenants.tenants.length, 1, "Shooting edition must contain only the Ilam shooting tenant.");
 assert.equal(tenants.tenants[0].id, "ilam-shooting");
 assert.equal(tenants.tenants[0].sport, "تیراندازی");
-assert.equal(existsSync(new URL("../config/shooting-disciplines.json", import.meta.url)), false, "Specialized equipment/disciplines catalogue must not be part of the product.");
+assert.equal(disciplineCatalogue.scope, "shooting-sports-only");
+assert.equal(disciplineCatalogue.status, "catalogue-definition-only");
+assert.deepEqual(disciplineCatalogue.disciplines.map((d) => d.id), [
+  "fixed-target", "moving-target", "flying-target-skeet"
+]);
+assert.ok(disciplineCatalogue.disciplines.every((d) => d.ruleSetRequired === true));
+assert.ok(!html.includes("تجهیزات و تأسیسات"));
+assert.ok(!JSON.stringify(disciplineCatalogue).match(/تفنگ|تپانچه|گلوله|مهمات|سلاح/));
 assert.ok(backlog.includes("No merge to `main`"));
 assert.ok(backlog.includes("UNREVIEWED"));
 assert.ok(foundationSpec.includes("## 3. Role and permission model"));
