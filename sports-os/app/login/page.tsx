@@ -32,7 +32,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/");
+      router.replace("/workspace");
       router.refresh();
     } catch (caughtError) {
       console.error("[METATYA AUTH] Login flow threw an exception:", caughtError);
