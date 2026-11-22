@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 
 type Tenant = { id: string; name: string; slug: string; role: string };
-type Person = { full_name: string; phone: string | null; sport_type: string | null };
+type Person = { full_name: string; sport_type: string | null };
 type Athlete = { id: string; athlete_code: string | null; gender: string | null; county: string | null; membership_status: string; member: Person };
 type Coach = { id: string; coach_code: string | null; specialty: string | null; coaching_grade: string | null; certificate_valid_until: string | null; professional_status: string; member: Person };
 type Referee = { id: string; referee_code: string | null; referee_grade: string | null; permitted_sports: string[]; card_valid_until: string | null; activity_status: string; member: Person };
@@ -129,7 +129,6 @@ export default function SpecialistsPage() {
         body: JSON.stringify({
           kind,
           full_name: value("full_name"),
-          phone: value("phone"),
           sport_type: value("sport_type"),
           profile,
         }),
@@ -196,10 +195,6 @@ export default function SpecialistsPage() {
             <div className="field">
               <label htmlFor="specialist-name">نام و نام خانوادگی</label>
               <input id="specialist-name" name="full_name" required minLength={2} maxLength={150} />
-            </div>
-            <div className="field">
-              <label htmlFor="specialist-phone">شماره تماس (اختیاری)</label>
-              <input id="specialist-phone" name="phone" type="tel" maxLength={30} />
             </div>
             <div className="field">
               <label htmlFor="specialist-sport">رشته / حوزه ورزشی</label>
