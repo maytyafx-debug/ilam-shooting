@@ -73,6 +73,15 @@ export default function PlatformPage() {
         if (!options.length) throw new Error("برای این حساب عضویت سازمانی فعالی ثبت نشده است.");
         const saved = window.sessionStorage.getItem("metatya-sports-os-active-tenant");
         const selected = options.length === 1 ? options[0] : options.find((item) => item.id === saved) ?? options[0];
+        if (["owner", "admin"].includes(selected.role)) {
+          const { data: assurance, error: assuranceError } =
+            await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (assuranceError) throw assuranceError;
+          if (assurance.currentLevel !== "aal2") {
+            router.replace("/security/mfa");
+            return;
+          }
+        }
         if (!mounted) return;
         setTenants(options); setTenantId(selected.id); setTenantName(selected.name); setRole(selected.role);
         window.sessionStorage.setItem("metatya-sports-os-active-tenant", selected.id);
