@@ -99,6 +99,18 @@ export default function DashboardPage() {
     .map((item) => ({ ...item, resultCount: results.filter((result) => result.event_id === item.id).length }));
   const chartMax = Math.max(1, ...chartEvents.map((item) => item.resultCount));
 
+  const upcomingEvents = events
+    .filter((item) => new Date(item.event_date).getTime() >= Date.now() && item.status !== "cancelled")
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
+  const completedEventsCount = events.filter((item) => item.status === "completed").length;
+  const firstPlaceResultsCount = results.filter((item) => item.rank === 1).length;
+  const recentEvents = [...events]
+    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .slice(0, 5);
+  const recentResults = [...results]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
+
   async function loadData(activeTenantId: string, roleOverride?: CoreRole) {
     if (!activeTenantId) throw new Error("سازمان فعال هنوز انتخاب نشده است.");
 
@@ -470,49 +482,114 @@ export default function DashboardPage() {
           <>
             {canManage && (
               <>
-                <section className="stats">
+                <section className="stats dashboard-stats">
                   <article className="stat stat-members">
                     <span className="stat-icon" aria-hidden="true">♙</span>
-                    <span className="muted">Total Members · اعضا</span>
+                    <span className="muted">اعضای ثبت‌شده</span>
                     <strong>{members.length.toLocaleString("fa-IR")}</strong>
-                    <small>اعضای ثبت‌شده در سازمان فعال</small>
+                    <small>پرونده‌های اعضای سازمان</small>
                   </article>
                   <article className="stat stat-events">
                     <span className="stat-icon" aria-hidden="true">▦</span>
-                    <span className="muted">Total Events · رویدادها</span>
+                    <span className="muted">کل مسابقات و رویدادها</span>
                     <strong>{events.length.toLocaleString("fa-IR")}</strong>
-                    <small>رویدادهای قابل مشاهده</small>
+                    <small>رویدادهای ثبت‌شده در هیئت</small>
+                  </article>
+                  <article className="stat stat-upcoming">
+                    <span className="stat-icon" aria-hidden="true">◷</span>
+                    <span className="muted">رویدادهای پیش‌رو</span>
+                    <strong>{upcomingEvents.length.toLocaleString("fa-IR")}</strong>
+                    <small>برنامه‌های آینده</small>
+                  </article>
+                  <article className="stat stat-completed">
+                    <span className="stat-icon" aria-hidden="true">✓</span>
+                    <span className="muted">رویدادهای پایان‌یافته</span>
+                    <strong>{completedEventsCount.toLocaleString("fa-IR")}</strong>
+                    <small>با وضعیت تکمیل‌شده</small>
                   </article>
                   <article className="stat stat-results">
                     <span className="stat-icon" aria-hidden="true">▤</span>
-                    <span className="muted">Total Results · نتایج</span>
+                    <span className="muted">نتایج ثبت‌شده</span>
                     <strong>{results.length.toLocaleString("fa-IR")}</strong>
-                    <small>نتایج ثبت‌شده</small>
+                    <small>عملکردهای ثبت‌شده ورزشکاران</small>
+                  </article>
+                  <article className="stat stat-honors">
+                    <span className="stat-icon" aria-hidden="true">★</span>
+                    <span className="muted">رتبه‌های نخست</span>
+                    <strong>{firstPlaceResultsCount.toLocaleString("fa-IR")}</strong>
+                    <small>افتخارات ثبت‌شده در نتایج</small>
                   </article>
                 </section>
-                <section className="panel analytics-panel">
-                  <div className="section-heading-row">
-                    <div>
-                      <h2 className="section-title">نمای آماری رویدادها</h2>
-                      <p className="muted">تعداد نتایج ثبت‌شده برای شش رویداد اخیر</p>
+
+                <section className="dashboard-lower-grid" id="analytics">
+                  <section className="panel analytics-panel dashboard-chart-panel">
+                    <div className="section-heading-row">
+                      <div>
+                        <h2 className="section-title">روند نتایج مسابقات</h2>
+                        <p className="muted">تعداد نتایج ثبت‌شده برای شش رویداد اخیر</p>
+                      </div>
+                      <span className="chart-legend"><i /> تعداد نتایج</span>
                     </div>
-                    <span className="chart-legend"><i /> تعداد نتایج</span>
-                  </div>
-                  {chartEvents.length === 0 ? (
-                    <p className="muted">برای نمایش نمودار، ابتدا رویدادی ثبت کنید.</p>
-                  ) : (
-                    <div className="bar-chart" role="img" aria-label="نمودار تعداد نتایج به تفکیک رویداد">
-                      {chartEvents.map((item) => (
-                        <div className="bar-chart-column" key={item.id}>
-                          <strong>{item.resultCount.toLocaleString("fa-IR")}</strong>
-                          <div className="bar-chart-track">
-                            <div className="bar-chart-fill" style={{ height: `${Math.max(8, (item.resultCount / chartMax) * 100)}%` }} />
+                    {chartEvents.length === 0 ? (
+                      <p className="muted">پس از ثبت مسابقه و نتایج، نمودار این بخش به‌صورت خودکار تکمیل می‌شود.</p>
+                    ) : (
+                      <div className="bar-chart" role="img" aria-label="نمودار تعداد نتایج به تفکیک رویداد">
+                        {chartEvents.map((item) => (
+                          <div className="bar-chart-column" key={item.id}>
+                            <strong>{item.resultCount.toLocaleString("fa-IR")}</strong>
+                            <div className="bar-chart-track">
+                              <div className="bar-chart-fill" style={{ height: `${Math.max(8, (item.resultCount / chartMax) * 100)}%` }} />
+                            </div>
+                            <span title={item.title}>{item.title}</span>
                           </div>
-                          <span title={item.title}>{item.title}</span>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    )}
+                  </section>
+
+                  <section className="panel dashboard-list-panel">
+                    <div className="section-heading-row">
+                      <h2 className="section-title">مسابقات و رویدادهای اخیر</h2>
+                      <span className="muted">{events.length.toLocaleString("fa-IR")} مورد</span>
                     </div>
-                  )}
+                    {recentEvents.length === 0 ? (
+                      <p className="muted">هنوز مسابقه یا رویدادی در این سازمان ثبت نشده است.</p>
+                    ) : (
+                      <ul className="dashboard-record-list">
+                        {recentEvents.map((item) => (
+                          <li className="dashboard-record" key={item.id}>
+                            <div>
+                              <strong>{item.title}</strong>
+                              <small>{new Date(item.event_date).toLocaleDateString("fa-IR")}{item.location ? ` · ${item.location}` : ""}</small>
+                            </div>
+                            <span className={`dashboard-status status-${item.status}`}>{item.status === "completed" ? "پایان‌یافته" : item.status === "ongoing" ? "در حال برگزاری" : item.status === "cancelled" ? "لغوشده" : "برنامه‌ریزی‌شده"}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+
+                  <section className="panel dashboard-list-panel dashboard-results-panel">
+                    <div className="section-heading-row">
+                      <h2 className="section-title">آخرین نتایج و افتخارات</h2>
+                      <span className="muted">{results.length.toLocaleString("fa-IR")} نتیجه</span>
+                    </div>
+                    {recentResults.length === 0 ? (
+                      <p className="muted">هنوز نتیجه‌ای ثبت نشده است.</p>
+                    ) : (
+                      <ul className="dashboard-record-list">
+                        {recentResults.map((result) => (
+                          <li className="dashboard-record" key={result.id}>
+                            <div>
+                              <strong>{members.find((member) => member.id === result.member_id)?.full_name ?? "ورزشکار نامشخص"}</strong>
+                              <small>{events.find((item) => item.id === result.event_id)?.title ?? "مسابقه نامشخص"} · {new Date(result.created_at).toLocaleDateString("fa-IR")}</small>
+                            </div>
+                            <span className="dashboard-result-value">{result.rank ? `رتبه ${result.rank.toLocaleString("fa-IR")}` : result.score !== null ? `امتیاز ${result.score.toLocaleString("fa-IR")}` : "ثبت‌شده"}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
                 </section>
               </>
             )}
