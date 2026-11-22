@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog, foundationSpec, supabaseAudit] = await Promise.all([
+const [pricingText, tenantsText, html, appJs, legacySubmit, coreSql, billingSql, membershipMigration, analyticsMigration, masterBlueprint, backlog, foundationSpec, supabaseAudit] = await Promise.all([
   read("../pricing.json"),
   read("../tenants.json"),
-  read("../config/shooting-disciplines.json"),
   read("../index.html"),
   read("../app.js"),
   read("../../functions/api/submit.js"),
@@ -20,7 +20,6 @@ const [pricingText, tenantsText, disciplineText, html, appJs, legacySubmit, core
 ]);
 const pricing = JSON.parse(pricingText);
 const tenants = JSON.parse(tenantsText);
-const disciplineCatalogue = JSON.parse(disciplineText);
 
 assert.deepEqual(pricing.plans.map((p) => p.id), ["basic", "professional", "enterprise"]);
 for (const plan of pricing.plans) {
@@ -66,12 +65,7 @@ assert.ok(shooting);
 assert.equal(tenants.tenants.length, 1, "Shooting edition must contain only the Ilam shooting tenant.");
 assert.equal(tenants.tenants[0].id, "ilam-shooting");
 assert.equal(tenants.tenants[0].sport, "تیراندازی");
-assert.equal(disciplineCatalogue.scope, "shooting-sports-only");
-assert.equal(disciplineCatalogue.status, "catalogue-definition-only");
-assert.deepEqual(disciplineCatalogue.disciplines.map((d) => d.id), [
-  "air-rifle", "air-pistol", "fixed-target", "moving-target", "flying-target-skeet", "sport-bullet-shooting"
-]);
-assert.ok(disciplineCatalogue.disciplines.every((d) => d.ruleSetRequired === true));
+assert.equal(existsSync(new URL("../config/shooting-disciplines.json", import.meta.url)), false, "Specialized equipment/disciplines catalogue must not be part of the product.");
 assert.ok(backlog.includes("No merge to `main`"));
 assert.ok(backlog.includes("UNREVIEWED"));
 assert.ok(foundationSpec.includes("## 3. Role and permission model"));
