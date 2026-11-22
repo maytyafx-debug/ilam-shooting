@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 
 type Tenant = { id: string; name: string; slug: string; role: string };
 type Person = { full_name: string; phone: string | null; sport_type: string | null };
@@ -157,7 +158,7 @@ export default function SpecialistsPage() {
             <div className="brand">METATYA Sports OS</div>
             <small>بانک‌های اطلاعات تخصصی</small>
           </div>
-          <a className="btn secondary" href="/">بازگشت به داشبورد</a>
+          <Link className="btn secondary" href="/">بازگشت به داشبورد</Link>
         </div>
       </header>
 
