@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
 
   const [athletes, coaches, referees] = await Promise.all([
     db.from("sports_athlete_profiles")
-      .select("id,member_id,athlete_code,gender,county,membership_status,created_at,member:sports_members!inner(full_name,phone,sport_type)")
+      .select("id,member_id,athlete_code,gender,county,membership_status,created_at,member:sports_members!inner(full_name,sport_type)")
       .eq("tenant_id", auth.tenantId).order("created_at", { ascending: false }),
     db.from("sports_coach_profiles")
-      .select("id,member_id,coach_code,specialty,coaching_grade,certificate_valid_until,professional_status,created_at,member:sports_members!inner(full_name,phone,sport_type)")
+      .select("id,member_id,coach_code,specialty,coaching_grade,certificate_valid_until,professional_status,created_at,member:sports_members!inner(full_name,sport_type)")
       .eq("tenant_id", auth.tenantId).order("created_at", { ascending: false }),
     db.from("sports_referee_profiles")
-      .select("id,member_id,referee_code,referee_grade,permitted_sports,card_valid_until,activity_status,created_at,member:sports_members!inner(full_name,phone,sport_type)")
+      .select("id,member_id,referee_code,referee_grade,permitted_sports,card_valid_until,activity_status,created_at,member:sports_members!inner(full_name,sport_type)")
       .eq("tenant_id", auth.tenantId).order("created_at", { ascending: false }),
   ]);
 
@@ -58,13 +58,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid specialist type." }, { status: 400 });
   }
   const fullName = typeof body.full_name === "string" ? body.full_name.trim() : "";
-  const phone = typeof body.phone === "string" ? body.phone.trim() : "";
   const sportType = typeof body.sport_type === "string" ? body.sport_type.trim() : "";
   const profile = body.profile && typeof body.profile === "object" && !Array.isArray(body.profile)
     ? body.profile as Record<string, unknown>
     : {};
 
-  if (fullName.length < 2 || fullName.length > 150 || phone.length > 30 || sportType.length > 120) {
+  if (fullName.length < 2 || fullName.length > 150 || sportType.length > 120) {
     return NextResponse.json({ error: "اطلاعات پایه معتبر نیست." }, { status: 400 });
   }
 
@@ -117,7 +116,7 @@ export async function POST(request: NextRequest) {
     p_tenant_id: auth.tenantId,
     p_kind: body.kind,
     p_full_name: fullName,
-    p_phone: phone || null,
+    p_phone: null,
     p_sport_type: sportType || null,
     p_profile: profileData,
   });
