@@ -279,7 +279,7 @@ export default function SpecialistManagementPage() {
           <section className="panel">
             <h2 className="section-title">ویرایش پرونده: {selected.name}</h2>
             <p className="muted">این فرم اطلاعات تخصصی پرونده را به‌روزرسانی می‌کند. برای ویرایش نام، تماس، رشته، شماره عضویت، تاریخ تولد و وضعیت پایه عضو از مدیریت اعضا استفاده کنید.</p>
-            <Link className="btn secondary" href="/members">ویرایش اطلاعات پایه این عضو در مدیریت اعضا</Link>
+            <Link className="btn secondary" href="/members">بازکردن مدیریت اعضا برای ویرایش اطلاعات پایه</Link>
             <form className="form-grid" onSubmit={submit}>
               {field("کد پرونده / شماره حرفه‌ای", "code")}
               {kind === "athlete" && <>
