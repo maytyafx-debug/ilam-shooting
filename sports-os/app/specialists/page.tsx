@@ -98,6 +98,7 @@ export default function SpecialistsPage() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     if (!tenantId) return;
     setBusy(true);
     setMessage("");
@@ -134,7 +135,7 @@ export default function SpecialistsPage() {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "ثبت اطلاعات ناموفق بود.");
-      event.currentTarget.reset();
+      formElement.reset();
       await loadBanks(tenantId);
       setMessage("پرونده با موفقیت ثبت شد و در فهرست همین بخش قرار گرفت.");
     } catch (error) {
