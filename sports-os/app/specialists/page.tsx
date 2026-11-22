@@ -157,7 +157,7 @@ export default function SpecialistsPage() {
             <div className="brand">METATYA Sports OS</div>
             <small>بانک‌های اطلاعات تخصصی</small>
           </div>
-          <Link className="btn secondary" href="/">بازگشت به داشبورد</Link>
+          <div className="topbar-actions"><Link className="btn secondary" href="/specialists/manage">جست‌وجو و ویرایش پرونده‌ها</Link><Link className="btn secondary" href="/">بازگشت به داشبورد</Link></div>
         </div>
       </header>
 
