@@ -10,8 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test:security": "node tests/security-static.mjs",
     "test:demo": "node tests/validate-demo.mjs",
-    "test": "npm run typecheck && npm run test:security && npm run test:demo && npm run test:architecture",
-    "test:architecture": "node tests/architecture-contract.mjs"
+    "test": "npm run typecheck && npm run test:security && npm run test:demo && npm run test:architecture && npm run test:admin-contract",
+    "test:architecture": "node tests/architecture-contract.mjs",
+    "test:admin-contract": "node tests/admin-v1-security-contract.mjs"
   },
   "engines": {
     "node": ">=20.9.0"
