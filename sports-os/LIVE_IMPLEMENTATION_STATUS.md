@@ -121,3 +121,7 @@ Added `app/workspace/page.tsx) as a supplementary module directory with feature 
 Validation evidence: GitHub Actions run 45028421318 passed dependency installation, TypeScript validation, Next.js production build, static security regression checks, legacy JavaScript syntax, and demo validation at commit `1e610c9df0339343787efba84a050979d98f1bbf`. A follow-up route-protection and test-fixture update is now committed and its validation run is pending.
 
 No database migrations, production data writes, or production deployment were performed for these interface changes.
+
+## 8. Single management entry point — 2026-11-22
+
+The legacy `/workspace` route now redirects to the canonical authenticated `/platform` experience. It no longer renders a second dashboard, duplicate module catalogue, tenant selector, or separate navigation. Existing links remain compatible. The canonical platform is the only management UI; module implementation must be added there once and backed by shared domain services.
