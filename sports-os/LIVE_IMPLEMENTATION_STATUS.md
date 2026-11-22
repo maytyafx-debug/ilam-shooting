@@ -112,16 +112,12 @@ No changes were made to those unrelated tables or Auth settings in this pass.
 Use synthetic test data only. Do not import real athlete, minor, health, insurance, or financial records; do not activate payments; do not merge to `main` or deploy publicly without a separate explicit release decision and verified readiness evidence.
 
 
-## 7. Authenticated workspace directory — source review 2026-11-22
+## 7. Authenticated management platform — source review 2026-11-22
 
-Added `app/workspace/page.tsx` as the authenticated landing page after sign-in. The directory exposes the 15 product domains as navigable module cards with feature inventories and evidence-based implementation labels. The member count is fetched from the existing tenant-scoped members API only for owner/admin roles; unavailable counts remain blank rather than being fabricated.
+Added `app/platform/page.tsx) as the primary post-login management platform. It provides a responsive Persian RTL management shell, 16 navigable module areas, tenant-aware overview, and a basic member directory with a create-member action backed by the existing tenant-scoped API. The module catalogue clearly marks the areas that are not yet connected to operational tables or APIs.
 
-Authentication routing now sends successful login and authenticated visits to `/workspace`. Middleware protects `/workspace` and redirects unauthenticated visitors to `/login`.
+Added `app/workspace/page.tsx) as a supplementary module directory with feature inventories and explicit implementation states. The login flow routes authenticated users to `/platform`; middleware protects `/platform` and `/workspace` and routes authenticated root visits to `/platform`.
 
-Current module evidence in this workspace:
-- Partial connection: organization/tenant selection, basic member list, and baseline identity/membership security.
-- Not yet operational: club/center management, complete athlete/guardian records, professional credentials, organizational calendar, verified honours archive, consent-based development records, courses, finance, insurance, general asset administration, analytics, communications, and document workflows.
-- The directory is an inspection/navigation layer. It does not claim that planned modules have operational database tables or write APIs.
-- No database migrations, production data writes, or production deployment were performed for this workspace change.
+Validation evidence: GitHub Actions run 45028421318 passed dependency installation, TypeScript validation, Next.js production build, static security regression checks, legacy JavaScript syntax, and demo validation at commit `1e610c9df0339343787efba84a050979d98f1bbf`. A follow-up route-protection and test-fixture update is now committed and its validation run is pending.
 
-Validation is pending the branch GitHub Actions run for the workspace commit.
+No database migrations, production data writes, or production deployment were performed for these interface changes.
