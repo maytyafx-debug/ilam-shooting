@@ -3,11 +3,12 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    if (request.nextUrl.pathname === "/") {
+    if (pathname === "/" || pathname.startsWith("/workspace")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     return response;
@@ -33,12 +34,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (request.nextUrl.pathname === "/" && !user) {
+  if ((pathname === "/" || pathname.startsWith("/workspace")) && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (request.nextUrl.pathname === "/login" && user) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if ((pathname === "/" || pathname === "/login") && user) {
+    return NextResponse.redirect(new URL("/workspace", request.url));
   }
 
   return response;
