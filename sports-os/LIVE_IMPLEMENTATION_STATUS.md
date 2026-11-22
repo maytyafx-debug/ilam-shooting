@@ -1,127 +1,98 @@
-# METATYA Sports OS — Live Implementation Status
+# METATYA Sports OS — Version 1 Readiness Status
 
-Last source review: 2026-11-22  
-Repository: `maytyafx-debug/ilam-shooting`  
-Working branch: `feat/sports-os-shooting-integrated-v1`  
-Application root: `sports-os/`  
-Connected Supabase project: `megbqtoihsuouiaxpifl`
+Last source review: 2026-11-22
+Repository: `maytyafx-debug/ilam-shooting`
+Working branch: `feat/sports-os-shooting-integrated-v1`
+Application root: `sports-os/`
 
-## 1. Scope
+## Release decision
 
-This is the first authenticated operational pilot of the reusable METATYA Sports OS Core, configured for shooting-sports administration in Ilam. It is not the complete nationwide sports federation platform and is not approved for real athlete/minor data or production operations.
+**Current state: authenticated development pilot / partial MVP. NOT ready for production or real sensitive records.**
 
-## 2. Live database evidence
+This document is the single source of truth for Version 1 readiness. Completion is evidence-based: a feature is not complete merely because it appears in the navigation.
 
-The active Next.js runtime uses the `public` schema and these five operational tables:
+Version 1 scope is the safe administrative platform: organization directory, clubs/centres, member registry, professional/credential directory, administrative calendar, membership administration, insurance administration, finance administration, document/secretariat, facilities/assets, communications, aggregate management reports, access administration, security and audit. Any operational specialist workflows outside this administrative scope are explicitly excluded from this V1 delivery.
 
-| Table | Current rows | RLS | FORCE RLS |
-|---|---:|---|---|
-| `sports_tenants` | 2 | enabled | enabled |
-| `sports_tenant_memberships` | 1 | enabled | enabled |
-| `sports_members` | 1 | enabled | enabled |
-| `sports_events` | 1 | enabled | enabled |
-| `sports_results` | 1 | enabled | enabled |
+## Architecture and current implementation
 
-Live hardening applied and read-back verified:
-- `007_public_sports_rbac_hardening.sql`
-- `008_public_sports_rbac_policy_cleanup.sql`
+- Next.js application under `sports-os/`, Supabase Auth with SSR cookie sessions.
+- One canonical management interface: `/platform`. Legacy `/workspace` redirects to `/platform`; do not create another dashboard or parallel navigation.
+- Protected routes: `/login`, `/`, `/platform`; server-side user and active-tenant membership checks.
+- Tenant selection is limited to active memberships returned by the server. Every tenant-scoped API request revalidates membership and role.
+- Tenant-bound UI data is cleared on tenant changes. A request-sequence guard ignores stale responses from a previously selected tenant.
+- Existing account is to be retained and verified; do not create a duplicate account.
+- Current connected data surface is limited to the five existing `public.sports_*` tables: `sports_tenants`, `sports_tenant_memberships`, `sports_members`, `sports_events`, `sports_results`.
+- Current live pilot evidence previously recorded: two tenant rows, one membership, one member, one event, one result. These figures must be re-queried before being treated as current.
+- Existing API surfaces include tenant resolution, member, event and result endpoints. The V1 administrative release must not expand specialist operational workflows; retain only administrative calendar/event metadata where appropriate and do not use specialist scoring/result functions as a V1 acceptance requirement.
+- Persian RTL dashboard and a single module directory exist. At last source review, only the basic member directory is identified as connected in the canonical platform; other module cards are honest placeholders, not completed modules.
 
-Verified grants/policies:
-- `PUBLIC` and `anon` have no table privileges on the five active operational tables.
-- `authenticated` can read tenant and self-membership rows; operational DML is constrained by RLS.
-- `owner` and `admin` can manage operational rows in their active tenant.
-- `referee` can read members/events/results and insert results, but cannot manage members/events or update/delete results.
-- `coach`, `staff`, and `member` do not have operational data access in this pilot.
-- Tenant ID changes on member, event, and result records are rejected by database triggers.
-- Tenant and membership provisioning remain owner-controlled.
+## Security and data boundary
 
-Tenant records:
-- Original pilot: `باشگاه ورزشی نمونه`, ID `e1f77f6f-da48-493f-94fb-db0c3398188d`
-- QA tenant: `سازمان آزمایشی دوم`, ID `7c82debc-10f0-4c31-9c43-2135b083db50`
+- Runtime uses the `public` schema. Older migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_isolation.sql` describe a legacy `sports_core` design and must not be applied to the connected project.
+- Existing RLS/FORCE RLS and grants were previously read-back verified for the five operational tables. Re-run live checks before release.
+- Tenant context is resolved from the authenticated user's active membership; the client-supplied tenant identifier is never trusted by itself.
+- Do not alter unrelated tables such as `public.data_bank`, `public.finance_ledger`, or `public.monetization_opportunities` as part of this project.
+- Do not import real personal, minor, guardian, health, insurance, or financial data until purpose limitation, consent/authority, least-privilege access, retention, encryption, audit and recovery controls have been independently verified.
+- Use synthetic data only for development and automated tests.
+- Do not create, modify or delete production database records, apply migrations to the connected Supabase project, change authentication settings, or deploy publicly without explicit scoped approval.
+- Privileged MFA and leaked-password protection remain release blockers until enabled and verified in the Supabase project.
+- Encrypted backup and an isolated restore drill are release blockers.
 
-The current provisioned identity is a member of the original pilot only. A simulated authenticated read showed that identity can see the original tenant and cannot see the QA tenant. The QA tenant currently has no test membership. This is a useful first isolation check, not a complete two-user/two-tenant security test.
+## Current module readiness
 
-Current operational sample data remains one member, one event, and one result in the original tenant. The QA tenant creation did not insert or modify operational records.
+| Area | Evidence-based status | V1 work remaining |
+|---|---|---|
+| Authentication and sessions | Implemented in source; existing account not yet fully revalidated for release | Verify the user's existing account, session renewal, logout and recovery flows |
+| Tenant and role enforcement | Implemented in source; partial prior live checks | Positive and negative role/tenant test matrix; no duplicate real identity |
+| Single platform shell | Implemented | Accessibility, responsive and navigation regression checks |
+| Member registry | Basic list/create API and UI connected | Complete safe profile fields, validation, duplicate detection, audit and privacy controls |
+| Organization hierarchy | Not connected | Units and hierarchy records, scoped management APIs and UI |
+| Clubs and centres | Not connected | Administrative directory, status and document references |
+| Professionals and credentials | Not connected | Credential records, expiry reminders, restricted document handling |
+| Administrative calendar | Not connected as a complete module | Meetings, internal appointments and reminders |
+| Membership administration | Not connected | Membership periods, renewals, status history and approvals |
+| Insurance administration | Not connected | Restricted coverage metadata, expiry tracking and access controls |
+| Finance administration | Not connected | Ledger-safe administrative records, reconciliation and approval boundaries |
+| Documents and secretariat | Not connected | Secure storage, classification, versioning, retention and correspondence register |
+| Facilities and assets | Not connected | Asset register, location, condition and maintenance records |
+| Communications | Not connected | Announcement workflow, recipient permissions and delivery audit |
+| Management analytics | Not connected | Privacy-preserving aggregate reports with verified source definitions |
+| Access administration | Partial role enforcement only | Role assignment workflow, scope, expiry, approver, revocation and audit |
+| Security and audit | Partial controls in source/database | Append-only audit evidence, MFA, alerting, backup/restore and security review |
 
-## 3. Active application behavior
+## CI and source validation
 
-Implemented in `sports-os/`:
-- Supabase Auth password login with SSR cookie sessions.
-- Server-side user and active-membership verification.
-- Role mapping: owner/admin → admin; referee → referee; coach/staff/member → member.
-- Multi-tenant selector when a user has more than one active tenant membership; the last authorized selection is remembered for the current browser session only.
-- The selected `tenant_id` is sent as `x-tenant-id` on every operational API request and revalidated against the authenticated user's active membership and role.
-- Tenant changes clear tenant-bound lists and form selections; a request-sequence guard prevents slower responses from a previous tenant overwriting the newly selected tenant.
-- Admin: create and list members, create and list events, create and list results.
-- Referee: read members/events/results and record results only.
-- Member: operational data remains blocked; no unverified profile-to-athlete mapping is assumed.
-- Persian RTL dashboard, responsive layout, and manual refresh.
-- Input validation for names, phone, event date, location, UUID references, score, rank, and notes.
-- Private/no-store responses for tenant and operational reads.
+- The repository has a committed lockfile at `sports-os/package-lock.json`.
+- The validation workflow now uses `npm ci --no-audit --no-fund`, has `contents: read` permission only, and no longer writes generated lockfiles back to the branch.
+- Static security regression checks include tenant request sequencing.
+- Latest workflow configuration change is commit `e83880b2409500e1443280b13c9faf705603aa58`.
+- CI status for that commit has not yet been confirmed. Do not mark the workflow as passed until GitHub Actions reports success for that exact commit.
+- A green source/build workflow is necessary but does not prove live RLS, account, backup, or production readiness.
 
-Main routes:
-- `/login`
-- `/`
-- `/api/core-sports/tenant`
-- `/api/core-sports/members`
-- `/api/core-sports/events`
-- `/api/core-sports/results`
-- `/api/auth/logout`
+## Required completion gates — execute in order
 
-## 4. Migration distinction — do not mix schemas
+1. **Source and build gate:** run lockfile-based install, TypeScript, static security tests, production build and legacy checks on the current branch; resolve every failure.
+2. **Identity gate:** verify the owner's existing Auth account, active membership and intended role. Never create a duplicate real account. Create synthetic QA identities only if strictly needed, in an isolated test environment, with approval.
+3. **Authorization gate:** test allowed and denied operations across roles and tenants, including missing, invalid, inactive and cross-tenant identifiers.
+4. **Administrative data model gate:** design and review one coherent tenant-scoped schema for the missing administrative modules. Produce forward and rollback migrations; do not apply them to the connected project without explicit approval and a restorable backup.
+5. **Module integration gate:** implement shared services, validation, authorization and audit once; connect each module to the same canonical platform. No duplicate forms, directories, dashboards or parallel data capture.
+6. **Privacy and records gate:** define data classification, purpose, minimum fields, consent/guardian authority where applicable, retention, deletion/export and restricted document handling before sensitive fields are enabled.
+7. **Operational controls gate:** enable and verify privileged MFA, leaked-password protection, rate limiting, secure secrets handling, logging and alerting.
+8. **Recovery gate:** produce encrypted backups and demonstrate restore into an isolated environment; record recovery evidence.
+9. **Quality gate:** test accessibility, mobile layout, keyboard navigation, performance, error handling, concurrency and tenant switching.
+10. **Pilot gate:** obtain stakeholder acceptance using synthetic or explicitly approved low-risk records; document support, incident response and rollback.
+11. **Release gate:** only after all gates pass, request explicit approval for production migration and deployment. No automatic promotion to main or public deployment.
 
-The live pilot uses `public.sports_*`.
+## Definition of Version 1 operational
 
-Repository migrations `005_sports_os_namespaced.sql` and `006_sports_os_tenant_isolation.sql` describe an older `sports_core` schema design. Those migrations are not recorded as applied in the connected project's current migration history and are not used by the active application. Do not run them on the connected project.
+V1 may be declared operational only when:
+- the existing owner account can sign in and use the correct authorized organization;
+- every released administrative module has real, tenant-scoped persistence and server-side authorization;
+- cross-tenant and unauthorized access tests fail closed;
+- sensitive data controls and audit are verified;
+- CI passes on the exact release candidate;
+- encrypted backup and isolated restore are demonstrated;
+- the pilot is accepted and rollback is documented;
+- the owner explicitly approves the production release.
 
-The intended long-term direction is a dedicated, carefully isolated Sports OS data environment. Any move from the current public-schema pilot must have a separately reviewed migration, explicit owner approval, a restorable backup, and negative cross-tenant integration tests.
-
-## 5. Git and test evidence
-
-- Earlier security-hardening CI passed at commit `d5ccc740fb89d8a636ee5835fecd5d92d793c978`.
-- The current update adds multi-tenant selection, role-gated UI, stricter API validation, unified npm test scripts, and documentation reconciliation.
-- GitHub Actions run #108 passed at commit `250a0529597a53636e95fb63759f398909218bd8`: dependency install, TypeScript validation, Next.js production build, static security regression checks, legacy JavaScript syntax, and demo/legacy validation all succeeded.
-- Run evidence: https://github.com/maytyafx-debug/ilam-shooting/actions/runs/44086200664
-- `npm test` now runs TypeScript validation, static security checks, and demo/legacy validation.
-- A successful static test/build does not establish live RLS behavior or production readiness.
-
-## 6. Outstanding blockers
-
-1. Create separate Auth users through Supabase Dashboard or an approved Auth Admin workflow for admin, referee, member, and QA tenant-2 testing. Never insert directly into `auth.users` with SQL.
-2. Add only the intended membership rows through a trusted owner-controlled process.
-3. Run a full positive/negative matrix across two real user identities and two tenants.
-4. Implement a verified Auth-user-to-athlete/member link before enabling athlete self-service.
-5. Complete competition entries, official assignments, result review/finalization, protests, versioned corrections, and audit history.
-6. Complete athlete and guardian records, minor consent, professional credentials, membership periods, insurance, dues/finance, facilities, documents, talent development, and privacy-preserving analytics.
-7. Configure MFA for privileged roles and enable leaked-password protection in Supabase Auth.
-8. Review Supabase advisor findings for unrelated existing tables: `public.data_bank`, `public.finance_ledger`, and `public.monetization_opportunities` have RLS enabled but no policies. They were not changed because they are outside the current Sports OS table scope.
-9. Run encrypted backup and isolated restore exercises, independent security/privacy review, accessibility/performance checks, and pilot stakeholder acceptance.
-
-## 7. Current Supabase advisor findings
-
-At the time of review:
-- WARN: leaked-password protection is disabled in Supabase Auth.
-- INFO: `public.data_bank`, `public.finance_ledger`, and `public.monetization_opportunities` have RLS enabled but no policies.
-
-No changes were made to those unrelated tables or Auth settings in this pass.
-
-## 8. Release decision
-
-**Status: authenticated pilot / development MVP — not production-ready.**
-
-Use synthetic test data only. Do not import real athlete, minor, health, insurance, or financial records; do not activate payments; do not merge to `main` or deploy publicly without a separate explicit release decision and verified readiness evidence.
-
-
-## 7. Authenticated management platform — source review 2026-11-22
-
-Added `app/platform/page.tsx) as the primary post-login management platform. It provides a responsive Persian RTL management shell, 16 navigable module areas, tenant-aware overview, and a basic member directory with a create-member action backed by the existing tenant-scoped API. The module catalogue clearly marks the areas that are not yet connected to operational tables or APIs.
-
-Added `app/workspace/page.tsx) as a supplementary module directory with feature inventories and explicit implementation states. The login flow routes authenticated users to `/platform`; middleware protects `/platform` and `/workspace` and routes authenticated root visits to `/platform`.
-
-Validation evidence: GitHub Actions run 45028421318 passed dependency installation, TypeScript validation, Next.js production build, static security regression checks, legacy JavaScript syntax, and demo validation at commit `1e610c9df0339343787efba84a050979d98f1bbf`. A follow-up route-protection and test-fixture update is now committed and its validation run is pending.
-
-No database migrations, production data writes, or production deployment were performed for these interface changes.
-
-## 8. Single management entry point — 2026-11-22
-
-The legacy `/workspace` route now redirects to the canonical authenticated `/platform` experience. It no longer renders a second dashboard, duplicate module catalogue, tenant selector, or separate navigation. Existing links remain compatible. The canonical platform is the only management UI; module implementation must be added there once and backed by shared domain services.
+**Until then, status remains: development pilot / partial MVP.**
