@@ -29,7 +29,7 @@ export async function PATCH(
 ) {
   const tenantId = request.headers.get("x-tenant-id");
   const db = await createSupabaseServerClient();
-  const auth = await requireCoreRole(db, ["admin"], tenantId);
+  const auth = await requireCoreRole(db, ["owner", "admin"], tenantId);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
