@@ -1,15 +1,26 @@
-# METATYA Sports OS — Integrated Sports Federation Blueprint
+# METATYA Sports OS — Integrated Shooting Sports Blueprint
 Version: 1.0
 Status: Architecture baseline; implementation evidence is tracked separately.
 
 ## Current implementation baseline (2026-11-17)
 The active Next.js pilot is connected to the Supabase `public` schema and uses `public.sports_tenants`, `public.sports_tenant_memberships`, `public.sports_members`, `public.sports_events`, and `public.sports_results`. The dashboard supports server-verified organization selection for users with multiple active memberships. The selected tenant ID is sent as `x-tenant-id` to operational API routes, which independently verify membership and role. This is a basic pilot, not implementation of all domains described in this blueprint. Legacy migrations 005/006 for `sports_core` are not part of the runtime and must not be applied to the connected project.
-Scope: General sports federation administration and management. Sport-specific operational guidance is outside this product scope.
+Scope: Sports shooting administration and management only. This repository work does not cover archery or other sports products.
 
 ## 1. Product mission
-Build a modular, secure, Persian-first management platform for sports federations, provincial and county boards, clubs, facilities, athletes, coaches, referees, and authorized experts. The first pilot is the Ilam provincial board. The product architecture supports future organizational expansion through separately authorized tenants.
+Build a modular, secure, Persian-first management platform for shooting-sport federations, provincial and county boards, clubs, shooting centers, athletes, coaches, referees, and authorized experts. The first pilot is the Ilam Shooting Board. The product architecture may support future organizational expansion, but this delivery scope is shooting only.
 
-## 2. Product domains
+## 2. Shooting discipline catalogue
+The discipline catalogue is configurable and must be validated against the applicable federation rules before production use:
+- Air rifle
+- Air pistol
+- Fixed-target disciplines
+- Moving-target disciplines
+- Flying/clay-target disciplines, including skeet
+- Sport bullet-shooting disciplines
+
+A discipline record must include its governing rule-set reference, effective date, competition format, eligibility constraints, result schema, and approval history. Do not infer technical rules or eligibility from a display label.
+
+## 3. Product domains
 1. Organization & Federation Management — federation, provincial/county boards, committees, clubs, centers, organizational units.
 2. Club & Center Management — facilities, operating status, authorized contacts, schedules, facility records.
 3. Athlete Registry — identity-minimized profile, membership, discipline affiliations, verified documents, status history.
@@ -20,20 +31,19 @@ Build a modular, secure, Persian-first management platform for sports federation
 8. Training & Education — courses, attendance, credentials, renewals, training history.
 9. Finance & Administration — dues, invoices, receipts, debts, refunds and reconciliations; no card data stored.
 10. Insurance & Membership — membership periods, insurance provider/reference, coverage status and expiry alerts.
-11. Facilities & General Assets — facility profiles, general inventory, maintenance schedules, inspection records and service status.
-12. Sports Intelligence & Analytics — authorized aggregate reports, competition summaries, trends, data-quality indicators and privacy thresholds.
-13. Communications & Notifications — official notices, audience targeting by authorized organizational scope, delivery status and templates.
-14. Documents & Workflow — correspondence, approvals, controlled archives, retention, versioning and provenance.
-15. Platform Security & Administration — identity, access, ownership, privacy, audit, backup/recovery, integration and assurance.
+11. Sports Intelligence & Analytics — authorized aggregate reports, competition summaries, trends, data-quality indicators and privacy thresholds.
+12. Communications & Notifications — official notices, audience targeting by authorized organizational scope, delivery status and templates.
+13. Documents & Workflow — correspondence, approvals, controlled archives, retention, versioning and provenance.
+14. Platform Security & Administration — identity, access, ownership, privacy, audit, backup/recovery, integration and assurance.
 
 ## 4. Organizational and tenancy model
-- The initial live pilot tenant is the Ilam provincial sports board.
+- The initial live pilot tenant is the Ilam Shooting Board.
 - Organizational hierarchy is configurable: national federation → provincial board → county board/committee → club/center.
 - Tenant and organizational scope are resolved and enforced server-side from verified identity and membership; browser-supplied tenant identifiers are never trusted as authorization.
 - Each tenant-owned record carries a tenant identifier and, where applicable, an organizational-unit identifier.
 - Cross-tenant and cross-unit access is denied by default and granted only by explicit, scoped policy.
 - The platform control plane is separate from tenant administration. Platform operators receive no implicit rights to tenant records.
-- Additional sports and organizational tenants may be enabled only through explicit scope approval, separate configuration and tenant-isolation tests.
+- Future sports expansion is out of scope for this shooting delivery and must not introduce other sport tenants or workflows into the Ilam pilot.
 
 ## 5. Core identity and access roles
 Roles are scoped to a tenant and/or organizational unit:
@@ -78,11 +88,10 @@ Use a modular relational model with shared identity references and domain-owned 
 - identity_and_access
 - athlete_and_membership
 - professional_credentials
-- sports_programs_and_categories
+- disciplines_and_rulesets
 - competitions_and_results
 - talent_and_training
 - finance_and_insurance
-- facilities_and_assets
 - documents_and_workflows
 - communications
 - analytics
@@ -141,7 +150,7 @@ Implement competitions, registration review, assignments, provisional results, o
 Exit: full lifecycle tests, audit trail and role-separation tests pass.
 
 ### Phase 5 — Finance, insurance, facilities and services
-Implement financial ledgers, insurance references, facility and general-asset records, and notifications.
+Implement financial ledgers, insurance references and notifications.
 Exit: reconciliation, permission, expiry and recovery tests pass.
 
 ### Phase 6 — Talent, training and intelligence
@@ -153,6 +162,7 @@ Run user acceptance, security/privacy review, backup restore exercise, accessibi
 Exit: signed acceptance and verified evidence; only then consider production deployment.
 
 ## 14. Non-negotiable exclusions
+- No weapon construction, modification, optimization or operational use instructions.
 - No real athlete, minor, health, insurance or financial data in the static demo or public repository.
 - No live database migration without an isolated dedicated Sports OS project and explicit approval.
 - No merge to main, production deployment, DNS changes, payment activation or third-party data sharing as part of architecture documentation.
