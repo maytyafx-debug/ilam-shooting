@@ -146,6 +146,27 @@ export async function requireCoreRole(
     return { ok: false as const, status: 403, error: "Forbidden" };
   }
 
+  // Privileged organization actions require a verified second factor.
+  if (role === "admin") {
+    const { data: assurance, error: assuranceError } =
+      await db.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assuranceError) {
+      console.error("[Sports OS] Unable to verify MFA assurance:", assuranceError);
+      return {
+        ok: false as const,
+        status: 503,
+        error: "Unable to verify privileged session assurance.",
+      };
+    }
+    if (assurance.currentLevel !== "aal2") {
+      return {
+        ok: false as const,
+        status: 428,
+        error: "MFA_REQUIRED",
+      };
+    }
+  }
+
   return {
     ok: true as const,
     user: user as User,
