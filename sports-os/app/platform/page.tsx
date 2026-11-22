@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import "./platform.css";
@@ -52,6 +52,7 @@ export default function PlatformPage() {
   const [name, setName] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const tenantLoadSequence = useRef(0);
 
   const canCreateMembers = role === "owner" || role === "admin";
   const filteredMembers = useMemo(() => members.filter((member) => member.full_name.toLowerCase().includes(search.trim().toLowerCase())), [members, search]);
@@ -82,11 +83,13 @@ export default function PlatformPage() {
     }
     async function loadMembersFor(id: string, selectedRole: string) {
       if (!["owner", "admin", "referee"].includes(selectedRole)) return;
+      const requestId = ++tenantLoadSequence.current;
       const response = await fetch("/api/core-sports/members", { cache: "no-store", headers: { "x-tenant-id": id } });
       const payload = await response.json();
+      if (!mounted || requestId !== tenantLoadSequence.current) return;
       if (response.status === 401) { router.replace("/login"); return; }
       if (!response.ok) throw new Error(payload.error || "دریافت اعضا ناموفق بود.");
-      if (mounted) { setMembers(payload.members ?? []); setMembersAvailable(true); }
+      setMembers(payload.members ?? []); setMembersAvailable(true);
     }
     void initialize();
     return () => { mounted = false; };
@@ -94,8 +97,10 @@ export default function PlatformPage() {
 
   async function loadMembersForTenant(id: string, selectedRole: string) {
     if (!["owner", "admin", "referee"].includes(selectedRole)) return;
+    const requestId = ++tenantLoadSequence.current;
     const response = await fetch("/api/core-sports/members", { cache: "no-store", headers: { "x-tenant-id": id } });
     const payload = await response.json();
+    if (requestId !== tenantLoadSequence.current) return;
     if (response.status === 401) { router.replace("/login"); return; }
     if (!response.ok) throw new Error(payload.error || "دریافت اعضا ناموفق بود.");
     setMembers(payload.members ?? []); setMembersAvailable(true);
