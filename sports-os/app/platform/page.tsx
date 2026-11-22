@@ -75,18 +75,18 @@ export default function PlatformPage() {
         if (!mounted) return;
         setTenants(options); setTenantId(selected.id); setTenantName(selected.name); setRole(selected.role);
         window.sessionStorage.setItem("metatya-sports-os-active-tenant", selected.id);
-        await loadMembersFor(selected.id, selected.role, mounted);
+        await loadMembersFor(selected.id, selected.role);
       } catch (caught) {
         if (mounted) setError(caught instanceof Error ? caught.message : "خطا در بارگذاری پلتفرم");
       } finally { if (mounted) setLoading(false); }
     }
-    async function loadMembersFor(id: string, selectedRole: string, stillMounted: boolean) {
+    async function loadMembersFor(id: string, selectedRole: string) {
       if (!["owner", "admin", "referee"].includes(selectedRole)) return;
       const response = await fetch("/api/core-sports/members", { cache: "no-store", headers: { "x-tenant-id": id } });
       const payload = await response.json();
       if (response.status === 401) { router.replace("/login"); return; }
       if (!response.ok) throw new Error(payload.error || "دریافت اعضا ناموفق بود.");
-      if (stillMounted) { setMembers(payload.members ?? []); setMembersAvailable(true); }
+      if (mounted) { setMembers(payload.members ?? []); setMembersAvailable(true); }
     }
     void initialize();
     return () => { mounted = false; };
