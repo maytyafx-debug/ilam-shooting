@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoreEvent, CoreMember, CoreResult, CoreRole } from "@/lib/core-sports/types";
 
@@ -445,7 +446,7 @@ export default function DashboardPage() {
               <p className="muted">مدیریت امن اعضا، رویدادها و نتایج ورزشی در محدوده سازمان فعال</p>
             </div>
             <div className="topbar-actions">
-              <a className="btn secondary" href="/specialists">بانک مربیان، داوران و ورزشکاران</a>
+              <Link className="btn secondary" href="/specialists">بانک مربیان، داوران و ورزشکاران</Link>
               <button className="btn secondary" onClick={refreshData} disabled={busy}>
                 {busy ? "در حال پردازش..." : "به‌روزرسانی"}
               </button>
