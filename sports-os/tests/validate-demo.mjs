@@ -29,7 +29,7 @@ for (const plan of pricing.plans) {
   assert.ok(Math.abs(plan.termOptions[2].discountPercent - 16.67) < 0.01);
 }
 assert.equal(pricing.pricingStatus, "quote_required");
-assert.ok(masterBlueprint.includes("Scope: Sports shooting administration and management only."));
+assert.ok(masterBlueprint.includes("Scope: General sports federation administration and management."));
 assert.ok(masterBlueprint.includes("Talent Identification & Development"));
 assert.ok(masterBlueprint.includes("Competition and result integrity"));
 assert.ok(masterBlueprint.includes("METATYA Sovereign Ownership"));
