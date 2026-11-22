@@ -4,10 +4,13 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import "./platform.css";
+import AdminModulePanel from "./admin-module-panel";
 
 type Tenant = { id: string; name: string; slug: string; role: string };
 type Member = { id: string; full_name: string; phone: string | null; sport_type: string | null; status: string; created_at: string };
 type Section = { id: string; title: string; description: string; icon: string; state: "connected" | "planned"; detail: string };
+
+const ADMIN_MODULE_IDS = ["organization", "clubs", "professionals", "calendar", "honours", "membership", "insurance", "finance", "training", "documents", "facilities", "communications"];
 
 const sections: Section[] = [
   { id: "organization", title: "ساختار سازمانی", description: "هیئت، واحدها، کمیته‌ها و شهرستان‌ها", icon: "▦", state: "planned", detail: "مدل سازمانی در سند مرجع تعریف شده است؛ فرم‌ها و APIهای این بخش هنوز به پایگاه داده عملیاتی متصل نشده‌اند." },
@@ -47,6 +50,7 @@ export default function PlatformPage() {
   const [role, setRole] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
   const [membersAvailable, setMembersAvailable] = useState(false);
+  const [adminSchemaReady, setAdminSchemaReady] = useState(false);
   const [active, setActive] = useState("overview");
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
@@ -57,6 +61,7 @@ export default function PlatformPage() {
   const canCreateMembers = role === "owner" || role === "admin";
   const filteredMembers = useMemo(() => members.filter((member) => member.full_name.toLowerCase().includes(search.trim().toLowerCase())), [members, search]);
   const currentSection = sections.find((item) => item.id === active);
+  const displaySections = sections.map((item) => ADMIN_MODULE_IDS.includes(item.id) && adminSchemaReady ? { ...item, state: "connected" as const } : item);
 
   useEffect(() => {
     let mounted = true;
@@ -156,9 +161,9 @@ export default function PlatformPage() {
         <div className="sidebar-caption">فضای مدیریت</div>
         <button className={active === "overview" ? "nav-item active" : "nav-item"} onClick={() => setActive("overview")}><span>⌂</span> نمای کلی</button>
         <div className="sidebar-caption">مدیریت سازمان</div>
-        {sections.slice(0, 6).map((item) => <button key={item.id} className={active === item.id ? "nav-item active" : "nav-item"} onClick={() => setActive(item.id)}><span>{item.icon}</span>{item.title}</button>)}
+        {displaySections.slice(0, 6).map((item) => <button key={item.id} className={active === item.id ? "nav-item active" : "nav-item"} onClick={() => setActive(item.id)}><span>{item.icon}</span>{item.title}</button>)}
         <div className="sidebar-caption">عملیات پشتیبانی</div>
-        {sections.slice(6).map((item) => <button key={item.id} className={active === item.id ? "nav-item active" : "nav-item"} onClick={() => setActive(item.id)}><span>{item.icon}</span>{item.title}</button>)}
+        {displaySections.slice(6).map((item) => <button key={item.id} className={active === item.id ? "nav-item active" : "nav-item"} onClick={() => setActive(item.id)}><span>{item.icon}</span>{item.title}</button>)}
         <div className="sidebar-bottom"><small>نسخه آزمایشی متصل به داده‌های موجود</small><button onClick={signOut}>خروج امن از حساب ↗</button></div>
       </aside>
       <main className="platform-main">
@@ -176,11 +181,11 @@ export default function PlatformPage() {
           <section className="platform-stats">
             <article><span>اعضای قابل مشاهده</span><b>{membersAvailable ? members.length.toLocaleString("fa-IR") : "—"}</b><small>{membersAvailable ? "داده واقعی از پایگاه داده" : "برای این نقش قابل مشاهده نیست"}</small></article>
             <article><span>ماژول‌های تعریف‌شده</span><b>{(sections.length + 1).toLocaleString("fa-IR")}</b><small>بر اساس دامنه سند مرجع</small></article>
-            <article><span>ماژول‌های متصل به داده</span><b>{membersAvailable ? "۱" : "۰"}</b><small>فهرست پایه اعضا؛ سایر بخش‌ها در انتظار اتصال</small></article>
+            <article><span>ماژول‌های متصل به داده</span><b>{(Number(membersAvailable) + (adminSchemaReady ? ADMIN_MODULE_IDS.length : 0)).toLocaleString("fa-IR")}</b><small>دفتر اعضا و لایه پرونده‌های اداری</small></article>
             <article><span>سازمان فعال</span><b className="stat-name">{tenantName}</b><small>عضویت توسط سرور تأیید شده است</small></article>
           </section>
           <div className="section-heading"><div><span className="eyebrow">MODULE DIRECTORY</span><h2>همه بخش‌های سامانه</h2></div><p>برای بررسی هر بخش، آن را از فهرست انتخاب کنید.</p></div>
-          <section className="module-cards">{sections.map((item) => <button key={item.id} className="module-card" onClick={() => setActive(item.id)}><span className="module-icon">{item.icon}</span><span className="module-state">{item.state === "connected" ? "متصل" : "در صف پیاده‌سازی"}</span><b>{item.title}</b><small>{item.description}</small><i>مشاهده بخش ←</i></button>)}</section>
+          <section className="module-cards">{displaySections.map((item) => <button key={item.id} className="module-card" onClick={() => setActive(item.id)}><span className="module-icon">{item.icon}</span><span className="module-state">{item.state === "connected" ? "متصل" : "در صف پیاده‌سازی"}</span><b>{item.title}</b><small>{item.description}</small><i>مشاهده بخش ←</i></button>)}</section>
           <section className="platform-note"><b>شفافیت داده:</b> اعداد فقط از سرویس متصل خوانده می‌شوند. برای بخش‌های فاقد اتصال، داده نمونه یا آمار تخمینی نمایش داده نمی‌شود.</section>
         </> : active === "members" ? <>
           <section className="content-panel"><div className="section-heading"><div><span className="eyebrow">PEOPLE DIRECTORY</span><h2>اعضا و ورزشکاران</h2></div><span className="connected-pill">● اتصال واقعی فعال</span></div>
@@ -189,7 +194,12 @@ export default function PlatformPage() {
             {membersAvailable ? <div className="platform-table-wrap"><table className="platform-table"><thead><tr><th>نام</th><th>دسته</th><th>وضعیت</th><th>تاریخ ثبت</th></tr></thead><tbody>{filteredMembers.map((member) => <tr key={member.id}><td>{member.full_name}</td><td>{member.sport_type || "—"}</td><td>{member.status === "active" ? "فعال" : member.status === "inactive" ? "غیرفعال" : "معلق"}</td><td>{new Date(member.created_at).toLocaleDateString("fa-IR")}</td></tr>)}{filteredMembers.length === 0 && <tr><td colSpan={4}>رکوردی برای نمایش وجود ندارد.</td></tr>}</tbody></table></div> : <p className="empty-copy">دسترسی مشاهده فهرست اعضا برای نقش فعلی فعال نیست.</p>}
             <p className="privacy-hint">اطلاعات تماس، مدارک هویتی و داده‌های حساس در این فهرست عمومی نمایش داده نمی‌شوند.</p>
           </section>
-        </> : currentSection ? <section className="content-panel module-detail">
+        </> : currentSection && ADMIN_MODULE_IDS.includes(currentSection.id) ? <AdminModulePanel
+          moduleId={currentSection.id}
+          tenantId={tenantId}
+          role={role}
+          onSchemaReady={() => setAdminSchemaReady(true)}
+        /> : currentSection ? <section className="content-panel module-detail">
           <div className="section-heading"><div><span className="eyebrow">MODULE WORKSPACE</span><h2>{currentSection.title}</h2></div><span className={currentSection.state === "connected" ? "connected-pill" : "planned-pill"}>{currentSection.state === "connected" ? "متصل به سرویس" : "تعریف‌شده؛ اتصال در حال تکمیل"}</span></div>
           <p className="module-description">{currentSection.description}</p>
           <div className="module-detail-box"><span className="module-icon large">{currentSection.icon}</span><div><b>وضعیت اجرایی این بخش</b><p>{currentSection.detail}</p></div></div>
