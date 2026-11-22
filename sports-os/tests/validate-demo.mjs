@@ -38,7 +38,7 @@ assert.ok(/immutable encrypted backups/i.test(masterBlueprint));
 assert.ok(masterBlueprint.includes("No merge to main, production deployment"));
 assert.ok(html.includes('id="pricingCards"'));
 assert.ok(html.includes('id="subscription-preview"'));
-assert.equal((html.match(/<article><b>\d{2}<\/b><span>/g) || []).length, 15, "The landing page must list all 15 shooting Sports OS domains.");
+assert.equal((html.match(/<article><b>\d{2}<\/b><span>/g) || []).length, 14, "The landing page must list the 14 retained shooting Sports OS domains.");
 assert.ok(html.includes("برای تیراندازی ورزشی."));
 assert.ok(!/کشتی|والیبال|فوتبال|MANY SPORTS|چندرشته/.test(html), "The public UI must remain shooting-only.");
 assert.ok(appJs.includes('fetch("pricing.json")'));
@@ -69,9 +69,11 @@ assert.equal(tenants.tenants[0].sport, "تیراندازی");
 assert.equal(disciplineCatalogue.scope, "shooting-sports-only");
 assert.equal(disciplineCatalogue.status, "catalogue-definition-only");
 assert.deepEqual(disciplineCatalogue.disciplines.map((d) => d.id), [
-  "air-rifle", "air-pistol", "fixed-target", "moving-target", "flying-target-skeet", "sport-bullet-shooting"
+  "fixed-target", "moving-target", "flying-target-skeet"
 ]);
 assert.ok(disciplineCatalogue.disciplines.every((d) => d.ruleSetRequired === true));
+assert.ok(!html.includes("تجهیزات و تأسیسات"));
+assert.ok(!JSON.stringify(disciplineCatalogue).match(/تفنگ|تپانچه|گلوله|مهمات|سلاح/));
 assert.ok(backlog.includes("No merge to `main`"));
 assert.ok(backlog.includes("UNREVIEWED"));
 assert.ok(foundationSpec.includes("## 3. Role and permission model"));
