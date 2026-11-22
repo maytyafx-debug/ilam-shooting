@@ -21,6 +21,7 @@ const [
   resultsApi,
   tenantApi,
   dashboard,
+  workspace,
 ] = await Promise.all([
   read("../app/login/page.tsx"),
   read("../app/auth/callback/route.ts"),
@@ -40,6 +41,7 @@ const [
   read("../app/api/core-sports/results/route.ts"),
   read("../app/api/core-sports/tenant/route.ts"),
   read("../app/page.tsx"),
+  read("../app/workspace/page.tsx"),
 ]);
 
 assert.ok(login.includes("signInWithPassword"));
@@ -120,6 +122,13 @@ assert.ok(dashboard.includes("console.error"));
 assert.ok(dashboard.includes('const canManage = activeRole === "admin"'));
 assert.ok(dashboard.includes('const canRecordResults = activeRole === "admin" || activeRole === "referee"'));
 assert.ok(dashboard.includes('activeRole === "member"'));
+assert.ok(workspace.includes("METATYA SPORTS OS"));
+assert.ok(workspace.includes("آرشیو افتخارات و مدال‌آوران"));
+assert.ok(workspace.includes("فیلتر جنسیت و رده سنی"));
+assert.ok(workspace.includes('fetch("/api/core-sports/tenant"'));
+assert.ok(workspace.includes('fetch("/api/core-sports/members"'));
+assert.ok(workspace.includes("وضعیت واقعی پیاده‌سازی"));
+assert.ok(workspace.includes("هیچ عدد نمونه‌ای"));
 assert.ok(dashboard.includes("tenantOptions.length > 1"));
 assert.ok(dashboard.includes("پنل شخصی ورزشکار هنوز فعال نشده است"));
 assert.ok(membersApi.includes("Invalid member data"));
