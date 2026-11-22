@@ -22,6 +22,7 @@ const [
   tenantApi,
   dashboard,
   workspace,
+  platform,
 ] = await Promise.all([
   read("../app/login/page.tsx"),
   read("../app/auth/callback/route.ts"),
@@ -42,6 +43,7 @@ const [
   read("../app/api/core-sports/tenant/route.ts"),
   read("../app/page.tsx"),
   read("../app/workspace/page.tsx"),
+  read("../app/platform/page.tsx"),
 ]);
 
 assert.ok(login.includes("signInWithPassword"));
