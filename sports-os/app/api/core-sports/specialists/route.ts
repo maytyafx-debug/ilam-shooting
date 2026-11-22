@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const tenantId = request.headers.get("x-tenant-id");
   const db = await createSupabaseServerClient();
-  const auth = await requireCoreRole(db, ["owner", "admin"], tenantId);
+  const auth = await requireCoreRole(db, ["admin"], tenantId);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   let body: Record<string, unknown>;
